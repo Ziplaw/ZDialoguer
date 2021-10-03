@@ -30,6 +30,7 @@ namespace ZDialoguer
             nodeView.style.left = nodeObject.position.x;
             nodeView.style.top = nodeObject.position.y;
             nodeView.mainContainer.style.backgroundColor = new StyleColor(new Color(0.17f, 0.17f, 0.17f));
+            nodeView.RefreshExpandedState();
             nodeView.RefreshPorts();
 
             return nodeView;

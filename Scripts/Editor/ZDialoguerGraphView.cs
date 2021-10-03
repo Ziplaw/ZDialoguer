@@ -39,6 +39,7 @@ public class ZDialoguerGraphView : GraphView
 
     public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
     {
+        var localMousePos = evt.localMousePosition;
         //base.BuildContextualMenu(evt);
         var types = TypeCache.GetTypesDerivedFrom<NodeObject>().Where(t => t.BaseType != typeof(NodeObject));
         foreach (var type in types)
@@ -52,11 +53,10 @@ public class ZDialoguerGraphView : GraphView
                     switch (type.Name)
                     {
                         case "FactNodeObject":
-                            type.GetMethod("Init").Invoke(node,
-                                new object[] { graph.facts[0], evt.originalMousePosition, graph });
+                            (node as FactNodeObject).Init(graph.facts[0], TransformMousePosition(localMousePos), graph);
                             break;
                         case "PredicateNodeObject":
-                            type.GetMethod("Init").Invoke(node, new object[] { evt.originalMousePosition, graph });
+                            (node as PredicateNodeObject).Init(TransformMousePosition(localMousePos), graph);
                             break;
                     }
 
