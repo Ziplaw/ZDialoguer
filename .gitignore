@@ -1,33 +1,3 @@
-﻿Skip to content
-Search or jump to…
-Pull requests
-Issues
-Trending
-Explore
- 
-@Ziplaw 
-Ziplaw
-/
-ZDialoguer
-Public
-00
-Code
-Issues
-Pull requests
-Actions
-Projects
-Wiki
-0
-Settings
-More
-ZDialoguer/.gitignore
-@Ziplaw
-Ziplaw Initial commit
-Latest commit 60ab8b3 3 days ago
- History
- 1 contributor
-60 lines (49 sloc)  1020 Bytes
-   
 # This .gitignore file should be placed at the root of your Unity project directory
 #
 # Get latest from https://github.com/github/gitignore/blob/master/Unity.gitignore
@@ -90,6 +60,7 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
+<<<<<<< HEAD
 Terms
 Privacy
 Security
@@ -102,3 +73,5 @@ Training
 Blog
 About
 Loading complete
+=======
+>>>>>>> 60ab8b33fd08d97a56e608ef4861c2f8e364ff2e
