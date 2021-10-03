@@ -1,0 +1,12 @@
+GridBackground {
+    --grid-background-color: rgb(40, 40, 40);
+    --line-color: rgba(193, 196, 192, .1);
+    --thick-line-color: rgba(193, 196, 192, .1);
+    --spacing: 15
+}
+
+.node #title #title-label{
+    color: black;
+    -unity-font: resource("Fonts/FugazOne");
+    font-size: 20px;
+}

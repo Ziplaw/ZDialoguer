@@ -1,0 +1,19 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
+using ZDialoguer;
+using ZDialoguerEditor;
+
+[CustomEditor(typeof(ZDialogueGraph))]
+public class ZDialogueGraphEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        if (GUILayout.Button("Open Graph"))
+        {
+            ZDialogueGraphEditorWindow.OpenWindow();
+        }
+        base.OnInspectorGUI();
+    }
+}

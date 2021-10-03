@@ -1,0 +1,388 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEditor;
+using UnityEditor.Experimental.GraphView;
+using UnityEditor.UIElements;
+using UnityEngine;
+using UnityEngine.UIElements;
+using ZDialoguer;
+
+public class ZDialoguerGraphView : GraphView
+{
+    public new class UxmlFactory : UxmlFactory<ZDialoguerGraphView, UxmlTraits>
+    {
+    }
+
+    public Action<NodeView> OnNodeSelected;
+    public Action<Fact> OnBlackboardFactSelected;
+    private ZDialogueGraph graph;
+    private Blackboard _blackBoard;
+
+    public ZDialoguerGraphView()
+    {
+        Insert(0, new GridBackground());
+
+        this.AddManipulator(new ContentZoomer());
+        this.AddManipulator(new ContentDragger());
+        this.AddManipulator(new SelectionDragger());
+        this.AddManipulator(new RectangleSelector());
+
+        RegisterCallback<DragUpdatedEvent>(OnDragUpdatedEvent);
+        RegisterCallback<DragPerformEvent>(OnDragPerformEvent);
+
+        var styleSheet =
+            AssetDatabase.LoadAssetAtPath<StyleSheet>(
+                "Assets/com.Ziplaw.ZDialoguer/Scripts/Editor/ZDialogueGraphEditorWindow.uss");
+        styleSheets.Add(styleSheet);
+    }
+
+    public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
+    {
+        //base.BuildContextualMenu(evt);
+        var types = TypeCache.GetTypesDerivedFrom<NodeObject>().Where(t => t.BaseType != typeof(NodeObject));
+        foreach (var type in types)
+        {
+            if (type == typeof(FactNodeObject) && graph.facts.Count < 1) continue;
+            evt.menu.AppendAction($"{type.Name}", a =>
+            {
+                if (graph)
+                {
+                    var node = ScriptableObject.CreateInstance(type) as NodeObject;
+                    switch (type.Name)
+                    {
+                        case "FactNodeObject":
+                            type.GetMethod("Init").Invoke(node,
+                                new object[] { graph.facts[0], evt.originalMousePosition, graph });
+                            break;
+                        case "PredicateNodeObject":
+                            type.GetMethod("Init").Invoke(node, new object[] { evt.originalMousePosition, graph });
+                            break;
+                    }
+
+                    CreateNodeView(node);
+                }
+                else
+                {
+                    Debug.Log("No Graph Selected");
+                }
+            });
+        }
+    }
+
+    public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
+    {
+        return ports.ToList()
+            .Where(endPort => endPort.direction != startPort.direction && endPort.node != startPort.node &&
+                              startPort.portType == endPort.portType).ToList();
+    }
+
+    NodeView FindNodeView(NodeObject nodeObject)
+    {
+        return GetNodeByGuid(nodeObject.guid) as NodeView;
+    }
+
+    public void PopulateView(ZDialogueGraph graph)
+    {
+        this.graph = graph;
+        graphViewChanged -= OnGraphViewChanged;
+        DeleteElements(graphElements.ToList());
+        graphViewChanged += OnGraphViewChanged;
+
+
+
+        graph.nodes.ForEach(n => CreateNodeView(n));
+        RestoreConnections();
+        // UpdateNodes();
+
+        GenerateBlackBoard();
+
+    }
+
+    private void RestoreConnections()
+    {
+        List<Edge> edgesToCreate = new List<Edge>();
+        foreach (var graphEdgeData in graph.edgeDatas)
+        {
+            Port input = GetPortByGuid(graphEdgeData.inputPortViewDataKey);
+            Port output = GetPortByGuid(graphEdgeData.outputPortViewDataKey);
+            
+            Edge edge = output.ConnectTo(input);
+            AddElement(edge);
+            edgesToCreate.Add(edge);
+        }
+
+        graphViewChanged.Invoke(new GraphViewChange() { edgesToCreate = edgesToCreate });
+    }
+
+    void UpdateNodes()
+    {
+        nodes.ForEach(n =>
+        {
+            var nodeView = (NodeView)n;
+
+            switch (nodeView.NodeObject.GetType().Name)
+            {
+
+            }
+        });
+        
+        foreach (var edge in edges.ToList().Where(e =>
+            ((NodeView)e.input.node).NodeObject.GetType() == typeof(PredicateNodeObject) &&
+            ((NodeView)e.output.node).NodeObject.GetType() == typeof(FactNodeObject)))
+        {
+            Port inputPort = ((NodeView)edge.input.node).Query<Port>().ToList()
+                .First(p => p.direction == Direction.Input && p.portType == typeof(Fact));
+            string nameID = ((FactNodeObject)((NodeView)edge.output.node).NodeObject).fact.nameID;
+
+            inputPort.portName = nameID;
+        }
+
+        foreach (var nodeView in nodes.ToList().Select(n => n as NodeView))
+        {
+            switch (nodeView.NodeObject.GetType().Name)
+            {
+                case "PredicateNodeObject":
+                    nodeView.Q<PopupField<string>>().index = (int)((PredicateNodeObject)nodeView.NodeObject).operation;
+                    break;
+            }
+        }
+    }
+
+
+    void GenerateBlackBoard()
+    {
+        if (_blackBoard != null)
+        {
+            Remove(_blackBoard);
+        }
+
+
+        var bb = new Blackboard(this);
+        bb.Add(new BlackboardSection() { title = "Facts" });
+        bb.addItemRequested += AddFactToBlackBoard;
+        bb.editTextRequested += EditFactText;
+
+        bb.RegisterCallback<GeometryChangedEvent>(e => GeometryChangedCallback(bb));
+
+
+        Add(bb);
+        _blackBoard = bb;
+
+        PopulateBlackboardWithFacts();
+    }
+
+    private void GeometryChangedCallback(Blackboard blackboard)
+    {
+        blackboard.UnregisterCallback<GeometryChangedEvent>(evt1 => GeometryChangedCallback(blackboard));
+        blackboard.SetPosition(new Rect(new Vector2(resolvedStyle.width - 300, 0), new Vector2(300, 300)));
+    }
+
+    private void EditFactText(Blackboard bb, VisualElement field, string value)
+    {
+        string newName = FixNewFactName(value);
+        ((FactBlackboardField)field).fact.nameID = newName;
+        ((FactBlackboardField)field).fact.name = newName;
+        ((FactBlackboardField)field).text = newName;
+        ((FactBlackboardField)field).name = newName;
+        UpdateNodes();
+        SaveChangesToGraph(graph);
+    }
+
+    void PopulateBlackboardWithFacts()
+    {
+        graph.facts.ForEach(f => { _blackBoard.Add(GenerateFactContainer(f)); });
+    }
+
+    string FixNewFactName(string newName)
+    {
+        int appender = 1;
+        if (graph.facts.Count != 0)
+        {
+            while (graph.facts.Any(f => f.nameID == newName))
+            {
+                if (newName.Contains($"({appender - 1})"))
+                {
+                    newName = newName.Replace($"({appender - 1})", $"({appender})");
+                }
+                else
+                {
+                    newName += $" ({appender})";
+                }
+
+                appender++;
+            }
+        }
+
+        return newName;
+    }
+
+    private void AddFactToBlackBoard(Blackboard blackboard)
+    {
+        var newFact = graph.CreateFact(FixNewFactName("New Fact"), 0);
+        blackboard.Add(GenerateFactContainer(newFact));
+
+        SaveChangesToGraph(graph);
+    }
+
+    VisualElement GenerateFactContainer(Fact fact)
+    {
+        var container = new VisualElement();
+        var bbField = new FactBlackboardField(fact)
+            { text = fact.nameID, typeText = "float", OnBlackboardFactSelected = OnBlackboardFactSelected };
+
+        container.Add(bbField);
+
+        return container;
+    }
+
+
+    private GraphViewChange OnGraphViewChanged(GraphViewChange graphViewChange)
+    {
+
+        if (graphViewChange.elementsToRemove != null)
+        {
+            graphViewChange.elementsToRemove.ForEach(e =>
+            {
+                NodeView nV = e as NodeView;
+                if (nV != null)
+                {
+                    graph.DeleteNode(nV.NodeObject);
+                }
+
+                Edge edge = e as Edge;
+                if (edge != null)
+                {
+                    DisconnectEdge(edge, graph);
+                }
+
+                FactBlackboardField factBlackboardField = e as FactBlackboardField;
+                if (factBlackboardField != null)
+                {
+                    graph.DeleteFact(factBlackboardField.fact);
+                }
+            });
+        }
+
+        if (graphViewChange.edgesToCreate != null)
+        {
+            graphViewChange.edgesToCreate.ForEach(e => { ConnectEdge(e, graph); });
+        }
+
+        SaveChangesToGraph(graph);
+
+        return graphViewChange;
+    }
+
+    public static void ConnectEdge(Edge edge, ZDialogueGraph graph)
+    {
+        NodeView inputView = (NodeView)edge.input.node;
+
+        NodeView outputView = (NodeView)edge.output.node;
+
+        switch (inputView.NodeObject.GetType().Name)
+        {
+            case "PredicateNodeObject":
+                PredicateNodeObject inputViewNodeObject = inputView.NodeObject as PredicateNodeObject;
+                PredicateNodeObject outputViewNodeObject = outputView.NodeObject as PredicateNodeObject;
+                switch (edge.input.viewDataKey.Last())
+                {
+                    case '3': // ID of Fact Port
+                        inputViewNodeObject.fact = (outputView.NodeObject as FactNodeObject).fact;
+                        edge.input.portName = inputViewNodeObject.fact.nameID;
+                        break;
+                }
+
+                switch (edge.output.viewDataKey.Last())
+                {
+                    case '1': // ID of "True ►" Port
+                        outputViewNodeObject.childIfTrue = inputViewNodeObject;
+                        break;
+                    case '2': // ID of "False ►" Port
+                        outputViewNodeObject.childIfFalse = inputViewNodeObject;
+                        break;
+                }
+
+                break;
+        }
+        graph.edgeDatas.AddEdge(edge);
+
+        SaveChangesToGraph(graph);
+    }
+
+    public static void DisconnectEdge(Edge edge, ZDialogueGraph graph)
+    {
+        NodeView inputView = (NodeView)edge.input.node;
+
+        NodeView outputView = (NodeView)edge.output.node;
+
+        switch (inputView.NodeObject.GetType().Name)
+        {
+            case "PredicateNodeObject":
+                PredicateNodeObject inputViewNodeObject = inputView.NodeObject as PredicateNodeObject;
+                PredicateNodeObject outputViewNodeObject = outputView.NodeObject as PredicateNodeObject;
+                switch (edge.input.portType.Name)
+                {
+                    case "Fact":
+                        inputViewNodeObject.fact = null;
+                        edge.input.portName = "Fact";
+                        break;
+                }
+                
+                switch (edge.output.viewDataKey.Last())
+                {
+                    case '1': // ID of "True ►" Port
+                        outputViewNodeObject.childIfTrue = null;
+                        break;
+                    case '2': // ID of "False ►" Port
+                        outputViewNodeObject.childIfFalse = null;
+                        break;
+                }
+
+                break;
+        }
+
+        graph.edgeDatas.RemoveEdge(edge);
+        
+        SaveChangesToGraph(graph);
+    }
+
+    public static void SaveChangesToGraph(ZDialogueGraph graph)
+    {
+        EditorUtility.SetDirty(graph);
+        AssetDatabase.SaveAssets();
+    }
+
+    void OnDragUpdatedEvent(DragUpdatedEvent e)
+    {
+        if (DragAndDrop.GetGenericData("DragSelection") is List<ISelectable> selection &&
+            (selection.OfType<BlackboardField>().Count() >= 0))
+        {
+            DragAndDrop.visualMode = e.actionKey ? DragAndDropVisualMode.Copy : DragAndDropVisualMode.Move;
+        }
+    }
+
+    void OnDragPerformEvent(DragPerformEvent e)
+    {
+        var selection = DragAndDrop.GetGenericData("DragSelection") as List<ISelectable>;
+        IEnumerable<FactBlackboardField> fields = selection.OfType<FactBlackboardField>();
+        foreach (FactBlackboardField field in fields)
+        {
+            var node = ScriptableObject.CreateInstance<FactNodeObject>();
+            node.Init(field.fact, TransformMousePosition(e.localMousePosition), graph);
+            CreateNodeView(node);
+        }
+    }
+
+    Vector2 TransformMousePosition(Vector2 eventLocalMousePosition)
+    {
+        return viewTransform.matrix.inverse.MultiplyPoint(eventLocalMousePosition);
+    }
+
+    void CreateNodeView(NodeObject nodeObject)
+    {
+        NodeView nodeView = new NodeView(nodeObject, graph);
+        nodeView.OnNodeSelected = OnNodeSelected;
+        AddElement(nodeView);
+    }
+}
