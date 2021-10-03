@@ -115,41 +115,6 @@ public class ZDialoguerGraphView : GraphView
         graphViewChanged.Invoke(new GraphViewChange() { edgesToCreate = edgesToCreate });
     }
 
-    void UpdateNodes()
-    {
-        nodes.ForEach(n =>
-        {
-            var nodeView = (NodeView)n;
-
-            switch (nodeView.NodeObject.GetType().Name)
-            {
-
-            }
-        });
-        
-        foreach (var edge in edges.ToList().Where(e =>
-            ((NodeView)e.input.node).NodeObject.GetType() == typeof(PredicateNodeObject) &&
-            ((NodeView)e.output.node).NodeObject.GetType() == typeof(FactNodeObject)))
-        {
-            Port inputPort = ((NodeView)edge.input.node).Query<Port>().ToList()
-                .First(p => p.direction == Direction.Input && p.portType == typeof(Fact));
-            string nameID = ((FactNodeObject)((NodeView)edge.output.node).NodeObject).fact.nameID;
-
-            inputPort.portName = nameID;
-        }
-
-        foreach (var nodeView in nodes.ToList().Select(n => n as NodeView))
-        {
-            switch (nodeView.NodeObject.GetType().Name)
-            {
-                case "PredicateNodeObject":
-                    nodeView.Q<PopupField<string>>().index = (int)((PredicateNodeObject)nodeView.NodeObject).operation;
-                    break;
-            }
-        }
-    }
-
-
     void GenerateBlackBoard()
     {
         if (_blackBoard != null)
@@ -185,7 +150,6 @@ public class ZDialoguerGraphView : GraphView
         ((FactBlackboardField)field).fact.name = newName;
         ((FactBlackboardField)field).text = newName;
         ((FactBlackboardField)field).name = newName;
-        UpdateNodes();
         SaveChangesToGraph(graph);
     }
 
@@ -253,7 +217,9 @@ public class ZDialoguerGraphView : GraphView
                 Edge edge = e as Edge;
                 if (edge != null)
                 {
-                    DisconnectEdge(edge, graph);
+                    (edge.output.node as NodeView).OnDisconnectEdgeFromOutputPort(edge); 
+                    (edge.input.node as NodeView).OnDisconnectEdgeFromInputPort(edge); 
+                    graph.edgeDatas.RemoveEdge(edge);
                 }
 
                 FactBlackboardField factBlackboardField = e as FactBlackboardField;
@@ -266,85 +232,17 @@ public class ZDialoguerGraphView : GraphView
 
         if (graphViewChange.edgesToCreate != null)
         {
-            graphViewChange.edgesToCreate.ForEach(e => { ConnectEdge(e, graph); });
+            graphViewChange.edgesToCreate.ForEach(e =>
+            {
+                (e.output.node as NodeView).OnConnectEdgeToOutputPort(e); 
+                (e.input.node as NodeView).OnConnectEdgeToInputPort(e); 
+                graph.edgeDatas.AddEdge(e);
+            });
         }
 
         SaveChangesToGraph(graph);
 
         return graphViewChange;
-    }
-
-    public static void ConnectEdge(Edge edge, ZDialogueGraph graph)
-    {
-        NodeView inputView = (NodeView)edge.input.node;
-
-        NodeView outputView = (NodeView)edge.output.node;
-
-        switch (inputView.NodeObject.GetType().Name)
-        {
-            case "PredicateNodeObject":
-                PredicateNodeObject inputViewNodeObject = inputView.NodeObject as PredicateNodeObject;
-                PredicateNodeObject outputViewNodeObject = outputView.NodeObject as PredicateNodeObject;
-                switch (edge.input.viewDataKey.Last())
-                {
-                    case '3': // ID of Fact Port
-                        inputViewNodeObject.fact = (outputView.NodeObject as FactNodeObject).fact;
-                        edge.input.portName = inputViewNodeObject.fact.nameID;
-                        break;
-                }
-
-                switch (edge.output.viewDataKey.Last())
-                {
-                    case '1': // ID of "True ►" Port
-                        outputViewNodeObject.childIfTrue = inputViewNodeObject;
-                        break;
-                    case '2': // ID of "False ►" Port
-                        outputViewNodeObject.childIfFalse = inputViewNodeObject;
-                        break;
-                }
-
-                break;
-        }
-        graph.edgeDatas.AddEdge(edge);
-
-        SaveChangesToGraph(graph);
-    }
-
-    public static void DisconnectEdge(Edge edge, ZDialogueGraph graph)
-    {
-        NodeView inputView = (NodeView)edge.input.node;
-
-        NodeView outputView = (NodeView)edge.output.node;
-
-        switch (inputView.NodeObject.GetType().Name)
-        {
-            case "PredicateNodeObject":
-                PredicateNodeObject inputViewNodeObject = inputView.NodeObject as PredicateNodeObject;
-                PredicateNodeObject outputViewNodeObject = outputView.NodeObject as PredicateNodeObject;
-                switch (edge.input.portType.Name)
-                {
-                    case "Fact":
-                        inputViewNodeObject.fact = null;
-                        edge.input.portName = "Fact";
-                        break;
-                }
-                
-                switch (edge.output.viewDataKey.Last())
-                {
-                    case '1': // ID of "True ►" Port
-                        outputViewNodeObject.childIfTrue = null;
-                        break;
-                    case '2': // ID of "False ►" Port
-                        outputViewNodeObject.childIfFalse = null;
-                        break;
-                }
-
-                break;
-        }
-
-        graph.edgeDatas.RemoveEdge(edge);
-        
-        SaveChangesToGraph(graph);
     }
 
     public static void SaveChangesToGraph(ZDialogueGraph graph)
@@ -381,7 +279,7 @@ public class ZDialoguerGraphView : GraphView
 
     void CreateNodeView(NodeObject nodeObject)
     {
-        NodeView nodeView = new NodeView(nodeObject, graph);
+        NodeView nodeView = NodeView.CreateNodeView(nodeObject, graph);
         nodeView.OnNodeSelected = OnNodeSelected;
         AddElement(nodeView);
     }
