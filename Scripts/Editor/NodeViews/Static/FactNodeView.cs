@@ -9,7 +9,7 @@ using ZDialoguer;
 
 public class FactNodeView : StaticNodeView
 {
-    public override NodeView BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph, ref int index)
+    public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph, ref int index)
     {
         base.BuildNodeView(nodeObject, graph, ref index);
         titleContainer.style.backgroundColor = new StyleColor(colorMap[typeof(Fact)]);
@@ -21,11 +21,8 @@ public class FactNodeView : StaticNodeView
         inputContainer.Add(factEnumField);
         inputContainer.Add(new IMGUIContainer(() =>
             GUILayout.Label($"({factNodeObject.fact.value})")));
-        inputContainer.style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Row);
         CreateOutputPort(typeof(Fact), "Fact", nodeObject, ref index);
         title = "Fact Node";
-
-        return this;
     }
 
     private void FactEnumChangeCallback(ChangeEvent<Fact> evt, FactNodeObject nodeObject)

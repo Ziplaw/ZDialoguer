@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.UIElements;
@@ -13,20 +14,20 @@ namespace ZDialoguer
     {
         public Action<NodeView> OnNodeSelected;
         public NodeObject NodeObject;
-        public abstract NodeView BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph, ref int index);
+        public abstract void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph, ref int index);
         public abstract void OnConnectEdgeToInputPort(Edge edge);
         public abstract void OnConnectEdgeToOutputPort(Edge edge);
         public abstract void OnDisconnectEdgeFromInputPort(Edge edge);
         public abstract void OnDisconnectEdgeFromOutputPort(Edge edge);
-
         public static NodeView CreateNodeView(NodeObject nodeObject, ZDialogueGraph graph)
         {
             int index = 0;
             
-            NodeView nodeView = nodeViewMap[nodeObject.GetType()].Invoke(nodeObject, graph)
-                .BuildNodeView(nodeObject, graph, ref index);
+            NodeView nodeView = nodeViewMap[nodeObject.GetType()].Invoke(nodeObject, graph);
+            
             nodeView.NodeObject = nodeObject;
             nodeView.viewDataKey = nodeObject.guid;
+            nodeView.BuildNodeView(nodeObject, graph, ref index);
             nodeView.style.left = nodeObject.position.x;
             nodeView.style.top = nodeObject.position.y;
             nodeView.mainContainer.style.backgroundColor = new StyleColor(new Color(0.17f, 0.17f, 0.17f));
@@ -41,6 +42,7 @@ namespace ZDialoguer
             {
                 { typeof(FactNodeObject), (nodeObject, graph) => new FactNodeView() },
                 { typeof(PredicateNodeObject), (nodeObject, graph) => new PredicateNodeView() },
+                { typeof(DialogueNodeObject), (nodeObject, graph) => new DialogueNodeView() },
             };
 
 
@@ -82,6 +84,29 @@ namespace ZDialoguer
         {
             base.OnSelected();
             OnNodeSelected?.Invoke(this);
+        }
+    }
+
+    public static class Extensions
+    {
+        public static bool IsOutputKey(this Edge edge, char key, Action action)
+        {
+            if(edge.output.viewDataKey.Last() == key) 
+            {
+                action.Invoke();
+                return true;
+            }
+            return false;
+        }
+        
+        public static bool IsInputKey(this Edge edge, char key, Action action)
+        {
+            if(edge.input.viewDataKey.Last() == key) 
+            {
+                action.Invoke();
+                return true;
+            }
+            return false;
         }
     }
 }

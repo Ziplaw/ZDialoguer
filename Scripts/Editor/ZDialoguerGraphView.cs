@@ -58,6 +58,9 @@ public class ZDialoguerGraphView : GraphView
                         case "PredicateNodeObject":
                             (node as PredicateNodeObject).Init(TransformMousePosition(localMousePos), graph);
                             break;
+                        case "DialogueNodeObject":
+                            (node as DialogueNodeObject).Init(TransformMousePosition(localMousePos), graph);
+                            break;
                     }
 
                     CreateNodeView(node);
@@ -151,11 +154,6 @@ public class ZDialoguerGraphView : GraphView
         _field.fact.name = newName;
         _field.text = newName;
         _field.name = newName;
-        foreach (var nodeView in nodes.ToList().Where(n  => ((NodeView)n).NodeObject.GetType() == typeof(PredicateNodeObject) && (((NodeView)n).NodeObject as PredicateNodeObject).fact == _field.fact))
-        {
-            var nV = nodeView as PredicateNodeView;
-            nV.Query<Port>().ToList().First(p => p.viewDataKey.Last() == '3').portName = newName;
-        }
         //Implement this into the Fact Field itself
         SaveChangesToGraph(graph);
     }

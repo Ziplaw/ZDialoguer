@@ -12,15 +12,18 @@ using ZDialoguerEditor;
 public class PredicateNodeView : SequencialNodeView
 {
     private PredicateNodeObject _predicateNodeObject => NodeObject as PredicateNodeObject;
-    public override NodeView BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph, ref int index)
+    public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph, ref int index)
     {
         var predicateNodeObject = nodeObject as PredicateNodeObject;
         
         base.BuildNodeView(nodeObject, graph, ref index);
+        CreateOutputPort(typeof(NodeObject), "True ►", nodeObject, ref index);
+        CreateOutputPort(typeof(NodeObject), "False ►", nodeObject, ref index);
         titleContainer.style.backgroundColor = new StyleColor(new Color(0.64f, 0.96f, 0.88f));
 
         PopupField<string> operationEnumField =
             new PopupField<string>(new List<string> { "=", ">", "<", "≥", "≤", "≠" }, (int)predicateNodeObject.operation);
+        operationEnumField.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleCenter);
         operationEnumField.RegisterValueChangedCallback(e =>
             OperationChangeCallback(e, predicateNodeObject));
 
@@ -39,20 +42,36 @@ public class PredicateNodeView : SequencialNodeView
         valueField.RegisterValueChangedCallback(e =>
             UpdatePredicateNodeValue(e, predicateNodeObject));
 
-        inputContainer.Add(operationEnumField);
-        inputContainer.Add(valueField);
-
         Font font = Resources.Load<Font>("Fonts/FugazOne");
 
+        IMGUIContainer factNameContainer = new IMGUIContainer((() =>
+        {
+            GUILayout.Label(predicateNodeObject.fact? predicateNodeObject.fact.nameID : "Fact",
+                new GUIStyle("label") { alignment = TextAnchor.MiddleCenter, fontSize = 20, font = font });
+        }));
+        
         IMGUIContainer autoUpdateContainer = new IMGUIContainer((() =>
         {
             GUILayout.Label(predicateNodeObject.GetPredicate().ToString(),
                 new GUIStyle("label") { alignment = TextAnchor.MiddleCenter, fontSize = 20, font = font });
         }));
+        autoUpdateContainer.style.borderTopColor = new StyleColor(new Color(.25f,.25f,.25f));
+        autoUpdateContainer.style.borderTopWidth = new StyleFloat(1);
+        VisualElement horizontalContainer = new VisualElement();
+        horizontalContainer.style.paddingBottom = 5;
+        horizontalContainer.style.paddingTop = 5;
+        horizontalContainer.style.paddingLeft = 5;
+        horizontalContainer.style.paddingRight = 5;
+        horizontalContainer.style.alignItems = Align.Center;
+        horizontalContainer.style.alignSelf = Align.Center;
+        horizontalContainer.style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Row);
+        horizontalContainer.Add(factNameContainer);
+        horizontalContainer.Add(operationEnumField);
+        horizontalContainer.Add(valueField);
+        mainContainer.Add(horizontalContainer);
         mainContainer.Add(autoUpdateContainer);
 
         title = "Predicate Node";
-        return this;
     }
     private void UpdatePredicateNodeValue(ChangeEvent<float> evt, PredicateNodeObject predicateNodeObject)
     {
@@ -80,49 +99,23 @@ public class PredicateNodeView : SequencialNodeView
     
     public override void OnConnectEdgeToInputPort(Edge edge)
     {
-        switch (edge.input.viewDataKey.Last())
-        {
-            case '3': // ID of Fact Port
-                _predicateNodeObject.fact = ((FactNodeObject)((NodeView)edge.output.node).NodeObject).fact;
-                edge.input.portName = ((PredicateNodeObject)NodeObject).fact.nameID;
-                break;
-        }
+        edge.IsOutputKey('3', () => _predicateNodeObject.fact = ((FactNodeObject)((NodeView)edge.output.node).NodeObject).fact);
     }
 
     public override void OnConnectEdgeToOutputPort(Edge edge)
     {
-        switch (edge.output.viewDataKey.Last())
-        {
-            case '1': // ID of True Port
-                _predicateNodeObject.childIfTrue =((NodeView)edge.input.node).NodeObject; // Will need rework
-                break;
-            case '2': // ID of False Port
-                _predicateNodeObject.childIfFalse = ((NodeView)edge.input.node).NodeObject; // Will need rework
-                break;
-        }
+        edge.IsOutputKey('1', () => _predicateNodeObject.childIfTrue = ((NodeView)edge.input.node).NodeObject);
+        edge.IsOutputKey('2', () => _predicateNodeObject.childIfFalse = ((NodeView)edge.input.node).NodeObject);
     }
 
     public override void OnDisconnectEdgeFromInputPort(Edge edge)
     {
-        switch (edge.input.viewDataKey.Last())
-        {
-            case '3': // ID of Fact Port
-                _predicateNodeObject.fact = null;
-                edge.input.portName = "Fact";
-                break;
-        }
+        edge.IsOutputKey('3', () => _predicateNodeObject.fact = null);
     }
 
     public override void OnDisconnectEdgeFromOutputPort(Edge edge)
     {
-        switch (edge.output.viewDataKey.Last())
-        {
-            case '1': // ID of True Port
-                _predicateNodeObject.childIfTrue = null;
-                break;
-            case '2': // ID of False Port
-                _predicateNodeObject.childIfFalse = null;
-                break;
-        }
+        edge.IsOutputKey('1', () => _predicateNodeObject.childIfTrue = null);
+        edge.IsOutputKey('2', () => _predicateNodeObject.childIfFalse = null);
     }
 }

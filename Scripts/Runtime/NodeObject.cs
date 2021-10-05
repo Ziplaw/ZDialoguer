@@ -13,11 +13,12 @@ namespace ZDialoguer
     {
         public Vector2 position;
         public string guid;
+        protected ZDialogueGraph graph;
 
         #if UNITY_EDITOR
-        
         protected void Init(Vector2 position, ZDialogueGraph graph)
         {
+            this.graph = graph;
             this.position = position;
             name = GetType().Name;
             guid = GUID.Generate().ToString();
