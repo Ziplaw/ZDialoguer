@@ -25,10 +25,10 @@ public class DialogueNodeView : SequencialNodeView
         textField.Q<TextInputBaseField<string>>().style.alignSelf = Align.Center;
         textField.Q<TextInputBaseField<string>>().style.whiteSpace = WhiteSpace.Normal;
         textField.Q<TextInputBaseField<string>>().style.maxHeight = 150;
-        textField.RegisterValueChangedCallback((evt =>
-        {
-            (nodeObject as DialogueNodeObject).text = evt.newValue;
-        }));
+        // textField.RegisterValueChangedCallback<LocalisedString>((evt =>
+        // {
+        //     (nodeObject as DialogueNodeObject).text = evt.newValue;
+        // }));
         mainContainer.Add(textField);
     }
     public override void OnConnectEdgeToOutputPort(Edge edge) => edge.IsInputKey('0', () => (NodeObject as DialogueNodeObject).connectedChild = (edge.input.node as NodeView).NodeObject as SequencialNodeObject);

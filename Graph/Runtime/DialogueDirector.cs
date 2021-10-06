@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using ZDialoguer;
+using ZDialoguer.Localization;
 
 public class DialogueDirector : MonoBehaviour
 {
     public List<ZDialogueGraph> graphs;
-
+    public LocalisedString text;
+    
     private void Start()
     {
         Print();

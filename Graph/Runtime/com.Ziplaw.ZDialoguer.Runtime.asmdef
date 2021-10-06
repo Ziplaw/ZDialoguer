@@ -1,12 +1,10 @@
 {
-    "name": "com.Ziplaw.ZDialoguer.Editor",
+    "name": "com.Ziplaw.ZDialoguer.Runtime",
     "rootNamespace": "",
     "references": [
-        "GUID:f9741071e2f9b134ba2c46f0bc06d832"
+        "GUID:bbd2e05e369110440a880430442d36e3"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

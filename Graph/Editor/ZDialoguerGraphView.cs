@@ -33,7 +33,7 @@ public class ZDialoguerGraphView : GraphView
 
         var styleSheet =
             AssetDatabase.LoadAssetAtPath<StyleSheet>(
-                "Assets/com.Ziplaw.ZDialoguer/Scripts/Editor/ZDialogueGraphEditorWindow.uss");
+                "Assets/com.Ziplaw.ZDialoguer/Graph/Editor/ZDialogueGraphEditorWindow.uss");
         styleSheets.Add(styleSheet);
     }
 
