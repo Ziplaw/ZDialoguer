@@ -16,6 +16,7 @@ namespace ZDialoguer
         public List<NodeObject> nodes = new List<NodeObject>();
         public List<Fact> facts = new List<Fact>();
         public List<EdgeData> edgeDatas = new List<EdgeData>();
+        public TextAsset dialogueText;
 #if UNITY_EDITOR
 
         public void Init()

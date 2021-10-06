@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -24,6 +25,7 @@ namespace ZDialoguerEditor
 
         public void CreateGUI()
         {
+            // Close();
             // Each editor window contains a root VisualElement object
             VisualElement root = rootVisualElement;
             // Import UXML
@@ -39,6 +41,22 @@ namespace ZDialoguerEditor
             root.styleSheets.Add(styleSheet);
             graphView = root.Q<ZDialoguerGraphView>();
             inspectorView = root.Q<InspectorView>();
+            PopupField<string> languagePopup = new PopupField<string>(LocalizationSettings.Instance.languages, LocalizationSettings.Instance.selectedLanguage);
+            languagePopup.RegisterValueChangedCallback(e =>
+            {
+                LocalizationSettings.Instance.selectedLanguage = LocalizationSettings.Instance.languages.IndexOf(e.newValue);
+                
+                foreach (var node in graphView.nodes.ToList().Where(n => n is DialogueNodeView))
+                {
+                    var nodeObject = (node as DialogueNodeView).NodeObject as DialogueNodeObject;
+                    nodeObject.text.Reset();
+                    (node as DialogueNodeView).Q<HelpBox>().text = nodeObject.text;
+                }
+
+                EditorUtility.SetDirty(LocalizationSettings.Instance);
+                AssetDatabase.SaveAssets();
+            });
+            root.Q<VisualElement>("LanguageSelectElement").Add(languagePopup);
             
             graphView.OnNodeSelected = OnNodeSelectionChanged;
             graphView.OnBlackboardFactSelected = OnFactSelectionChanged;

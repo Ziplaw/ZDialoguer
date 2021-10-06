@@ -66,11 +66,6 @@ public class ZDialoguerGraphView : GraphView
                               startPort.portType == endPort.portType).ToList();
     }
 
-    NodeView FindNodeView(NodeObject nodeObject)
-    {
-        return GetNodeByGuid(nodeObject.guid) as NodeView;
-    }
-
     public void PopulateView(ZDialogueGraph graph)
     {
         this.graph = graph;
@@ -110,6 +105,9 @@ public class ZDialoguerGraphView : GraphView
 
 
         var bb = new Blackboard(this);
+        var dialogueTextSection = new BlackboardSection  { title = "Dialogue Text" };
+        InitDialogueTextBlackboard(dialogueTextSection);
+        bb.Add(dialogueTextSection);
         bb.Add(new BlackboardSection() { title = "Facts" });
         bb.addItemRequested += AddFactToBlackBoard;
         bb.editTextRequested += EditFactText;
@@ -123,11 +121,18 @@ public class ZDialoguerGraphView : GraphView
         PopulateBlackboardWithFacts();
     }
 
+    void InitDialogueTextBlackboard(BlackboardSection section)
+    {
+        var textObjectField = new ObjectField() { objectType = typeof(TextAsset) };
+        textObjectField.SetValueWithoutNotify(graph.dialogueText);
+        textObjectField.RegisterValueChangedCallback(e => graph.dialogueText = e.newValue as TextAsset);
+        section.Add(textObjectField);
+    }
+
     private void GeometryChangedCallback(Blackboard blackboard)
     {
         blackboard.UnregisterCallback<GeometryChangedEvent>(evt1 => GeometryChangedCallback(blackboard));
         blackboard.SetPosition(new Rect(new Vector2(resolvedStyle.width - 300, 0), new Vector2(300, 300)));
-
     }
 
     private void EditFactText(Blackboard bb, VisualElement field, string value)
@@ -144,7 +149,7 @@ public class ZDialoguerGraphView : GraphView
 
     void PopulateBlackboardWithFacts()
     {
-        graph.facts.ForEach(f => { _blackBoard.Add(GenerateFactContainer(f)); });
+        graph.facts.ForEach(f => { _blackBoard.Query<BlackboardSection>().ToList().First(s => s.title == "Facts").Add(GenerateFactContainer(f)); });
     }
 
     string FixNewFactName(string newName)
@@ -173,20 +178,16 @@ public class ZDialoguerGraphView : GraphView
     private void AddFactToBlackBoard(Blackboard blackboard)
     {
         var newFact = graph.CreateFact(FixNewFactName("New Fact"), 0);
-        blackboard.Add(GenerateFactContainer(newFact));
-
+        blackboard.Query<BlackboardSection>().ToList().First(s => s.title == "Facts").Add(GenerateFactContainer(newFact));
+        
         SaveChangesToGraph(graph);
     }
 
     VisualElement GenerateFactContainer(Fact fact)
     {
-        var container = new VisualElement();
         var bbField = new FactBlackboardField(fact)
-            { text = fact.nameID, typeText = "float", OnBlackboardFactSelected = OnBlackboardFactSelected };
-
-        container.Add(bbField);
-
-        return container;
+            { text = fact.nameID, typeText = "Fact", OnBlackboardFactSelected = OnBlackboardFactSelected };
+        return bbField;
     }
 
 

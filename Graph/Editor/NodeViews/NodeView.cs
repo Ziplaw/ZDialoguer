@@ -54,7 +54,8 @@ namespace ZDialoguer
             Port.Capacity capacity = Port.Capacity.Single)
         {
             var input = InstantiatePort(Orientation.Horizontal, Direction.Input, capacity, type);
-            input.portName = portName;
+            input.contentContainer.Remove(input.contentContainer.Q<Label>("type"));
+            input.contentContainer.Add(new Label(portName){style = { color = colorMap[type]}});
             input.portColor = colorMap[type];
             input.viewDataKey = nodeObject.guid + " " + index;
             index++;
@@ -65,7 +66,8 @@ namespace ZDialoguer
             Port.Capacity portCapacity = Port.Capacity.Multi, Orientation orientation = Orientation.Horizontal)
         {
             var output = InstantiatePort(orientation, Direction.Output, portCapacity, type);
-            output.portName = portName;
+            output.contentContainer.Remove(output.contentContainer.Q<Label>("type"));
+            output.contentContainer.Add(new Label(portName){style = { color = colorMap[type]}});
             output.portColor = colorMap[type];
             output.viewDataKey = nodeObject.guid + " " + index;
             index++;
@@ -89,6 +91,20 @@ namespace ZDialoguer
         {
             base.OnSelected();
             OnNodeSelected?.Invoke(this);
+        }
+
+        public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
+        {
+            base.BuildContextualMenu(evt);
+            evt.menu.AppendAction("Log Node Ports", LogNodePorts);
+        }
+
+        private void LogNodePorts(DropdownMenuAction action)
+        {
+            this.Query<Port>().ForEach(x =>
+            {
+                Debug.Log($"[<color=#{ColorUtility.ToHtmlStringRGB(x.portColor)}>{x.portName}</color>]"+ " " + x.viewDataKey);
+            });
         }
     }
 
@@ -114,6 +130,10 @@ namespace ZDialoguer
             }
 
             return false;
+        }
+        public static string WithColor(this string str, Color color)
+        {
+            return $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{str}</color>";
         }
     }
 }

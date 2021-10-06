@@ -14,11 +14,15 @@ public class DialogueDirector : MonoBehaviour
     private void Start()
     {
         Print();
+        Print();
+        Print();
+        Print();
     }
 
     void Print()
     {
-        graphs.ForEach(g => g.facts.ForEach(f => Debug.LogError(f.value)));
+        // graphs.ForEach(g => g.facts.ForEach(f => Debug.LogError(f.value)));
+        Debug.Log((string)text);
     }
 
     private void OnGUI()

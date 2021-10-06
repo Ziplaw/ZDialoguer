@@ -28,7 +28,7 @@ public class GraphStartNodeView : SequencialNodeView
                     current = startNodeObject.Next;
                 }
                 graphView.AddToSelection(graphView.GetNodeByGuid(current.guid));
-                Debug.Log((current as DialogueNodeObject).text);
+                Debug.Log((string)(current as DialogueNodeObject).text);
                 current = startNodeObject.Next;
             }
             startNodeObject.Next = startNodeObject;

@@ -7,7 +7,10 @@
         </ui:VisualElement>
         <ui:VisualElement name="right-panel">
             <ui:Label text="Dialogue Graph" display-tooltip-when-elided="true" style="background-color: rgb(40, 40, 40);" />
-            <ZDialoguerGraphView focusable="true" style="flex-grow: 1; -unity-slice-left: 0; -unity-slice-top: 0; -unity-slice-right: 0; -unity-slice-bottom: 0;" />
+            <ZDialoguerGraphView focusable="true" style="flex-grow: 1; -unity-slice-left: 0; -unity-slice-top: 0; -unity-slice-right: 0; -unity-slice-bottom: 0; height: 568px;" />
+            <ui:VisualElement name="LanguageSelectElement" style="flex-direction: row; justify-content: flex-end; background-color: rgb(40, 40, 40); -unity-background-image-tint-color: rgba(255, 255, 255, 0);">
+                <ui:Label text="Selected Language:" display-tooltip-when-elided="true" name="SelectedLanguageLabel" tooltip="CurrentlySelectedLanguage" style="align-items: center; -unity-text-align: middle-right; white-space: nowrap; -unity-background-image-tint-color: rgb(255, 255, 255); background-color: rgb(40, 40, 40); flex-direction: row; left: 0; position: relative; border-left-color: rgb(70, 70, 69); border-right-color: rgb(70, 70, 69); border-top-color: rgb(70, 70, 69); border-bottom-color: rgb(70, 70, 69); justify-content: flex-start;" />
+            </ui:VisualElement>
         </ui:VisualElement>
     </SplitView>
 </ui:UXML>
