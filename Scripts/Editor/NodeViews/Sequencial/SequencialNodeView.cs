@@ -8,7 +8,7 @@ public abstract class SequencialNodeView : NodeView
 {
     public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph, ref int index)
     {
-        CreateInputPort(typeof(NodeObject), "►", inputContainer, nodeObject, ref index);
+        
     }
 
     public abstract override void OnConnectEdgeToInputPort(Edge edge);

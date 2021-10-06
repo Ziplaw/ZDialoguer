@@ -7,6 +7,7 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using ZDialoguerEditor;
+using PointerType = UnityEngine.PointerType;
 
 namespace ZDialoguer
 {
@@ -19,12 +20,13 @@ namespace ZDialoguer
         public abstract void OnConnectEdgeToOutputPort(Edge edge);
         public abstract void OnDisconnectEdgeFromInputPort(Edge edge);
         public abstract void OnDisconnectEdgeFromOutputPort(Edge edge);
+
         public static NodeView CreateNodeView(NodeObject nodeObject, ZDialogueGraph graph)
         {
             int index = 0;
-            
-            NodeView nodeView = nodeViewMap[nodeObject.GetType()].Invoke(nodeObject, graph);
-            
+
+            NodeView nodeView = nodeViewMap[nodeObject.GetType()].Invoke();
+
             nodeView.NodeObject = nodeObject;
             nodeView.viewDataKey = nodeObject.guid;
             nodeView.BuildNodeView(nodeObject, graph, ref index);
@@ -37,16 +39,18 @@ namespace ZDialoguer
             return nodeView;
         }
 
-        private static Dictionary<Type, Func<NodeObject, ZDialogueGraph, NodeView>> nodeViewMap =
-            new Dictionary<Type, Func<NodeObject, ZDialogueGraph, NodeView>>()
+        private static Dictionary<Type, Func<NodeView>> nodeViewMap =
+            new Dictionary<Type, Func<NodeView>>
             {
-                { typeof(FactNodeObject), (nodeObject, graph) => new FactNodeView() },
-                { typeof(PredicateNodeObject), (nodeObject, graph) => new PredicateNodeView() },
-                { typeof(DialogueNodeObject), (nodeObject, graph) => new DialogueNodeView() },
+                { typeof(GraphStartNodeObject), () => new GraphStartNodeView() },
+                { typeof(PredicateNodeObject), () => new PredicateNodeView() },
+                { typeof(DialogueNodeObject), () => new DialogueNodeView() },
+                { typeof(FactNodeObject), () => new FactNodeView() },
             };
 
 
-        protected void CreateInputPort(Type type, string portName, VisualElement container, NodeObject nodeObject, ref int index,
+        protected void CreateInputPort(Type type, string portName, VisualElement container, NodeObject nodeObject,
+            ref int index,
             Port.Capacity capacity = Port.Capacity.Single)
         {
             var input = InstantiatePort(Orientation.Horizontal, Direction.Input, capacity, type);
@@ -57,20 +61,21 @@ namespace ZDialoguer
             container.Add(input);
         }
 
-        protected void CreateOutputPort(Type type, string portName, NodeObject nodeObject, ref int index)
+        protected void CreateOutputPort(Type type, string portName, VisualElement container, NodeObject nodeObject, ref int index,
+            Port.Capacity portCapacity = Port.Capacity.Multi, Orientation orientation = Orientation.Horizontal)
         {
-            var output = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi, type);
+            var output = InstantiatePort(orientation, Direction.Output, portCapacity, type);
             output.portName = portName;
             output.portColor = colorMap[type];
             output.viewDataKey = nodeObject.guid + " " + index;
             index++;
-            outputContainer.Add(output);
+            container.Add(output);
         }
-        
+
         protected Dictionary<Type, Color> colorMap = new Dictionary<Type, Color>()
         {
             { typeof(Fact), new Color(1f, 0.65f, 0f) },
-            { typeof(NodeObject), new Color(0.55f, 0.42f, 1f) }
+            { typeof(SequencialNodeObject), new Color(0.55f, 0.42f, 1f) }
         };
 
         public override void SetPosition(Rect newPos)
@@ -91,21 +96,23 @@ namespace ZDialoguer
     {
         public static bool IsOutputKey(this Edge edge, char key, Action action)
         {
-            if(edge.output.viewDataKey.Last() == key) 
+            if (edge.output.viewDataKey.Last() == key)
             {
                 action.Invoke();
                 return true;
             }
+
             return false;
         }
-        
+
         public static bool IsInputKey(this Edge edge, char key, Action action)
         {
-            if(edge.input.viewDataKey.Last() == key) 
+            if (edge.input.viewDataKey.Last() == key)
             {
                 action.Invoke();
                 return true;
             }
+
             return false;
         }
     }

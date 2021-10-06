@@ -1,11 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UIElements;
+[assembly: InternalsVisibleTo("com.Ziplaw.ZDialoguer.Editor")]
 
 namespace ZDialoguer
 {
@@ -16,7 +18,7 @@ namespace ZDialoguer
         protected ZDialogueGraph graph;
 
         #if UNITY_EDITOR
-        protected void Init(Vector2 position, ZDialogueGraph graph)
+        public virtual void Init(Vector2 position, ZDialogueGraph graph)
         {
             this.graph = graph;
             this.position = position;
@@ -33,7 +35,7 @@ namespace ZDialoguer
     
     public abstract class SequencialNodeObject : NodeObject
     {
-        public abstract NodeObject SequenceChild { get; }
+        public abstract SequencialNodeObject SequenceChild { get; }
     }
     
     public abstract class StaticNodeObject : NodeObject

@@ -13,10 +13,10 @@ namespace ZDialoguer
         
         #if UNITY_EDITOR
         
-        public void Init(Fact fact, Vector2 position, ZDialogueGraph graph)
+        public override void Init(Vector2 position, ZDialogueGraph graph)
         {
-            Init(position, graph);
-            this.fact = fact;
+            base.Init(position, graph);
+            fact = graph.facts[0];
         }
         
         #endif

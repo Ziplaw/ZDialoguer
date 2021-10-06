@@ -15,10 +15,10 @@ public class PredicateNodeView : SequencialNodeView
     public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph, ref int index)
     {
         var predicateNodeObject = nodeObject as PredicateNodeObject;
-        
         base.BuildNodeView(nodeObject, graph, ref index);
-        CreateOutputPort(typeof(NodeObject), "True ►", nodeObject, ref index);
-        CreateOutputPort(typeof(NodeObject), "False ►", nodeObject, ref index);
+        CreateInputPort(typeof(SequencialNodeObject), "►", inputContainer, nodeObject, ref index);
+        CreateOutputPort(typeof(SequencialNodeObject), "True ►",outputContainer, nodeObject, ref index);
+        CreateOutputPort(typeof(SequencialNodeObject), "False ►",outputContainer, nodeObject, ref index);
         titleContainer.style.backgroundColor = new StyleColor(new Color(0.64f, 0.96f, 0.88f));
 
         PopupField<string> operationEnumField =
@@ -99,7 +99,10 @@ public class PredicateNodeView : SequencialNodeView
     
     public override void OnConnectEdgeToInputPort(Edge edge)
     {
-        edge.IsOutputKey('3', () => _predicateNodeObject.fact = ((FactNodeObject)((NodeView)edge.output.node).NodeObject).fact);
+        edge.IsInputKey('3', () =>
+        {
+            _predicateNodeObject.fact = ((FactNodeObject)((NodeView)edge.output.node).NodeObject).fact;
+        });
     }
 
     public override void OnConnectEdgeToOutputPort(Edge edge)
@@ -110,7 +113,7 @@ public class PredicateNodeView : SequencialNodeView
 
     public override void OnDisconnectEdgeFromInputPort(Edge edge)
     {
-        edge.IsOutputKey('3', () => _predicateNodeObject.fact = null);
+        edge.IsInputKey('3', () => _predicateNodeObject.fact = null);
     }
 
     public override void OnDisconnectEdgeFromOutputPort(Edge edge)

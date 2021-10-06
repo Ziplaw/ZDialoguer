@@ -26,7 +26,7 @@ namespace ZDialoguer
         public NodeObject childIfTrue;
         public NodeObject childIfFalse;
 
-        public new void Init(Vector2 _position, ZDialogueGraph graph)
+        public override void Init(Vector2 _position, ZDialogueGraph graph)
         {
             base.Init(_position, graph);
         }
@@ -55,6 +55,6 @@ namespace ZDialoguer
             return true;
         }
 
-        public override NodeObject SequenceChild => GetPredicate() ? childIfTrue : childIfFalse;
+        public override SequencialNodeObject SequenceChild => GetPredicate() ? (childIfTrue as SequencialNodeObject) : (childIfFalse as SequencialNodeObject);
     }
 }

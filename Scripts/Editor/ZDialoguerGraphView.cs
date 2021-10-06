@@ -41,7 +41,7 @@ public class ZDialoguerGraphView : GraphView
     {
         var localMousePos = evt.localMousePosition;
         //base.BuildContextualMenu(evt);
-        var types = TypeCache.GetTypesDerivedFrom<NodeObject>().Where(t => t.BaseType != typeof(NodeObject));
+        var types = TypeCache.GetTypesDerivedFrom<NodeObject>().Where(t => t != typeof(GraphStartNodeObject) && t.BaseType != typeof(NodeObject));
         foreach (var type in types)
         {
             if (type == typeof(FactNodeObject) && graph.facts.Count < 1) continue;
@@ -49,21 +49,7 @@ public class ZDialoguerGraphView : GraphView
             {
                 if (graph)
                 {
-                    var node = ScriptableObject.CreateInstance(type) as NodeObject;
-                    switch (type.Name)
-                    {
-                        case "FactNodeObject":
-                            (node as FactNodeObject).Init(graph.facts[0], TransformMousePosition(localMousePos), graph);
-                            break;
-                        case "PredicateNodeObject":
-                            (node as PredicateNodeObject).Init(TransformMousePosition(localMousePos), graph);
-                            break;
-                        case "DialogueNodeObject":
-                            (node as DialogueNodeObject).Init(TransformMousePosition(localMousePos), graph);
-                            break;
-                    }
-
-                    CreateNodeView(node);
+                    CreateNode(type, TransformMousePosition(localMousePos));
                 }
                 else
                 {
@@ -89,17 +75,14 @@ public class ZDialoguerGraphView : GraphView
     {
         this.graph = graph;
         graphViewChanged -= OnGraphViewChanged;
+        graph.Init();
         DeleteElements(graphElements.ToList());
         graphViewChanged += OnGraphViewChanged;
 
 
-
         graph.nodes.ForEach(n => CreateNodeView(n));
         RestoreConnections();
-        // UpdateNodes();
-
         GenerateBlackBoard();
-
     }
 
     private void RestoreConnections()
@@ -144,6 +127,7 @@ public class ZDialoguerGraphView : GraphView
     {
         blackboard.UnregisterCallback<GeometryChangedEvent>(evt1 => GeometryChangedCallback(blackboard));
         blackboard.SetPosition(new Rect(new Vector2(resolvedStyle.width - 300, 0), new Vector2(300, 300)));
+
     }
 
     private void EditFactText(Blackboard bb, VisualElement field, string value)
@@ -271,10 +255,12 @@ public class ZDialoguerGraphView : GraphView
         IEnumerable<FactBlackboardField> fields = selection.OfType<FactBlackboardField>();
         foreach (FactBlackboardField field in fields)
         {
-            var node = ScriptableObject.CreateInstance<FactNodeObject>();
-            node.Init(field.fact, TransformMousePosition(e.localMousePosition), graph);
-            CreateNodeView(node);
+            var node = CreateNode<FactNodeObject>(TransformMousePosition(e.localMousePosition), false); 
+            (node as FactNodeObject).fact = field.fact;
+            CreateNodeView(node); // creating node here because we gotta assign fact first hehe;
         }
+        
+        SaveChangesToGraph(graph);
     }
 
     Vector2 TransformMousePosition(Vector2 eventLocalMousePosition)
@@ -282,10 +268,24 @@ public class ZDialoguerGraphView : GraphView
         return viewTransform.matrix.inverse.MultiplyPoint(eventLocalMousePosition);
     }
 
-    void CreateNodeView(NodeObject nodeObject)
+    NodeObject CreateNode<T>(Vector2 position, bool generateView = true) where T : NodeObject
+    {
+        return CreateNode(typeof(T), position, generateView);
+    }
+    
+    NodeObject CreateNode(Type type, Vector2 position, bool generateView = true)
+    {
+        var node = ScriptableObject.CreateInstance(type) as NodeObject;
+        node.Init(position, graph);
+        if(generateView) CreateNodeView(node);
+        return node;
+    }
+
+    NodeView CreateNodeView(NodeObject nodeObject)
     {
         NodeView nodeView = NodeView.CreateNodeView(nodeObject, graph);
         nodeView.OnNodeSelected = OnNodeSelected;
         AddElement(nodeView);
+        return nodeView;
     }
 }

@@ -12,10 +12,22 @@ namespace ZDialoguer
     [CreateAssetMenu]
     public class ZDialogueGraph : ScriptableObject
     {
+        public bool initialized;
         public List<NodeObject> nodes = new List<NodeObject>();
         public List<Fact> facts = new List<Fact>();
         public List<EdgeData> edgeDatas = new List<EdgeData>();
 #if UNITY_EDITOR
+
+        public void Init()
+        {
+            if (!initialized)
+            {
+                var start = CreateInstance<GraphStartNodeObject>();
+                start.Init(new Vector2(100,100), this);
+                initialized = true;
+            }
+        }
+        
         public Fact CreateFact(string nameID, float value)
         {
             Fact fact = CreateInstance<Fact>();
@@ -42,26 +54,6 @@ namespace ZDialoguer
             AssetDatabase.RemoveObjectFromAsset(fact);
             AssetDatabase.SaveAssets();
         }
-
-
-        // public void AddChild(NodeObject parent, NodeObject child)
-        // {
-        //     parent.children.Add(child);
-        //     EditorUtility.SetDirty(this);
-        //     AssetDatabase.SaveAssets();
-        // }
-        //
-        // public void RemoveChild(NodeObject parent, NodeObject child)
-        // {
-        //     parent.children.Remove(child);
-        //     EditorUtility.SetDirty(this);
-        //     AssetDatabase.SaveAssets();
-        // }
-
-        // public List<NodeObject> GetChildren(NodeObject parent)
-        // {
-        //     return parent.children;
-        // }
 #endif
         [Serializable]
         public class EdgeData
@@ -69,6 +61,8 @@ namespace ZDialoguer
             public string outputPortViewDataKey;
             public string inputPortViewDataKey;
         }
+
+        
     }
 }
 

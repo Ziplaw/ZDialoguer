@@ -10,8 +10,9 @@ public class DialogueNodeView : SequencialNodeView
     public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph, ref int index)
     {
         base.BuildNodeView(nodeObject, graph, ref index);
+        CreateInputPort(typeof(SequencialNodeObject), "►", inputContainer, nodeObject, ref index);
         title = "Dialogue Node";
-        CreateOutputPort(typeof(NodeObject), "►", nodeObject, ref index);
+        CreateOutputPort(typeof(SequencialNodeObject), "►",outputContainer, nodeObject, ref index, Port.Capacity.Single);
         titleContainer.style.backgroundColor = new StyleColor(new Color(0.58f, 0.96f, 0.68f));
 
         TextField textField = new TextField(int.MaxValue, true, false, '*');
@@ -30,7 +31,7 @@ public class DialogueNodeView : SequencialNodeView
         }));
         mainContainer.Add(textField);
     }
-    public override void OnConnectEdgeToOutputPort(Edge edge) => edge.IsInputKey('0', () => (NodeObject as DialogueNodeObject).connectedChild = (edge.input.node as NodeView).NodeObject);
+    public override void OnConnectEdgeToOutputPort(Edge edge) => edge.IsInputKey('0', () => (NodeObject as DialogueNodeObject).connectedChild = (edge.input.node as NodeView).NodeObject as SequencialNodeObject);
     public override void OnDisconnectEdgeFromOutputPort(Edge edge) => edge.IsInputKey('0', () => (NodeObject as DialogueNodeObject).connectedChild = null);
     public override void OnConnectEdgeToInputPort(Edge edge) { }
     public override void OnDisconnectEdgeFromInputPort(Edge edge) { }

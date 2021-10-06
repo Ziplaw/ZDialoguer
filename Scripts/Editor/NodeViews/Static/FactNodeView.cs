@@ -17,11 +17,13 @@ public class FactNodeView : StaticNodeView
 
         PopupField<Fact> factEnumField = new PopupField<Fact>(graph.facts, factNodeObject.fact);
         factEnumField.RegisterValueChangedCallback(e => FactEnumChangeCallback(e, factNodeObject));
+        FloatField field = new FloatField();
+        field.SetValueWithoutNotify( factNodeObject.fact.value);
+        field.RegisterValueChangedCallback(e => FactValueChangeCallback(e, factNodeObject));
         inputContainer.style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Row);
         inputContainer.Add(factEnumField);
-        inputContainer.Add(new IMGUIContainer(() =>
-            GUILayout.Label($"({factNodeObject.fact.value})")));
-        CreateOutputPort(typeof(Fact), "Fact", nodeObject, ref index);
+        inputContainer.Add(field);
+        CreateOutputPort(typeof(Fact), "Fact", outputContainer, nodeObject, ref index);
         title = "Fact Node";
     }
 
@@ -32,8 +34,26 @@ public class FactNodeView : StaticNodeView
         AssetDatabase.SaveAssets();
     }
 
-    public override void OnConnectEdgeToInputPort(Edge edge) { }
-    public override void OnConnectEdgeToOutputPort(Edge edge) { }
-    public override void OnDisconnectEdgeFromInputPort(Edge edge) { }
-    public override void OnDisconnectEdgeFromOutputPort(Edge edge) { }
+    private void FactValueChangeCallback(ChangeEvent<float> evt, FactNodeObject nodeObject)
+    {
+        nodeObject.fact.value = evt.newValue;
+        EditorUtility.SetDirty(nodeObject);
+        AssetDatabase.SaveAssets();
+    }
+
+    public override void OnConnectEdgeToInputPort(Edge edge)
+    {
+    }
+
+    public override void OnConnectEdgeToOutputPort(Edge edge)
+    {
+    }
+
+    public override void OnDisconnectEdgeFromInputPort(Edge edge)
+    {
+    }
+
+    public override void OnDisconnectEdgeFromOutputPort(Edge edge)
+    {
+    }
 }
