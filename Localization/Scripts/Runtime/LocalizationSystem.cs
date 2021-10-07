@@ -1,11 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using UnityEditor;
+using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class LocalizationSystem
 {
@@ -13,14 +10,42 @@ public class LocalizationSystem
     {
         return GetTable(csvFile)[id].entry[LocalizationSettings.Instance.selectedLanguage];
     }
+
+#if UNITY_EDITOR
+    public static void SetTable(TextAsset csvFile, TableEntry[] table)
+    {
+        var newTable = table.ToList();
+        newTable.InsertRange(0,
+            new List<TableEntry>()
+            {
+                new TableEntry { entry = LocalizationSettings.Instance.languages.ToArray() }
+            });
+
+        string csvText = "";
+        
+        foreach (var tableEntry in newTable)
+        {
+            for (var i = 0; i < tableEntry.entry.Length; i++)
+            {
+                csvText += tableEntry.entry[i] + (i == tableEntry.entry.Length-1 ? "" : LocalizationSettings.Instance.separator.ToString());
+            }
+            
+            foreach (var s in tableEntry.entry)
+            {
+            }
+
+            csvText += "\n";
+        }
+        
+        Debug.Log(csvText);
+        var path = UnityEditor.AssetDatabase.GetAssetPath(csvFile);
+        File.WriteAllText(path, csvText);
+        UnityEditor.AssetDatabase.Refresh();
+    }
+#endif
+    
     internal static TableEntry[] GetTable(TextAsset csvFile)
     {
-        // if (Application.isPlaying)
-        // {
-        //     Debug.LogWarning("Localization tables shouldn't be generated at runtime! Generate them on the editor first.");
-        //     return null;
-        // }
-
         if (csvFile)
         {
             string[] csvData = csvFile.text.Split('\n');

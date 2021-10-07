@@ -1,5 +1,9 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -12,109 +16,185 @@ public class LocalizationCSVEditorWindow : EditorWindow
     public static void ShowExample()
     {
         LocalizationCSVEditorWindow wnd = GetWindow<LocalizationCSVEditorWindow>();
-        wnd.titleContent = new GUIContent("LocalizationCSVEditorWindow");
+        wnd.titleContent = new GUIContent("Localization Editor");
     }
 
     private bool editMode;
+    private TextAsset csvFile;
+
+    private Button generateButton;
     
 
     public void CreateGUI()
     {
-        // Each editor window contains a root VisualElement object
+        rootVisualElement.Clear();
         VisualElement root = rootVisualElement;
-
-        // VisualElements objects can contain other VisualElement following a tree hierarchy.
-        // VisualElement label = new Label("Hello World! From C#");
-        // root.Add(label);
-
-        // Import UXML
         var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
             "Assets/com.Ziplaw.ZDialoguer/Graph/Editor/LocalizationCSVEditor/LocalizationCSVEditorWindow.uxml");
         VisualElement staticVisualElement = visualTree.Instantiate();
         root.Add(staticVisualElement);
         var container = root.Q<ScrollView>();
-        root.Q<ObjectField>().RegisterValueChangedCallback(e => GenerateTableMenu(e, container));
-
-        // A stylesheet can be added to a VisualElement.
-        // The style will be applied to the VisualElement and all of its children.
-
-        // root.Add(labelWithStyle);
+        var assetField = root.Q<ObjectField>();
+        assetField.RegisterValueChangedCallback(e => GenerateTableMenu(e.newValue as TextAsset, container));
+        generateButton = root.Q<Button>("GenerateLocalizationAsset");
+        generateButton.clicked += () => GenerateAndOpenTextAsset(assetField);
     }
 
-    private void GenerateTableMenu(ChangeEvent<Object> evt, VisualElement container)
+    private void GenerateAndOpenTextAsset(ObjectField assetField)
+    {
+        var path = EditorUtility.SaveFilePanel("Create Localization Table Asset", "", "Table", "csv");
+        path = path.Substring(Application.dataPath.Length - 6);
+        File.WriteAllText(path, String.Join(LocalizationSettings.Instance.separator.ToString(),LocalizationSettings.Instance.languages) + "\n");
+        AssetDatabase.Refresh();
+        
+        var textAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(path);
+        assetField.SetValueWithoutNotify(textAsset);
+        GenerateTableMenu(textAsset, rootVisualElement.Q<ScrollView>());
+    }
+
+    private void GenerateTableMenu(TextAsset csvFile, VisualElement container)
     {
         container.Clear();
-        if (evt.newValue)
+        if (csvFile)
         {
-            var table = LocalizationSystem.GetTable(evt.newValue as TextAsset).ToList();
+            generateButton.RemoveFromHierarchy();
+            this.csvFile = csvFile;
+            var table = LocalizationSystem.GetTable(csvFile).ToList();
             table.InsertRange(0,
                 new List<LocalizationSystem.TableEntry>()
                 {
-                    new LocalizationSystem.TableEntry() { entry = LocalizationSettings.Instance.languages.ToArray() }
+                    new LocalizationSystem.TableEntry { entry = LocalizationSettings.Instance.languages.ToArray() }
                 });
             foreach (var tableEntry in table)
             {
-                VisualElement rowContainer = new VisualElement { style = { flexDirection = FlexDirection.Row } };
+                int tableEntryIndex = table.IndexOf(tableEntry);
+                VisualElement rowContainer = new VisualElement {name = $"row{tableEntryIndex}", style = { flexDirection = FlexDirection.Row } };
                 var tree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
                     "Assets/com.Ziplaw.ZDialoguer/Graph/Editor/LocalizationCSVEditor/SelectorButton.uxml");
 
-                foreach (var entry in tableEntry.entry)
+                for (var i = 0; i < tableEntry.entry.Length; i++)
                 {
-                    var element = tree.Instantiate();
-                    element.style.flexGrow = 1;
-                    element.style.width =
-                        new StyleLength(new Length(100f / LocalizationSettings.Instance.languages.Count, LengthUnit.Percent));
-                    var label = element.Q<Label>();
+                    int j = i;
+                    var entry = tableEntry.entry[i];
+                    var editButtonTemplateContainer = tree.Instantiate();
+                    editButtonTemplateContainer.Q<Button>().name = j.ToString();
+                    editButtonTemplateContainer.style.flexGrow = 1;
+                    editButtonTemplateContainer.style.width =
+                        new StyleLength(new Length(100f / LocalizationSettings.Instance.languages.Count,
+                            LengthUnit.Percent));
+                    editButtonTemplateContainer.style.minHeight = 24;
+                    var label = editButtonTemplateContainer.Q<Label>();
                     label.text = entry;
-                    element.Q<Button>().clicked += () => EditButton(element, table.IndexOf(tableEntry), tableEntry.entry.ToList().IndexOf(entry));
-                    rowContainer.Add(element);
+                    editButtonTemplateContainer.Q<Button>().clicked += () => EditButton(LocalizationSystem.GetTable(csvFile), editButtonTemplateContainer,
+                        tableEntryIndex, j);
+                    editButtonTemplateContainer.Q<Button>().style.flexDirection = FlexDirection.Column;
+                    editButtonTemplateContainer.Q<Button>().style.alignItems = i == 0 ? Align.Center : Align.FlexStart;
+                    rowContainer.Add(editButtonTemplateContainer);
+                }
+
+                if (tableEntryIndex == 0)
+                {
+                    rowContainer.Add(new Button(() =>
+                    {
+                        Selection.activeObject = LocalizationSettings.Instance;
+                        EditorGUIUtility.PingObject(LocalizationSettings.Instance);
+                    }) { style = { backgroundImage = Resources.Load<Texture2D>("Icons/selectInProject"), height = 20, width = 20}});
+                }
+                else
+                {
+                    rowContainer.Add(new Button(() =>
+                    {
+                        table.RemoveAt(tableEntryIndex);
+                        GenerateTableMenu(csvFile, container);
+                    }) { text = "-" });
                 }
 
                 container.Add(rowContainer);
             }
+            
+            container.Add(new Button(() =>
+            {
+                table = AddEntry(table);
+                GenerateTableMenu(csvFile, container);
+                Debug.Log(typeof(Clickable).GetMethod("Invoke", BindingFlags.NonPublic | BindingFlags.Instance));
+                Debug.Log(container.Q<VisualElement>("row0"));
+                Debug.Log(container.Q<VisualElement>("row0").Q<TemplateContainer>().Q<Button>("0"));
+                Debug.Log(container.Q<VisualElement>("row0").Q<Button>().clickable);
+                typeof(Clickable).GetMethod("Invoke", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(container.Q<VisualElement>("row0").Q<TemplateContainer>().Q<Button>("0").clickable, new object[] {null});
+            }){text = "+" , style = {fontSize = 24, height = 24}});
+            
+        }
+        else
+        {
+            rootVisualElement.Add(generateButton);
         }
     }
 
-    private void EditButton(VisualElement element, int tableIndex, int entryIndex)
+    private List<LocalizationSystem.TableEntry> AddEntry(List<LocalizationSystem.TableEntry> table)
     {
-        var label = element.Q<Label>();
+        table.Add(new LocalizationSystem.TableEntry {entry = LocalizationSettings.Instance.languages.Select(s => "").ToArray()});
+        var tableNoLanguages = new List<LocalizationSystem.TableEntry>(table);
+        tableNoLanguages.RemoveAt(0);
+        LocalizationSystem.SetTable(csvFile, tableNoLanguages.ToArray());
+        return table;
+    }
+
+    private void EditButton(LocalizationSystem.TableEntry[] table, VisualElement editButtonTemplateContainer, int tableIndex, int entryIndex)
+    {
+        var label = editButtonTemplateContainer.Q<Label>();
         label.RemoveFromHierarchy();
         var textField = new TextField()
         {
             multiline = true,
             style =
             {
-                // width = new StyleLength(new Length(98, LengthUnit.Percent)),
+                width = new StyleLength(new Length(98, LengthUnit.Percent)),
                 unityTextAlign = TextAnchor.UpperLeft,
                 flexDirection = FlexDirection.Row,
-                flexGrow = 1,
                 whiteSpace = WhiteSpace.Normal,
-                alignSelf = Align.FlexStart,
-                alignContent = Align.FlexStart,
-                alignItems = Align.FlexStart,
+                flexShrink = 1
             },
             value = label.text
         };
-        textField.SelectAll();
+        textField.RegisterCallback<KeyDownEvent>(evt =>
+        {
+            if (evt.keyCode == KeyCode.Escape)
+            {
+                GenerateTableMenu(csvFile, rootVisualElement.Q<ScrollView>());
+            }
+        });
         var textElement = textField.Q<VisualElement>("unity-text-input");
         textElement.style.unityTextAlign = TextAnchor.UpperLeft;
         textElement.style.whiteSpace = WhiteSpace.Normal;
+        
         var color = new Color(40 / 255f, 40 / 255f, 40 / 255f);
-        element.Q<Button>().Add(textField);
-        var submit = new Button((() => SubmitEntryAt(tableIndex, entryIndex)))
+        editButtonTemplateContainer.Q<Button>().Add(textField);
+        
+        var submit = new Button(() => SubmitEntryAt(table,tableIndex, entryIndex, textField.value))
         {
             style =
             {
+                height = 24,
                 width = new StyleLength(new Length(98, LengthUnit.Percent)), backgroundColor = color,
                 unityBackgroundScaleMode = ScaleMode.ScaleToFit,
-                backgroundImage = Resources.Load<Texture2D>("Icons/select")
+                backgroundImage = Resources.Load<Texture2D>("Icons/select"),
             }
         };
-        element.Q<Button>().Add(submit);
+        editButtonTemplateContainer.Q<Button>().Add(submit);
     }
 
-    private void SubmitEntryAt(int tableIndex, int entryIndex)
+    private void SubmitEntryAt( LocalizationSystem.TableEntry[] table,  int tableIndex, int entryIndex, string newText)
     {
-        throw new System.NotImplementedException();
+        Debug.Log(tableIndex + " " + entryIndex);
+        try
+        {
+            table[tableIndex-1].entry[entryIndex] = newText;
+        }
+        catch (IndexOutOfRangeException){}
+        
+        LocalizationSystem.SetTable(csvFile,table);
+        
+        rootVisualElement.Q<ScrollView>().Clear();
+        GenerateTableMenu(csvFile, rootVisualElement.Q<ScrollView>());
     }
 }
