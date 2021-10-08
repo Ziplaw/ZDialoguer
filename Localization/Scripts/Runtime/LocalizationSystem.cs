@@ -37,7 +37,6 @@ public class LocalizationSystem
             csvText += "\n";
         }
         
-        Debug.Log(csvText);
         var path = UnityEditor.AssetDatabase.GetAssetPath(csvFile);
         File.WriteAllText(path, csvText);
         UnityEditor.AssetDatabase.Refresh();

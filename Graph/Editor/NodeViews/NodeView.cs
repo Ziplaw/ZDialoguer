@@ -54,8 +54,9 @@ namespace ZDialoguer
             Port.Capacity capacity = Port.Capacity.Single)
         {
             var input = InstantiatePort(Orientation.Horizontal, Direction.Input, capacity, type);
-            input.contentContainer.Remove(input.contentContainer.Q<Label>("type"));
-            input.contentContainer.Add(new Label(portName){style = { color = colorMap[type]}});
+            input.portName = portName;
+            // input.contentContainer.Remove(input.contentContainer.Q<Label>("type"));
+            // input.contentContainer.Add(new Label(portName){style = {overflow = Overflow.Hidden, color = colorMap[type]}});
             input.portColor = colorMap[type];
             input.viewDataKey = nodeObject.guid + " " + index;
             index++;
@@ -66,8 +67,9 @@ namespace ZDialoguer
             Port.Capacity portCapacity = Port.Capacity.Multi, Orientation orientation = Orientation.Horizontal)
         {
             var output = InstantiatePort(orientation, Direction.Output, portCapacity, type);
-            output.contentContainer.Remove(output.contentContainer.Q<Label>("type"));
-            output.contentContainer.Add(new Label(portName){style = { color = colorMap[type]}});
+            // output.contentContainer.Remove(output.contentContainer.Q<Label>("type"));
+            // output.contentContainer.Add(new Label(portName){ style = {overflow = Overflow.Hidden, color = colorMap[type]}});
+            output.portName = portName;
             output.portColor = colorMap[type];
             output.viewDataKey = nodeObject.guid + " " + index;
             index++;

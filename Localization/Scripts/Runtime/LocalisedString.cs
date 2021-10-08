@@ -31,7 +31,7 @@ namespace ZDialoguer.Localization
                 {
                     textField.table = LocalizationSystem.GetTable(textField.csvFile);
                 }
-                if (textField.table != null && textField.table.Length > 0 && textField.table[textField.value].entry != null)
+                if (textField.table != null && textField.table.Length > 0 && textField.table.Length > textField.value && textField.table[textField.value].entry != null)
                 {
                     textField.output = textField.table[textField.value].entry[LocalizationSettings.Instance.selectedLanguage];
                 }
