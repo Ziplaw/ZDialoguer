@@ -20,7 +20,7 @@ namespace ZDialoguerEditor
         {
             ZDialogueGraphEditorWindow wnd = GetWindow<ZDialogueGraphEditorWindow>();
             // DestroyImmediate(wnd);
-            wnd.titleContent = new GUIContent("ZDialogueGraphEditorWindow");
+            wnd.titleContent = new GUIContent("Dialogue Graph");
         }
 
         public void CreateGUI()

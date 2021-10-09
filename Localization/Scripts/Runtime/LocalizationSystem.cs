@@ -1,69 +1,107 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using LINQtoCSV;
 using UnityEngine;
 
 public class LocalizationSystem
 {
-    public static string GetString(TextAsset csvFile, int id)
+    public static string GetString(string textAssetFullPath, int id)
     {
-        return GetTable(csvFile)[id].entry[LocalizationSettings.Instance.selectedLanguage];
+        return GetTable(textAssetFullPath)[id].entry[LocalizationSettings.Instance.selectedLanguage];
     }
 
 #if UNITY_EDITOR
-    public static void SetTable(TextAsset csvFile, TableEntry[] table)
+    public static void SetTable(string textAssetFullPath, List<TableEntry> table)
     {
-        var newTable = table.ToList();
-        newTable.InsertRange(0,
-            new List<TableEntry>()
-            {
-                new TableEntry { entry = LocalizationSettings.Instance.languages.ToArray() }
-            });
-
-        string csvText = "";
+        var localizationTableType = Assembly.Load("Assembly-CSharp").GetType("LocalizationTable");
         
-        foreach (var tableEntry in newTable)
+        CsvFileDescription outputFileDescription = new CsvFileDescription
         {
-            for (var i = 0; i < tableEntry.entry.Length; i++)
-            {
-                csvText += tableEntry.entry[i] + (i == tableEntry.entry.Length-1 ? "" : LocalizationSettings.Instance.separator.ToString());
-            }
-            
-            foreach (var s in tableEntry.entry)
-            {
-            }
+            SeparatorChar = LocalizationSettings.Instance.separator,
+            FirstLineHasColumnNames = true, 
+        };
 
-            csvText += "\n";
-        }
+        var cc = new CsvContext();
         
-        var path = UnityEditor.AssetDatabase.GetAssetPath(csvFile);
-        File.WriteAllText(path, csvText);
+        var list = localizationTableType.GetMethod("GenerateTable").Invoke(null, new object[] {table});
+        var method = typeof(CsvContext)
+            .GetMethods().First(m =>
+                m.Name == "Write" &&
+                m.GetParameters().Length == 3 /*&& m.GetParameters()[0].ParameterType == typeof(IEnumerable<>)*/ &&
+                m.GetParameters()[1].ParameterType == typeof(string) &&
+                m.GetParameters()[2].ParameterType == typeof(CsvFileDescription));
+
+        method = method.MakeGenericMethod(new Type[] { localizationTableType });
+        
+        method.Invoke(cc, new object[] { list, textAssetFullPath, outputFileDescription });
         UnityEditor.AssetDatabase.Refresh();
     }
 #endif
-    
-    internal static TableEntry[] GetTable(TextAsset csvFile)
+
+    internal static List<TableEntry> GetTable(string textAssetFullPath)
     {
-        if (csvFile)
+        // string[] internalLineBreakSplits = csvFile.text.Split( new [] {$"{LocalizationSettings.Instance.separator}\"", $"\"{LocalizationSettings.Instance.separator}", "\n\"","\"\n"}, StringSplitOptions.None);
+
+        CsvFileDescription inputFileDescription = new CsvFileDescription
         {
-            string[] csvData = csvFile.text.Split('\n');
-            TableEntry[] csvTable = new TableEntry[csvData.Length - 2];
+            SeparatorChar = LocalizationSettings.Instance.separator,
+            FirstLineHasColumnNames = true
+        };
 
-            for (int i = 1; i < csvData.Length - 1; i++)
-            {
-                string[] csvInfo = csvData[i].Split(LocalizationSettings.Instance.separator);
-                csvTable[i - 1].entry = new string[LocalizationSettings.Instance.languages.Count];
+        CsvContext cc = new CsvContext();
 
-                for (int j = 0; j < csvInfo.Length; j++)
+        // Debug.Log(localizationTableType);
+        // object table = Activator.CreateInstance(typeof(IEnumerable<>).MakeGenericType(new Type[] { localizationTableType }));
+
+        // Debug.Log(table);
+
+        // List<LocalizationTable> table = cc.Read<LocalizationTable>(textAssetFullPath, inputFileDescription).ToList();
+
+        var localizationTableType = Assembly.Load("Assembly-CSharp").GetType("LocalizationTable");
+        
+        return localizationTableType.GetMethod("GenerateConvertedTable").Invoke(null, new object[]{
+            typeof(Enumerable).GetMethod("ToList").MakeGenericMethod(localizationTableType).Invoke(
+                null, new object[]
                 {
-                    csvTable[i - 1].entry[j] = csvInfo[j];
-                }
-            }
-            return csvTable;
-        }
+                    typeof(CsvContext).GetMethod("Read", new []{typeof(string), typeof(CsvFileDescription)})
+                        .MakeGenericMethod(new Type[] { localizationTableType })
+                        .Invoke(cc, new object[] { textAssetFullPath, inputFileDescription })
+                })}) as List<TableEntry>;
+
+        // Debug.Log(table);
+
+        // IEnumerable<DataTestClass> products =
+        //     cc.Read<DataTestClass>(Path.Combine(Application.dataPath, "A.csv"), inputFileDescription);
+        //
+        // foreach (var dataTestClass in products)
+        // {
+        //     Debug.Log(dataTestClass.German);
+        // }
+
         return null;
+
+        // string[] csvData = csvFile.text.Split('\n');
+        // TableEntry[] csvTable = new TableEntry[csvData.Length - 2];
+        //
+        // for (int i = 1; i < csvData.Length - 1; i++)
+        // {
+        //     string[] csvInfo = csvData[i].Split(LocalizationSettings.Instance.separator);
+        //     csvTable[i - 1].entry = new string[LocalizationSettings.Instance.languages.Count];
+        //
+        //     for (int j = 0; j < csvInfo.Length; j++)
+        //     {
+        //         csvTable[i - 1].entry[j] = csvInfo[j];
+        //     }
+        // }
+        //
+        // return csvTable;
     }
+
 
     [Serializable]
     public struct TableEntry

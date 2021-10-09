@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 [assembly: InternalsVisibleTo("com.Ziplaw.ZDialoguer.Editor")]
@@ -11,9 +12,13 @@ namespace ZDialoguer.Localization
         public int value;
         public TextAsset csvFile;
         [SerializeField, HideInInspector] private bool csvDictatedByDialogueGraph;
-        [SerializeField] internal LocalizationSystem.TableEntry[] table;
+        [SerializeField] internal List<LocalizationSystem.TableEntry> table;
         [SerializeField] internal string output;
+        [SerializeField] internal string csvFileFullAssetPath;
 
+        #if UNITY_EDITOR
+        
+        #endif
         public LocalisedString(bool csvDictatedByDialogueGraph = false)
         {
             this.csvDictatedByDialogueGraph = csvDictatedByDialogueGraph;
@@ -27,11 +32,11 @@ namespace ZDialoguer.Localization
         {
             if (string.IsNullOrEmpty(textField.output))
             {
-                if (textField.table == null || textField.table.Length == 0)
+                if (textField.table == null || textField.table.Count == 0)
                 {
-                    textField.table = LocalizationSystem.GetTable(textField.csvFile);
+                    textField.table = LocalizationSystem.GetTable(textField.csvFileFullAssetPath);
                 }
-                if (textField.table != null && textField.table.Length > 0 && textField.table.Length > textField.value && textField.table[textField.value].entry != null)
+                if (textField.table != null && textField.table.Count > 0 && textField.table.Count > textField.value && textField.table[textField.value].entry != null)
                 {
                     textField.output = textField.table[textField.value].entry[LocalizationSettings.Instance.selectedLanguage];
                 }

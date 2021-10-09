@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using LINQtoCSV;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -70,7 +72,7 @@ namespace ZDialoguer.Localization.Editor
             
             var node = _property.serializedObject.targetObject as DialogueNodeObject;
             var text = node.text;
-            var table = LocalizationSystem.GetTable(text.csvFile);
+            var table = LocalizationSystem.GetTable(text.csvFileFullAssetPath);
             VisualElement root = new ScrollView()
                 { style = {flexDirection = FlexDirection.Column} };
             var searchField = new ToolbarSearchField(){contentContainer = { style = { maxWidth = 1000}},style = { maxWidth = 1000}};
@@ -83,7 +85,7 @@ namespace ZDialoguer.Localization.Editor
                 {
                     using (new GUILayout.HorizontalScope())
                     {
-                        string label = Array.IndexOf(table, tableEntry) == text.value
+                        string label = Array.IndexOf(table.ToArray(), tableEntry) == text.value
                             ? $"<color=#94F5AD>{tableEntry.entry[LocalizationSettings.Instance.selectedLanguage]}</color>"
                             : tableEntry.entry[LocalizationSettings.Instance.selectedLanguage];
                         int height =(int)( 24 * (1 + tableEntry.entry[LocalizationSettings.Instance.selectedLanguage].Length / 144f));
@@ -120,9 +122,9 @@ namespace ZDialoguer.Localization.Editor
             rootVisualElement.Add(root);
         }
 
-        void SelectValue(LocalizationSystem.TableEntry entry, LocalizationSystem.TableEntry[] table, LocalisedString text, NodeObject node)
+        void SelectValue(LocalizationSystem.TableEntry entry, List<LocalizationSystem.TableEntry> table, LocalisedString text, NodeObject node)
         {
-            text.value = Array.IndexOf(table, entry);
+            text.value = Array.IndexOf(table.ToArray(), entry);
             text.Reset();
             _localisedTextBox.text = text;
             EditorUtility.SetDirty(node);

@@ -20,9 +20,8 @@ public class LocalizationCSVEditorWindow : EditorWindow
         wnd.titleContent = new GUIContent("Localization Editor");
     }
 
-    private bool editMode;
     private TextAsset csvFile;
-
+    private string csvFileAssetPath;
     private Button generateButton;
 
 
@@ -36,7 +35,20 @@ public class LocalizationCSVEditorWindow : EditorWindow
         root.Add(staticVisualElement);
         var container = root.Q<ScrollView>();
         var assetField = root.Q<ObjectField>();
-        assetField.RegisterValueChangedCallback(e => GenerateTableMenu(e.newValue as TextAsset, container));
+        assetField.RegisterValueChangedCallback(e =>
+        {
+            if (e.newValue != null)
+            {
+                csvFileAssetPath = Path.Combine(Application.dataPath.Substring(0, Application.dataPath.Length - 6),
+                    AssetDatabase.GetAssetPath(e.newValue as TextAsset));
+            }
+            else
+            {
+                csvFileAssetPath = null;
+            }
+
+            GenerateTableMenu(csvFileAssetPath, container);
+        });
         generateButton = root.Q<Button>("GenerateLocalizationAsset");
         generateButton.clicked += () => GenerateAndOpenTextAsset(assetField);
     }
@@ -52,18 +64,16 @@ public class LocalizationCSVEditorWindow : EditorWindow
 
         var textAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(path);
         assetField.SetValueWithoutNotify(textAsset);
-        GenerateTableMenu(textAsset, rootVisualElement.Q<ScrollView>());
+        GenerateTableMenu(csvFileAssetPath, rootVisualElement.Q<ScrollView>());
     }
 
-    private void GenerateTableMenu(TextAsset csvFile, VisualElement container)
+    private void GenerateTableMenu(string csvFilePath, VisualElement container)
     {
         container.Clear();
-        if (csvFile)
+        if (!string.IsNullOrEmpty(csvFilePath))
         {
             generateButton.RemoveFromHierarchy();
-            this.csvFile = csvFile;
-            var table = LocalizationSystem.GetTable(csvFile).ToList();
-            // TemplateContainer lastTemplateContainer = null;
+            var table = LocalizationSystem.GetTable(csvFilePath);
             table.InsertRange(0,
                 new List<LocalizationSystem.TableEntry>()
                 {
@@ -97,16 +107,10 @@ public class LocalizationCSVEditorWindow : EditorWindow
                     editButtonTemplateContainer.Q<Button>().style.alignItems = i == 0 ? Align.Center : Align.FlexStart;
                     rowContainer.Add(editButtonTemplateContainer);
 
-                    if (tableEntryIndex == (table.Count - 1) && j == 0)
-                    {
-                        editButtonTemplateContainer.name = "editing";
-                        // lastTemplateContainer = editButtonTemplateContainer;
-                    }
-
-                    // Debug.Log(tableEntryIndex + " " + (table.Count - 1) + " " + j);
-                    // Debug.Log(lastTemplateContainer);
-                    // Debug.Log(rootVisualElement.Q<TemplateContainer>("editing"));
-                    // Debug.Log(rootVisualElement.Q<ScrollView>().Q<VisualElement>("row3"));
+                    // if (tableEntryIndex == (table.Count - 1) && j == 0)
+                    // {
+                    //     editButtonTemplateContainer.name = "editing";
+                    // }
                 }
 
                 if (tableEntryIndex == 0)
@@ -130,14 +134,10 @@ public class LocalizationCSVEditorWindow : EditorWindow
                     {
                         table.RemoveAt(tableEntryIndex);
                         table.RemoveAt(0);
-                        LocalizationSystem.SetTable(csvFile, table.ToArray());
-                        GenerateTableMenu(csvFile, container);
+                        LocalizationSystem.SetTable(csvFileAssetPath, table);
+                        GenerateTableMenu(csvFileAssetPath, container);
                     }) { text = "-" });
                 }
-
-
-                // Debug.Log(rootVisualElement.Q<ScrollView>());
-                // Debug.Log(rootVisualElement.Q<ScrollView>().Q<VisualElement>($"row{table.Count-2}").Q<TemplateContainer>());
 
                 container.Add(rowContainer);
             }
@@ -145,23 +145,11 @@ public class LocalizationCSVEditorWindow : EditorWindow
             container.Add(new Button(() =>
             {
                 table = AddEntry(table);
-                // Debug.Log(lastTemplateContainer.Q<Button>());
-                
-                // lastTemplateContainer.Q<Button>().style.borderBottomColor = Color.red;
-                // lastTemplateContainer.Q<Button>().style.borderBottomWidth = 20;
-                GenerateTableMenu(csvFile, container);
+                GenerateTableMenu(csvFileAssetPath, container);
                 var editContainer = rootVisualElement.Q<ScrollView>().Q<VisualElement>("unity-content-viewport")
                     .Q<VisualElement>("unity-content-container").Q<VisualElement>($"row{table.Count - 1}")
                     .Q<TemplateContainer>();
-                // Debug.Log(lastTemplateContainer.Q<Button>());
-                // lastTemplateContainer.Q<Button>().style.borderBottomColor = Color.red;
-                // lastTemplateContainer.Q<Button>().style.borderBottomWidth = 20;
                 EditButton(editContainer, table.Count - 1, 0);
-                // Debug.Log(typeof(Clickable).GetMethod("Invoke", BindingFlags.NonPublic | BindingFlags.Instance));
-                // Debug.Log(container.Q<VisualElement>("row0"));
-                // Debug.Log(container.Q<VisualElement>("row0").Q<TemplateContainer>().Q<Button>("0"));
-                // Debug.Log(container.Q<VisualElement>("row0").Q<Button>().clickable);
-                // typeof(Clickable).GetMethod("Invoke", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(container.Q<VisualElement>("row0").Q<TemplateContainer>().Q<Button>("0").clickable, new object[] {null});
             }) { text = "+", style = { fontSize = 24, height = 24 } });
         }
         else
@@ -176,15 +164,16 @@ public class LocalizationCSVEditorWindow : EditorWindow
             { entry = LocalizationSettings.Instance.languages.Select(s => "").ToArray() });
         var tableNoLanguages = new List<LocalizationSystem.TableEntry>(table);
         tableNoLanguages.RemoveAt(0);
-        LocalizationSystem.SetTable(csvFile, tableNoLanguages.ToArray());
+        LocalizationSystem.SetTable(csvFileAssetPath, tableNoLanguages);
         return table;
     }
 
     private void EditButton(VisualElement editButtonTemplateContainer, int tableIndex, int entryIndex)
     {
-        var table = LocalizationSystem.GetTable(csvFile);
+        var table = LocalizationSystem.GetTable(csvFileAssetPath);
         var label = editButtonTemplateContainer.Q<Label>();
         label.RemoveFromHierarchy();
+
         var textField = new TextField()
         {
             multiline = true,
@@ -202,7 +191,7 @@ public class LocalizationCSVEditorWindow : EditorWindow
         {
             if (evt.keyCode == KeyCode.Escape)
             {
-                GenerateTableMenu(csvFile, rootVisualElement.Q<ScrollView>());
+                GenerateTableMenu(csvFileAssetPath, rootVisualElement.Q<ScrollView>());
             }
         });
         var textElement = textField.Q<VisualElement>("unity-text-input");
@@ -219,15 +208,16 @@ public class LocalizationCSVEditorWindow : EditorWindow
                 else
                 {
                     // ((e.target as VisualElement).parent as TextField).SetValueWithoutNotify(((e.target as VisualElement).parent as TextField).value + "\n");
-                    
-                    rootVisualElement.schedule.Execute(() => {
+
+                    rootVisualElement.schedule.Execute(() =>
+                    {
                         textField.SetValueWithoutNotify(textField.value + "\n");
                         textElement.Focus();
                         rootVisualElement.schedule.Execute(() =>
                         {
-                            Debug.Log(textElement.worldBound + " " + textElement.localBound);
                             var evt = MouseDownEvent.GetPooled(
-                                new Vector2(textElement.worldBound.x + textElement.worldBound.width - 2, textElement.worldBound.y + textElement.worldBound.height - 2), 0,
+                                new Vector2(textElement.worldBound.x + textElement.worldBound.width-1,
+                                    textElement.worldBound.y + textElement.worldBound.height-1), 0,
                                 1,
                                 Vector2.zero);
                             textElement.SendEvent(evt);
@@ -237,10 +227,8 @@ public class LocalizationCSVEditorWindow : EditorWindow
                 }
             }
         });
-        
-        rootVisualElement.schedule.Execute(() => {
-            textElement.Focus();
-        });
+
+        rootVisualElement.schedule.Execute(() => { textElement.Focus(); });
         // textElement.Focus();
 
         var color = new Color(40 / 255f, 40 / 255f, 40 / 255f);
@@ -259,9 +247,9 @@ public class LocalizationCSVEditorWindow : EditorWindow
         editButtonTemplateContainer.Q<Button>().Add(submit);
     }
 
-    private void SubmitEntryAt(LocalizationSystem.TableEntry[] table, int tableIndex, int entryIndex, string newText)
+    private void SubmitEntryAt(List<LocalizationSystem.TableEntry> table, int tableIndex, int entryIndex,
+        string newText)
     {
-        Debug.Log(tableIndex + " " + entryIndex);
         try
         {
             table[tableIndex - 1].entry[entryIndex] = newText;
@@ -270,9 +258,9 @@ public class LocalizationCSVEditorWindow : EditorWindow
         {
         }
 
-        LocalizationSystem.SetTable(csvFile, table);
+        LocalizationSystem.SetTable(csvFileAssetPath, table);
 
         rootVisualElement.Q<ScrollView>().Clear();
-        GenerateTableMenu(csvFile, rootVisualElement.Q<ScrollView>());
+        GenerateTableMenu(csvFileAssetPath, rootVisualElement.Q<ScrollView>());
     }
 }

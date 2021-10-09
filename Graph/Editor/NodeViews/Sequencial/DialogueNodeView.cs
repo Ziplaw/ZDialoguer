@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -20,6 +21,8 @@ public class DialogueNodeView : SequencialNodeView
         titleContainer.style.backgroundColor = new StyleColor(new Color(0.58f, 0.96f, 0.68f));
         // dialogueNodeObject.text = new LocalisedString(true);
         dialogueNodeObject.text.csvFile = graph.dialogueText;
+        dialogueNodeObject.text.csvFileFullAssetPath = Path.Combine(Application.dataPath.Substring(0,Application.dataPath.Length-6),AssetDatabase.GetAssetPath(dialogueNodeObject.text.csvFile));
+
         mainContainer.Add(new LocalisedStringPropertyDrawer().CreatePropertyGUI(new SerializedObject(nodeObject).FindProperty("text")));
         // IMGUIContainer localisationStringContainer = new IMGUIContainer((() =>
         // {
