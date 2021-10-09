@@ -50,6 +50,7 @@ public class ZDialoguerGraphView : GraphView
 
     public void PopulateView(ZDialogueGraph graph)
     {
+        // _editorWindow.Close();
         this.graph = graph;
         graphViewChanged -= OnGraphViewChanged;
         graph.Init();

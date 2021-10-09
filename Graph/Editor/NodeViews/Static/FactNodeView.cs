@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,7 @@ public class FactNodeView : StaticNodeView
     {
         int index = 0;
         FactNodeObject factNodeObject = nodeObject as FactNodeObject;
-
+        
         base.BuildNodeView(nodeObject, graph);
         titleContainer.style.backgroundColor = new StyleColor(colorMap[typeof(Fact)]);
 
@@ -26,14 +27,50 @@ public class FactNodeView : StaticNodeView
             inputContainer.Insert(0, factEnumField);
         }).ForDuration(100);
         factEnumField.RegisterValueChangedCallback(e => FactEnumChangeCallback(e, factNodeObject));
-        FloatField field = new FloatField();
-        field.SetValueWithoutNotify( factNodeObject.fact.value);
-        field.RegisterValueChangedCallback(e => FactValueChangeCallback(e, factNodeObject));
+
+        var valueField = GenerateValueField(factNodeObject);
+        
         inputContainer.style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Row);
         inputContainer.Add(factEnumField);
-        inputContainer.Add(field);
+
+        inputContainer.Add(valueField);
+        int valueFieldIndex = inputContainer.IndexOf(valueField);
+        factNodeObject.fact.OnFactTypeChange+= type => OnFactTypeChange(valueFieldIndex, factNodeObject);
         CreateOutputPort(typeof(Fact), "Fact", outputContainer, nodeObject, ref index);
         title = "Fact Node";
+    }
+
+    private void OnFactTypeChange(int valueFieldIndex, FactNodeObject factNodeObject)
+    {
+        this.Q("factValueField").RemoveFromHierarchy();
+        var field = GenerateValueField(factNodeObject);
+        inputContainer.Insert(valueFieldIndex, field);
+    }
+
+    private VisualElement GenerateValueField(FactNodeObject factNodeObject)
+    {
+        VisualElement valueField;
+        
+        switch (factNodeObject.fact.factType)
+        {
+            case Fact.FactType.Float:
+                FloatField floatField = new FloatField();
+                floatField.SetValueWithoutNotify( (float)factNodeObject.fact.Value);
+                floatField.RegisterValueChangedCallback(e => FactValueChangeCallback(e.newValue, factNodeObject));
+                valueField = floatField;
+                break;
+            case Fact.FactType.String:
+                TextField stringField = new TextField();
+                stringField.SetValueWithoutNotify( (string)factNodeObject.fact.Value);
+                stringField.RegisterValueChangedCallback(e => FactValueChangeCallback(e.newValue, factNodeObject));
+                valueField = stringField;
+                break;
+            default: throw new NotImplementedException();
+        }
+
+        valueField.name = "factValueField";
+
+        return valueField;
     }
 
     private void FactEnumChangeCallback(ChangeEvent<Fact> evt, FactNodeObject nodeObject)
@@ -43,9 +80,9 @@ public class FactNodeView : StaticNodeView
         AssetDatabase.SaveAssets();
     }
 
-    private void FactValueChangeCallback(ChangeEvent<float> evt, FactNodeObject nodeObject)
+    private void FactValueChangeCallback(object value, FactNodeObject nodeObject)
     {
-        nodeObject.fact.value = evt.newValue;
+        nodeObject.fact.Value = value;
         EditorUtility.SetDirty(nodeObject);
         AssetDatabase.SaveAssets();
     }

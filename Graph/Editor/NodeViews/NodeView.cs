@@ -24,8 +24,6 @@ namespace ZDialoguer
 
         public static NodeView CreateNodeView(NodeObject nodeObject, ZDialoguerGraphView graphView)
         {
-            int index = 0;
-            
             currentGraphView = graphView;
             NodeView nodeView = nodeViewMap[nodeObject.GetType()].Invoke();
             

@@ -29,12 +29,12 @@ namespace ZDialoguer
             }
         }
         
-        public Fact CreateFact(string nameID, float value)
+        public Fact CreateFact(string nameID)
         {
             Fact fact = CreateInstance<Fact>();
             fact.name = nameID;
             fact.nameID = nameID;
-            fact.value = value;
+            fact.Value = default;
             facts.Add(fact);
             AssetDatabase.AddObjectToAsset(fact, this);
             AssetDatabase.SaveAssets();

@@ -35,7 +35,7 @@ namespace ZDialoguer
                 string tag = _text.Substring(start, end-start+1);
                 string factName = tag.Replace("<","").Replace(">","");
 
-                _text = _text.Replace(tag, graph.facts.First(f => f.nameID == factName).value.ToString());
+                _text = _text.Replace(tag, graph.facts.First(f => f.nameID == factName).Value.ToString());
             }
 
             return _text;

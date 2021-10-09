@@ -68,7 +68,7 @@ namespace ZDialoguer
         
         private void AddFactToBlackBoard(Blackboard blackboard)
         {
-            var newFact = graphView.graph.CreateFact(FixNewFactName("New Fact"), 0);
+            var newFact = graphView.graph.CreateFact(FixNewFactName("New Fact"));
             blackboard.Query<BlackboardSection>().ToList().First(s => s.title == "Facts").Add(GenerateFactContainer(newFact));
         
             ZDialoguerGraphView.SaveChangesToGraph(graphView.graph);

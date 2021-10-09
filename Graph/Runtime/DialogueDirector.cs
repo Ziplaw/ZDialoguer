@@ -27,10 +27,10 @@ public class DialogueDirector : MonoBehaviour
 
     private void OnGUI()
     {
-        if (GUILayout.Button("Modify"))
-        {
-            graphs.FirstOrDefault().facts.FirstOrDefault().value = 10;
-            Print();
-        }
+        // if (GUILayout.Button("Modify"))
+        // {
+        //     graphs.FirstOrDefault().facts.FirstOrDefault().Value = 10;
+        //     Print();
+        // }
     }
 }

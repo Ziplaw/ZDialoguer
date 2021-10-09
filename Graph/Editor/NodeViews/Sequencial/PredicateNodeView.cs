@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,23 +14,26 @@ using ZDialoguerEditor;
 public class PredicateNodeView : SequencialNodeView
 {
     private PredicateNodeObject _predicateNodeObject => NodeObject as PredicateNodeObject;
+
     public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph)
     {
         int index = 0;
         var predicateNodeObject = nodeObject as PredicateNodeObject;
         base.BuildNodeView(nodeObject, graph);
         CreateInputPort(typeof(SequencialNodeObject), "►", inputContainer, nodeObject, ref index, Port.Capacity.Multi);
-        CreateOutputPort(typeof(SequencialNodeObject), "True ►",outputContainer, nodeObject, ref index);
-        CreateOutputPort(typeof(SequencialNodeObject), "False ►",outputContainer, nodeObject, ref index);
+        CreateOutputPort(typeof(SequencialNodeObject), "True ►", outputContainer, nodeObject, ref index);
+        CreateOutputPort(typeof(SequencialNodeObject), "False ►", outputContainer, nodeObject, ref index);
         titleContainer.style.backgroundColor = new StyleColor(new Color(0.64f, 0.96f, 0.88f));
 
         PopupField<string> operationEnumField =
-            new PopupField<string>(new List<string> { "=", ">", "<", "≥", "≤", "≠" }, (int)predicateNodeObject.operation);
+            new PopupField<string>(new List<string> { "=", ">", "<", "≥", "≤", "≠" },
+                (int)predicateNodeObject.operation);
         operationEnumField.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleCenter);
         // Debug.Log(operationEnumField.Q<TextElement>());
         operationEnumField.Q<TextElement>().style.unityTextAlign = TextAnchor.MiddleCenter;
         // Debug.LogWarning(operationEnumField.ElementAt(0));
-        operationEnumField.Q<VisualElement>().Query<VisualElement>().ToList().First(x => x.GetClasses().Any(c => c == "unity-base-popup-field__arrow")).RemoveFromHierarchy();
+        operationEnumField.Q<VisualElement>().Query<VisualElement>().ToList()
+            .First(x => x.GetClasses().Any(c => c == "unity-base-popup-field__arrow")).RemoveFromHierarchy();
         operationEnumField.style.width = 20;
         operationEnumField.Q<TextElement>().style.width = 20;
         operationEnumField.ElementAt(0).style.width = 20;
@@ -40,7 +44,7 @@ public class PredicateNodeView : SequencialNodeView
             OperationChangeCallback(e, predicateNodeObject));
 
         CreateInputPort(typeof(Fact), "Fact", inputContainer, predicateNodeObject, ref index);
-            
+
         Button testButton = new Button(() =>
         {
             var window = EditorWindow.GetWindow<ZDialogueGraphEditorWindow>();
@@ -48,49 +52,53 @@ public class PredicateNodeView : SequencialNodeView
         });
         testButton.text = "Test";
         outputContainer.Add(testButton);
-            
-        FloatField valueField = new FloatField();
-        valueField.SetValueWithoutNotify(predicateNodeObject.value);
-        valueField.RegisterValueChangedCallback(e =>
-            UpdatePredicateNodeValue(e, predicateNodeObject));
+
+
 
         Font font = Resources.Load<Font>("Fonts/FugazOne");
 
         IMGUIContainer factNameContainer = new IMGUIContainer((() =>
         {
-            GUILayout.Label(predicateNodeObject.fact? predicateNodeObject.fact.nameID : "Fact",
+            GUILayout.Label(predicateNodeObject.fact ? predicateNodeObject.fact.nameID : "Fact",
                 new GUIStyle("label") { alignment = TextAnchor.MiddleCenter, fontSize = 20, font = font });
         }));
-        
-        IMGUIContainer autoUpdateContainer = new IMGUIContainer((() =>
+
+        IMGUIContainer autoUpdateContainer = new IMGUIContainer(() =>
         {
             GUILayout.Label(predicateNodeObject.GetPredicate().ToString(),
                 new GUIStyle("label") { alignment = TextAnchor.MiddleCenter, fontSize = 20, font = font });
-        }));
-        autoUpdateContainer.style.borderTopColor = new StyleColor(new Color(.25f,.25f,.25f));
+        });
+        autoUpdateContainer.style.borderTopColor = new StyleColor(new Color(.25f, .25f, .25f));
         autoUpdateContainer.style.borderTopWidth = new StyleFloat(1);
-        VisualElement horizontalContainer = new VisualElement();
-        horizontalContainer.style.paddingBottom = 5;
-        horizontalContainer.style.paddingTop = 5;
-        horizontalContainer.style.paddingLeft = 5;
-        horizontalContainer.style.paddingRight = 5;
-        horizontalContainer.style.alignItems = Align.Center;
-        horizontalContainer.style.alignSelf = Align.Center;
-        horizontalContainer.style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Row);
+        VisualElement horizontalContainer = new VisualElement
+        {
+            style =
+            {
+                paddingBottom = 5,
+                paddingTop = 5,
+                paddingLeft = 5,
+                paddingRight = 5,
+                alignItems = Align.Center,
+                alignSelf = Align.Center,
+                flexDirection = FlexDirection.Row
+            }
+        };
         horizontalContainer.Add(factNameContainer);
         horizontalContainer.Add(operationEnumField);
-        horizontalContainer.Add(valueField);
+        GenerateValueField(horizontalContainer);
         mainContainer.Add(horizontalContainer);
         mainContainer.Add(autoUpdateContainer);
 
         title = "Predicate Node";
     }
-    private void UpdatePredicateNodeValue(ChangeEvent<float> evt, PredicateNodeObject predicateNodeObject)
+
+    private void UpdatePredicateNodeValue(object value, PredicateNodeObject predicateNodeObject)
     {
-        predicateNodeObject.value = evt.newValue;
+        predicateNodeObject.Value = value;
         EditorUtility.SetDirty(predicateNodeObject);
         AssetDatabase.SaveAssets();
     }
+
     private void OperationChangeCallback(ChangeEvent<string> evt, PredicateNodeObject predicateNodeObject)
     {
         Dictionary<string, PredicateNodeObject.Operation> stringMap =
@@ -109,12 +117,91 @@ public class PredicateNodeView : SequencialNodeView
         AssetDatabase.SaveAssets();
     }
     
+    // private void OnFactTypeChange(int valueFieldIndex, FactNodeObject factNodeObject)
+    // {
+    //     Debug.Log("wjat");
+    //     this.Q("factValueField").RemoveFromHierarchy();
+    //     var field = GenerateValueField(factNodeObject);
+    //     inputContainer.Insert(valueFieldIndex, field);
+    // }
+    //
+    // private VisualElement GenerateValueField(FactNodeObject factNodeObject)
+    // {
+    //     VisualElement valueField;
+    //     
+    //     switch (factNodeObject.fact.factType)
+    //     {
+    //         case Fact.FactType.Float:
+    //             FloatField floatField = new FloatField();
+    //             floatField.SetValueWithoutNotify( (float)factNodeObject.fact.Value);
+    //             floatField.RegisterValueChangedCallback(e => FactValueChangeCallback(e.newValue, factNodeObject));
+    //             valueField = floatField;
+    //             break;
+    //         case Fact.FactType.String:
+    //             TextField stringField = new TextField();
+    //             stringField.SetValueWithoutNotify( (string)factNodeObject.fact.Value);
+    //             stringField.RegisterValueChangedCallback(e => FactValueChangeCallback(e.newValue, factNodeObject));
+    //             valueField = stringField;
+    //             break;
+    //         default: throw new NotImplementedException();
+    //     }
+    //
+    //     valueField.name = "factValueField";
+    //
+    //     return valueField;
+    // }
+    
+    private void OnFactTypeChange(Fact.FactType newFactType)
+    {
+        this.Q("factValueField").RemoveFromHierarchy();
+        GenerateValueField(this.Q("factFieldContainer"));
+    }
+
+    private void GenerateValueField(VisualElement horizontalContainer)
+    {
+        VisualElement valueField;
+        
+        if (_predicateNodeObject.fact)
+        {
+            switch (_predicateNodeObject.fact.factType)
+            {
+                case Fact.FactType.Float:
+                    FloatField floatField = new FloatField();
+                    floatField.SetValueWithoutNotify((float)_predicateNodeObject.Value);
+                    floatField.RegisterValueChangedCallback(e =>
+                        UpdatePredicateNodeValue(e.newValue, _predicateNodeObject));
+                    valueField = floatField;
+                    break;
+                case Fact.FactType.String:
+                    TextField stringField = new TextField();
+                    stringField.SetValueWithoutNotify((string)_predicateNodeObject.Value);
+                    stringField.RegisterValueChangedCallback(e =>
+                        UpdatePredicateNodeValue(e.newValue, _predicateNodeObject));
+                    valueField = stringField;
+                    break;
+                default: throw new NotImplementedException();
+            }
+        }
+        else
+        {
+            valueField = new Label("No Fact Connected!");
+        }
+
+        valueField.name = "factValueField";
+        horizontalContainer.name = "factFieldContainer";
+        horizontalContainer.Add(valueField);
+    }
+
     public override void OnConnectEdgeToInputPort(Edge edge)
     {
-        edge.IsInputKey('3', () =>
-        {
-            _predicateNodeObject.fact = ((FactNodeObject)((NodeView)edge.output.node).NodeObject).fact;
-        });
+        edge.IsInputKey('3',
+            () =>
+            {
+                _predicateNodeObject.fact = ((FactNodeObject)((NodeView)edge.output.node).NodeObject).fact;
+                _predicateNodeObject.fact.OnFactTypeChange += OnFactTypeChange;
+                OnFactTypeChange(default);
+                
+            });
     }
 
     public override void OnConnectEdgeToOutputPort(Edge edge)
@@ -125,7 +212,12 @@ public class PredicateNodeView : SequencialNodeView
 
     public override void OnDisconnectEdgeFromInputPort(Edge edge)
     {
-        edge.IsInputKey('3', () => _predicateNodeObject.fact = null);
+        edge.IsInputKey('3', () =>
+        {
+            _predicateNodeObject.fact.OnFactTypeChange -= OnFactTypeChange;
+            _predicateNodeObject.fact = null;
+            OnFactTypeChange(default);
+        });
     }
 
     public override void OnDisconnectEdgeFromOutputPort(Edge edge)
