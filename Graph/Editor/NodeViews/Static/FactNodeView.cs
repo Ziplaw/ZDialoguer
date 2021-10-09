@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.UIElements;
@@ -9,13 +10,21 @@ using ZDialoguer;
 
 public class FactNodeView : StaticNodeView
 {
-    public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph, ref int index)
+    public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph)
     {
-        base.BuildNodeView(nodeObject, graph, ref index);
-        titleContainer.style.backgroundColor = new StyleColor(colorMap[typeof(Fact)]);
+        int index = 0;
         FactNodeObject factNodeObject = nodeObject as FactNodeObject;
 
+        base.BuildNodeView(nodeObject, graph);
+        titleContainer.style.backgroundColor = new StyleColor(colorMap[typeof(Fact)]);
+
         PopupField<Fact> factEnumField = new PopupField<Fact>(graph.facts, factNodeObject.fact);
+        currentGraphView._blackBoard.editTextRequested += (blackboard, element, factName) => currentGraphView.schedule.Execute(() =>
+        {
+            factEnumField.RemoveFromHierarchy();
+            factEnumField = new PopupField<Fact>(graph.facts, factNodeObject.fact);
+            inputContainer.Insert(0, factEnumField);
+        }).ForDuration(100);
         factEnumField.RegisterValueChangedCallback(e => FactEnumChangeCallback(e, factNodeObject));
         FloatField field = new FloatField();
         field.SetValueWithoutNotify( factNodeObject.fact.value);

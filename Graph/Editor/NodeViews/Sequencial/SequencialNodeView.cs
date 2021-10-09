@@ -6,7 +6,7 @@ using ZDialoguer;
 
 public abstract class SequencialNodeView : NodeView
 {
-    public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph, ref int index)
+    public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph)
     {
         
     }

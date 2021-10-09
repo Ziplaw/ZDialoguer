@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.Accessibility;
 using UnityEngine.UIElements;
 using ZDialoguer;
 using ZDialoguerEditor;
@@ -12,11 +13,12 @@ using ZDialoguerEditor;
 public class PredicateNodeView : SequencialNodeView
 {
     private PredicateNodeObject _predicateNodeObject => NodeObject as PredicateNodeObject;
-    public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph, ref int index)
+    public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph)
     {
+        int index = 0;
         var predicateNodeObject = nodeObject as PredicateNodeObject;
-        base.BuildNodeView(nodeObject, graph, ref index);
-        CreateInputPort(typeof(SequencialNodeObject), "►", inputContainer, nodeObject, ref index);
+        base.BuildNodeView(nodeObject, graph);
+        CreateInputPort(typeof(SequencialNodeObject), "►", inputContainer, nodeObject, ref index, Port.Capacity.Multi);
         CreateOutputPort(typeof(SequencialNodeObject), "True ►",outputContainer, nodeObject, ref index);
         CreateOutputPort(typeof(SequencialNodeObject), "False ►",outputContainer, nodeObject, ref index);
         titleContainer.style.backgroundColor = new StyleColor(new Color(0.64f, 0.96f, 0.88f));
@@ -24,6 +26,16 @@ public class PredicateNodeView : SequencialNodeView
         PopupField<string> operationEnumField =
             new PopupField<string>(new List<string> { "=", ">", "<", "≥", "≤", "≠" }, (int)predicateNodeObject.operation);
         operationEnumField.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleCenter);
+        // Debug.Log(operationEnumField.Q<TextElement>());
+        operationEnumField.Q<TextElement>().style.unityTextAlign = TextAnchor.MiddleCenter;
+        // Debug.LogWarning(operationEnumField.ElementAt(0));
+        operationEnumField.Q<VisualElement>().Query<VisualElement>().ToList().First(x => x.GetClasses().Any(c => c == "unity-base-popup-field__arrow")).RemoveFromHierarchy();
+        operationEnumField.style.width = 20;
+        operationEnumField.Q<TextElement>().style.width = 20;
+        operationEnumField.ElementAt(0).style.width = 20;
+        operationEnumField.ElementAt(0).style.minWidth = 0;
+        // operationEnumField.Query<VisualElement>().ForEach(Debug.Log);
+        // Debug.Log("---");
         operationEnumField.RegisterValueChangedCallback(e =>
             OperationChangeCallback(e, predicateNodeObject));
 

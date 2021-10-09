@@ -15,21 +15,23 @@ namespace ZDialoguer
     {
         public Action<NodeView> OnNodeSelected;
         public NodeObject NodeObject;
-        public abstract void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph, ref int index);
+        protected static ZDialoguerGraphView currentGraphView;
+        public abstract void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph);
         public abstract void OnConnectEdgeToInputPort(Edge edge);
         public abstract void OnConnectEdgeToOutputPort(Edge edge);
         public abstract void OnDisconnectEdgeFromInputPort(Edge edge);
         public abstract void OnDisconnectEdgeFromOutputPort(Edge edge);
 
-        public static NodeView CreateNodeView(NodeObject nodeObject, ZDialogueGraph graph)
+        public static NodeView CreateNodeView(NodeObject nodeObject, ZDialoguerGraphView graphView)
         {
             int index = 0;
-
+            
+            currentGraphView = graphView;
             NodeView nodeView = nodeViewMap[nodeObject.GetType()].Invoke();
-
+            
             nodeView.NodeObject = nodeObject;
             nodeView.viewDataKey = nodeObject.guid;
-            nodeView.BuildNodeView(nodeObject, graph, ref index);
+            nodeView.BuildNodeView(nodeObject, graphView.graph);
             nodeView.style.left = nodeObject.position.x;
             nodeView.style.top = nodeObject.position.y;
             nodeView.mainContainer.style.backgroundColor = new StyleColor(new Color(0.17f, 0.17f, 0.17f));
@@ -55,8 +57,9 @@ namespace ZDialoguer
         {
             var input = InstantiatePort(Orientation.Horizontal, Direction.Input, capacity, type);
             input.portName = portName;
-            // input.contentContainer.Remove(input.contentContainer.Q<Label>("type"));
-            // input.contentContainer.Add(new Label(portName){style = {overflow = Overflow.Hidden, color = colorMap[type]}});
+            Color.RGBToHSV(colorMap[type], out float H, out float S, out float B);
+            S *= .5f;
+            input.Q<Label>().style.color = Color.HSVToRGB(H, S, B);
             input.portColor = colorMap[type];
             input.viewDataKey = nodeObject.guid + " " + index;
             index++;
@@ -67,8 +70,9 @@ namespace ZDialoguer
             Port.Capacity portCapacity = Port.Capacity.Multi, Orientation orientation = Orientation.Horizontal)
         {
             var output = InstantiatePort(orientation, Direction.Output, portCapacity, type);
-            // output.contentContainer.Remove(output.contentContainer.Q<Label>("type"));
-            // output.contentContainer.Add(new Label(portName){ style = {overflow = Overflow.Hidden, color = colorMap[type]}});
+            Color.RGBToHSV(colorMap[type], out float H, out float S, out float B);
+            S *= .5f;
+            output.Q<Label>().style.color = Color.HSVToRGB(H, S, B);
             output.portName = portName;
             output.portColor = colorMap[type];
             output.viewDataKey = nodeObject.guid + " " + index;

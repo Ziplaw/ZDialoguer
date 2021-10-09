@@ -25,6 +25,16 @@ namespace ZDialoguerEditor
 
         public void CreateGUI()
         {
+            // if (float.IsNaN(rootVisualElement.layout.width))
+            // {
+            //     var evt = GeometryChangedEvent.GetPooled(rootVisualElement.layout,
+            //         new Rect(new Vector2(rootVisualElement.layout.x, rootVisualElement.layout.y),
+            //             new Vector2(500, 300)));
+            //     rootVisualElement.schedule.Execute(() => rootVisualElement.SendEvent(evt));
+            //     Debug.Log(rootVisualElement.layout);
+            //     evt.Dispose();
+            // }
+
             // Close();
             // Each editor window contains a root VisualElement object
             VisualElement root = rootVisualElement;
@@ -40,6 +50,7 @@ namespace ZDialoguerEditor
                     "Assets/com.Ziplaw.ZDialoguer/Graph/Editor/ZDialogueGraphEditorWindow.uss");
             root.styleSheets.Add(styleSheet);
             graphView = root.Q<ZDialoguerGraphView>();
+            graphView._editorWindow = this;
             inspectorView = root.Q<InspectorView>();
             PopupField<string> languagePopup = new PopupField<string>(LocalizationSettings.Instance.languages, LocalizationSettings.Instance.selectedLanguage);
             languagePopup.RegisterValueChangedCallback(e =>

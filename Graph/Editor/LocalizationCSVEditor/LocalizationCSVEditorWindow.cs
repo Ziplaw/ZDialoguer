@@ -8,52 +8,75 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
+using ZDialoguerEditor;
 using Object = UnityEngine.Object;
 
 
 public class LocalizationCSVEditorWindow : EditorWindow
 {
     [MenuItem("Tools/ZDialoguer/LocalizationCSVEditorWindow")]
-    public static void ShowExample()
+    public static void Open()
     {
-        LocalizationCSVEditorWindow wnd = GetWindow<LocalizationCSVEditorWindow>();
-        wnd.titleContent = new GUIContent("Localization Editor");
+        var window = GetWindow<LocalizationCSVEditorWindow>();
+        window.titleContent = new GUIContent("Localization Editor");
+        // window.Close();
     }
 
     private TextAsset csvFile;
-    private string csvFileAssetPath;
+    internal string csvFileAssetPath;
     private Button generateButton;
 
+    internal string GetTextAssetFullPath(TextAsset textAsset)
+    {
+        if (textAsset != null)
+        {
+            return Path.Combine(Application.dataPath.Substring(0, Application.dataPath.Length - 6),
+                AssetDatabase.GetAssetPath(textAsset));
+        }
+
+        return null;
+    }
 
     public void CreateGUI()
     {
+        // Show();
+        // Open();
+        // Close();
         rootVisualElement.Clear();
         VisualElement root = rootVisualElement;
         var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
             "Assets/com.Ziplaw.ZDialoguer/Graph/Editor/LocalizationCSVEditor/LocalizationCSVEditorWindow.uxml");
         VisualElement staticVisualElement = visualTree.Instantiate();
         root.Add(staticVisualElement);
-        var container = root.Q<ScrollView>();
+        var scrollView = root.Q<ScrollView>();
+        
+        root.style.marginBottom = 5;
+        root.style.marginLeft = 5;
+        root.style.marginRight = 5;
+        root.style.marginTop = 5;
+        root.style.backgroundColor = new Color(0.16f, 0.16f, 0.16f);
+        scrollView.style.backgroundColor = new Color(0.16f, 0.16f, 0.16f);
+        scrollView.style.flexGrow = 1;
+        scrollView.style.flexDirection = FlexDirection.Column;
+        
+        // scrollView.Q("unity-content-viewport").style.flexGrow = 1;
+        // scrollView.Q("unity-content-viewport").style.flexDirection = FlexDirection.Column;
+        //
+        // scrollView.Q("unity-content-container").style.flexGrow = 1;
+        // scrollView.Q("unity-content-container").style.flexDirection = FlexDirection.Column;
+        
         var assetField = root.Q<ObjectField>();
         assetField.RegisterValueChangedCallback(e =>
         {
-            if (e.newValue != null)
-            {
-                csvFileAssetPath = Path.Combine(Application.dataPath.Substring(0, Application.dataPath.Length - 6),
-                    AssetDatabase.GetAssetPath(e.newValue as TextAsset));
-            }
-            else
-            {
-                csvFileAssetPath = null;
-            }
+            csvFileAssetPath = GetTextAssetFullPath(e.newValue as TextAsset);
 
-            GenerateTableMenu(csvFileAssetPath, container);
+            GenerateTableMenu(csvFileAssetPath, scrollView);
         });
         generateButton = root.Q<Button>("GenerateLocalizationAsset");
         generateButton.clicked += () => GenerateAndOpenTextAsset(assetField);
     }
 
-    private void GenerateAndOpenTextAsset(ObjectField assetField)
+    internal void GenerateAndOpenTextAsset(ObjectField assetField)
     {
         var path = EditorUtility.SaveFilePanel("Create Localization Table Asset", "", "Table", "csv");
         path = path.Substring(Application.dataPath.Length - 6);
@@ -67,7 +90,7 @@ public class LocalizationCSVEditorWindow : EditorWindow
         GenerateTableMenu(csvFileAssetPath, rootVisualElement.Q<ScrollView>());
     }
 
-    private void GenerateTableMenu(string csvFilePath, VisualElement container)
+    internal void GenerateTableMenu(string csvFilePath, VisualElement container)
     {
         container.Clear();
         if (!string.IsNullOrEmpty(csvFilePath))
@@ -262,5 +285,8 @@ public class LocalizationCSVEditorWindow : EditorWindow
 
         rootVisualElement.Q<ScrollView>().Clear();
         GenerateTableMenu(csvFileAssetPath, rootVisualElement.Q<ScrollView>());
+        var window = GetWindow<ZDialogueGraphEditorWindow>();
+        var view = window.graphView;
+        view.PopulateView(view.graph);
     }
 }

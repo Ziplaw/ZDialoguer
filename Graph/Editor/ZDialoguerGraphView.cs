@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
+using UnityEditor.PackageManager.UI;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using ZDialoguer;
+using ZDialoguerEditor;
 
 public class ZDialoguerGraphView : GraphView
 {
@@ -16,8 +18,10 @@ public class ZDialoguerGraphView : GraphView
 
     public Action<NodeView> OnNodeSelected;
     public Action<Fact> OnBlackboardFactSelected;
-    private ZDialogueGraph graph;
-    private Blackboard _blackBoard;
+    internal ZDialogueGraph graph;
+    internal DialogueBlackboard _blackBoard;
+    internal NodeSearchWindow _nodeSearchWindow;
+    internal ZDialogueGraphEditorWindow _editorWindow;
 
     public ZDialoguerGraphView()
     {
@@ -37,28 +41,6 @@ public class ZDialoguerGraphView : GraphView
         styleSheets.Add(styleSheet);
     }
 
-    public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
-    {
-        var localMousePos = evt.localMousePosition;
-        //base.BuildContextualMenu(evt);
-        var types = TypeCache.GetTypesDerivedFrom<NodeObject>().Where(t => t != typeof(GraphStartNodeObject) && t.BaseType != typeof(NodeObject));
-        foreach (var type in types)
-        {
-            if (type == typeof(FactNodeObject) && graph.facts.Count < 1) continue;
-            evt.menu.AppendAction($"{type.Name}", a =>
-            {
-                if (graph)
-                {
-                    CreateNode(type, TransformMousePosition(localMousePos));
-                }
-                else
-                {
-                    Debug.Log("No Graph Selected");
-                }
-            });
-        }
-    }
-
     public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
     {
         return ports.ToList()
@@ -74,10 +56,18 @@ public class ZDialoguerGraphView : GraphView
         DeleteElements(graphElements.ToList());
         graphViewChanged += OnGraphViewChanged;
 
-
+        AddSearchWindow();
+        GenerateBlackBoard();
         graph.nodes.ForEach(n => CreateNodeView(n));
         RestoreConnections();
-        GenerateBlackBoard();
+    }
+
+    private void AddSearchWindow()
+    {
+        _nodeSearchWindow = ScriptableObject.CreateInstance<NodeSearchWindow>();
+        _nodeSearchWindow.graphView = this;
+        nodeCreationRequest = context =>
+            SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), _nodeSearchWindow);
     }
 
     private void RestoreConnections()
@@ -103,94 +93,55 @@ public class ZDialoguerGraphView : GraphView
             Remove(_blackBoard);
         }
 
-
-        var bb = new Blackboard(this);
-        var dialogueTextSection = new BlackboardSection  { title = "Dialogue Text" };
-        InitDialogueTextBlackboard(dialogueTextSection);
-        bb.Add(dialogueTextSection);
-        bb.Add(new BlackboardSection() { title = "Facts" });
-        bb.addItemRequested += AddFactToBlackBoard;
-        bb.editTextRequested += EditFactText;
-
-        bb.RegisterCallback<GeometryChangedEvent>(e => GeometryChangedCallback(bb));
-
-
+        var bb = new DialogueBlackboard(this);
+        
         Add(bb);
         _blackBoard = bb;
 
-        PopulateBlackboardWithFacts();
     }
 
-    void InitDialogueTextBlackboard(BlackboardSection section)
+    internal void InitDialogueTextBlackboard(BlackboardSection section)
     {
-        var textObjectField = new ObjectField() { objectType = typeof(TextAsset) };
+        section.Q<TemplateContainer>().style.flexGrow = 1;
+        section.Q<TemplateContainer>().Q<VisualElement>("rowsContainer").style.flexDirection = FlexDirection.Row;
+        
+        var textObjectField = new ObjectField() { objectType = typeof(TextAsset), style = { flexGrow = 1, flexShrink = 1}};
         textObjectField.SetValueWithoutNotify(graph.dialogueText);
         textObjectField.RegisterValueChangedCallback(e => graph.dialogueText = e.newValue as TextAsset);
-        section.Add(textObjectField);
-    }
-
-    private void GeometryChangedCallback(Blackboard blackboard)
-    {
-        blackboard.UnregisterCallback<GeometryChangedEvent>(evt1 => GeometryChangedCallback(blackboard));
-        blackboard.SetPosition(new Rect(new Vector2(resolvedStyle.width - 300, 0), new Vector2(300, 300)));
-    }
-
-    private void EditFactText(Blackboard bb, VisualElement field, string value)
-    {
-        string newName = FixNewFactName(value);
-        var _field = (FactBlackboardField) field;
-        _field.fact.nameID = newName;
-        _field.fact.name = newName;
-        _field.text = newName;
-        _field.name = newName;
-        //Implement this into the Fact Field itself
-        SaveChangesToGraph(graph);
-    }
-
-    void PopulateBlackboardWithFacts()
-    {
-        graph.facts.ForEach(f => { _blackBoard.Query<BlackboardSection>().ToList().First(s => s.title == "Facts").Add(GenerateFactContainer(f)); });
-    }
-
-    string FixNewFactName(string newName)
-    {
-        int appender = 1;
-        if (graph.facts.Count != 0)
+        var editButton = new Button(() =>
         {
-            while (graph.facts.Any(f => f.nameID == newName))
-            {
-                if (newName.Contains($"({appender - 1})"))
-                {
-                    newName = newName.Replace($"({appender - 1})", $"({appender})");
-                }
-                else
-                {
-                    newName += $" ({appender})";
-                }
+            var editWindow = ScriptableObject.CreateInstance<LocalizationCSVEditorWindow>();
+            Vector2 mouse = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
+            var currentResolution = Screen.currentResolution;
+            Rect r = new Rect(currentResolution.width*.5f - 1024*.5f, currentResolution.height*.5f - 512*.5f, 10, 10);
+            editWindow.ShowAsDropDown(r, new Vector2(1024, 512));
+            
+            
+            // LocalizationSearchWindow window = CreateInstance<LocalizationSearchWindow>();
+            // window.titleContent = new GUIContent("Localisation Search");
+            // _property = property;
+            // _localisedTextBox = localisedTextBox;
+            // Vector2 mouse = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
+            // Rect r = new Rect(mouse.x - 450, mouse.y + 10, 10, 10);
+            // window.ShowAsDropDown(r, new Vector2(500, 300));
+            
+            editWindow.rootVisualElement.Q<ObjectField>().SetValueWithoutNotify(textObjectField.value);
+            
+            editWindow.csvFileAssetPath = editWindow.GetTextAssetFullPath(textObjectField.value as TextAsset);
 
-                appender++;
-            }
-        }
+            editWindow.GenerateTableMenu(editWindow.csvFileAssetPath, editWindow.rootVisualElement.Q<ScrollView>());
+        });
 
-        return newName;
+        editButton.style.backgroundImage = Resources.Load<Texture2D>("Icons/edit");
+        editButton.style.width = 24;
+        editButton.style.maxWidth = 24;
+        editButton.style.height = 24;
+        editButton.style.flexGrow = 1;
+        editButton.style.flexShrink = 1;
+        section.style.flexDirection = FlexDirection.Row;
+        section.Add(textObjectField);
+        section.Add(editButton);
     }
-
-    private void AddFactToBlackBoard(Blackboard blackboard)
-    {
-        var newFact = graph.CreateFact(FixNewFactName("New Fact"), 0);
-        blackboard.Query<BlackboardSection>().ToList().First(s => s.title == "Facts").Add(GenerateFactContainer(newFact));
-        
-        SaveChangesToGraph(graph);
-    }
-
-    VisualElement GenerateFactContainer(Fact fact)
-    {
-        var bbField = new FactBlackboardField(fact)
-            { text = fact.nameID, typeText = "Fact", OnBlackboardFactSelected = OnBlackboardFactSelected };
-        return bbField;
-    }
-
-
     private GraphViewChange OnGraphViewChanged(GraphViewChange graphViewChange)
     {
 
@@ -264,17 +215,17 @@ public class ZDialoguerGraphView : GraphView
         SaveChangesToGraph(graph);
     }
 
-    Vector2 TransformMousePosition(Vector2 eventLocalMousePosition)
+    internal Vector2 TransformMousePosition(Vector2 eventLocalMousePosition)
     {
         return viewTransform.matrix.inverse.MultiplyPoint(eventLocalMousePosition);
     }
 
-    NodeObject CreateNode<T>(Vector2 position, bool generateView = true) where T : NodeObject
+    internal NodeObject CreateNode<T>(Vector2 position, bool generateView = true) where T : NodeObject
     {
         return CreateNode(typeof(T), position, generateView);
     }
     
-    NodeObject CreateNode(Type type, Vector2 position, bool generateView = true)
+    internal NodeObject CreateNode(Type type, Vector2 position, bool generateView = true)
     {
         var node = ScriptableObject.CreateInstance(type) as NodeObject;
         node.Init(position, graph);
@@ -284,7 +235,7 @@ public class ZDialoguerGraphView : GraphView
 
     NodeView CreateNodeView(NodeObject nodeObject)
     {
-        NodeView nodeView = NodeView.CreateNodeView(nodeObject, graph);
+        NodeView nodeView = NodeView.CreateNodeView(nodeObject, this);
         nodeView.OnNodeSelected = OnNodeSelected;
         AddElement(nodeView);
         return nodeView;

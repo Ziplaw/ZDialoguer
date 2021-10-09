@@ -16,7 +16,7 @@ namespace ZDialoguer.Localization
         [SerializeField] internal string output;
         [SerializeField] internal string csvFileFullAssetPath;
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         
         #endif
         public LocalisedString(bool csvDictatedByDialogueGraph = false)
