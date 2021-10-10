@@ -1,0 +1,18 @@
+{
+    "name": "com.Ziplaw.ZDialoguer.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f9741071e2f9b134ba2c46f0bc06d832"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

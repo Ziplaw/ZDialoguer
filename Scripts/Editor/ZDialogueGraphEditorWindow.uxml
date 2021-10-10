@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="ZDialogueGraphEditorWindow.uss" />
+    <SplitView fixed-pane-initial-dimension="285">
+        <ui:VisualElement name="left-panel" style="width: 299px; background-color: rgba(40, 40, 40, 255);">
+            <ui:Label text="Inspector" display-tooltip-when-elided="true" style="background-color: rgb(40, 40, 40);" />
+            <InspectorView style="-unity-slice-left: 0; -unity-slice-top: 0; -unity-slice-right: 0; -unity-slice-bottom: 0; margin-left: 5px; margin-right: 5px; margin-top: 5px; margin-bottom: 5px;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="right-panel">
+            <ui:Label text="Dialogue Graph" display-tooltip-when-elided="true" style="background-color: rgb(40, 40, 40);" />
+            <ZDialoguerGraphView focusable="true" style="flex-grow: 1; -unity-slice-left: 0; -unity-slice-top: 0; -unity-slice-right: 0; -unity-slice-bottom: 0; height: 568px;" />
+            <ui:VisualElement name="LanguageSelectElement" style="flex-direction: row; justify-content: flex-end; background-color: rgb(40, 40, 40); -unity-background-image-tint-color: rgba(255, 255, 255, 0);">
+                <ui:Label text="Selected Language:" display-tooltip-when-elided="true" name="SelectedLanguageLabel" tooltip="CurrentlySelectedLanguage" style="align-items: center; -unity-text-align: middle-right; white-space: nowrap; -unity-background-image-tint-color: rgb(255, 255, 255); background-color: rgb(40, 40, 40); flex-direction: row; left: 0; position: relative; border-left-color: rgb(70, 70, 69); border-right-color: rgb(70, 70, 69); border-top-color: rgb(70, 70, 69); border-bottom-color: rgb(70, 70, 69); justify-content: flex-start;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </SplitView>
+</ui:UXML>
