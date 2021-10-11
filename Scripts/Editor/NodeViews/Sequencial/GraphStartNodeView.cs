@@ -27,6 +27,11 @@ public class GraphStartNodeView : SequentialNodeView
             {
                 while (!(current as DialogueNodeObject))
                 {
+                    if (current == null)
+                    {
+                        startNodeObject.Next = startNodeObject;
+                        return;
+                    }
                     current = startNodeObject.Next;
                 }
 

@@ -60,11 +60,17 @@ namespace ZDialoguer
             }
         }
 
-        public object GetValue()
+        public object GetValue(out int position)
         {
             if (fact)
-                return outputEntries.FirstOrDefault(e => e.GetValue(fact.factType).Equals(fact.Value))
-                    ?.GetValue(fact.factType);
+            {
+                var value = outputEntries.FirstOrDefault(e => e.GetValue(fact.factType).Equals(fact.Value));
+                position = outputEntries.IndexOf(value);
+                    
+                return value?.GetValue(fact.factType);
+            }
+
+            position = -1;
             return null;
         }
     }

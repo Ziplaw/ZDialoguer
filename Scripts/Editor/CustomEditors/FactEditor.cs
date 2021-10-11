@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using ZDialoguer;
 using ZDialoguerEditor;
 
 [CustomEditor(typeof(Fact))]
@@ -16,15 +17,26 @@ public class FactEditor : Editor
 
     private void OnEnable()
     {
-        manager = target as Fact;
         root = new VisualElement();
+
+        switch (target)
+        {
+            case Fact fact:
+                manager = fact;
+                break;
+            case FactNodeObject factNodeObject:
+                manager = factNodeObject.fact;
+                break;
+            default:
+                return;
+        }
 
         manager.OnFactTypeChange += FactChange;
     }
 
     private void OnDisable()
     {
-        manager.OnFactTypeChange -= FactChange;
+        if (manager) manager.OnFactTypeChange -= FactChange;
     }
 
     public void FactChange(Fact.FactType newFactType)

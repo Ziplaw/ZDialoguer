@@ -9,7 +9,7 @@ public class Fact : ScriptableObject
 
     public Action<FactType> OnFactTypeChange;
     public string nameID;
-    [SerializeField,HideInInspector] string stringValue = "";
+    [SerializeField,HideInInspector] string stringValue = "New Fact";
     [SerializeField,HideInInspector] float floatValue = 0f;
     public FactType factType;
 

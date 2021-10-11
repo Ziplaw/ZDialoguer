@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using UnityEngine;
 using ZDialoguer.Localization;
@@ -35,7 +36,15 @@ namespace ZDialoguer
                 string tag = _text.Substring(start, end-start+1);
                 string factName = tag.Replace("<","").Replace(">","");
 
-                _text = _text.Replace(tag, graph.facts.First(f => f.nameID == factName).Value.ToString());
+                try
+                {
+                    _text = _text.Replace(tag, graph.facts.First(f => f.nameID == factName).Value.ToString());
+                }
+                catch (InvalidOperationException)
+                {
+                    Debug.LogWarning($"You defined a Fact Tag ({tag}) in your Dialogue Text that doesn't exist in the current Dialogue Graph");
+                    break;
+                }
 
                 // index++;
                 // if (index == 1000)

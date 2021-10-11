@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
@@ -8,6 +10,7 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using ZDialoguer;
+using Debug = UnityEngine.Debug;
 
 public class SwitchNodeView : SequentialNodeView
 {
@@ -26,38 +29,115 @@ public class SwitchNodeView : SequentialNodeView
         CreateInputPort(typeof(SequentialNodeObject), "►", inputContainer, nodeObject, ref index);
         CreateInputPort(typeof(Fact), "Fact", inputContainer, nodeObject, ref index);
 
-        Button addEntryButton = new Button(() => AddOutputEntry())
+        Button addEntryButton = new Button(AddOutputEntry)
             { text = "+", style = { width = 24, height = 24, fontSize = 24 } };
         titleContainer.Add(addEntryButton);
         outputContainer.Add(new Label("Output") { style = { unityTextAlign = TextAnchor.MiddleCenter } });
-        GenerateOutputEntries(outputContainer );
-        
-        Font font = Resources.Load<Font>("Fonts/FugazOne");
-        
-        mainContainer.Add(new IMGUIContainer((() =>
+
+        for (int i = 0; i < switchNode.outputEntries.Count; i++)
         {
-            GUILayout.Label($"Output: { switchNode.GetValue() ?? "None" }",
+            var position = i + index;
+            GenerateOutputPort(position, i);
+            GenerateField(outputContainer.Q($"row{i}"), i);
+        }
+
+        Font font = Resources.Load<Font>("Fonts/FugazOne");
+
+        mainContainer.Add(new IMGUIContainer(() =>
+        {
+            GUILayout.Label($"Output: {switchNode.GetValue(out int position) ?? "None"} - ({position+1})",
                 new GUIStyle("label") { alignment = TextAnchor.MiddleCenter, fontSize = 20, font = font });
-        })));
-
-
+        }));
     }
 
     void AddOutputEntry()
     {
         switchNode.outputEntries.Add(new SwitchNodeObject.OutputEntry());
-        GenerateOutputEntries(outputContainer);
+
+        int position = switchNode.outputEntries.Count - 1;
+
+        if (outputContainer.Q($"row{position}") == null) GenerateOutputPort(position + outputNodeStartIndex, position);
+        GenerateField(outputContainer.Q($"row{position}"), position);
     }
 
-    void RemoveOutputEntryAt(int position)
+    private void RemoveOutputPort(int position)
     {
         switchNode.outputEntries.RemoveAt(position);
-        GenerateOutputEntries(outputContainer);
+        var port = this.Query<Port>().ToList().First(p =>
+            Int32.Parse(new string(new[] { p.viewDataKey.Last() })) == position + outputNodeStartIndex);
+
+        GraphViewChange change = new GraphViewChange
+            { elementsToRemove = port.connections.Select(e => e as GraphElement).ToList() };
+        currentGraphView.graphViewChanged.Invoke(change);
+
+        foreach (var portConnection in port.connections)
+        {
+            portConnection.RemoveFromHierarchy();
+        }
+        port.RemoveFromHierarchy();
+    }
+
+    void GenerateOutputPort(int position, int rowPosition)
+    {
+        var port = CreateOutputPort(typeof(SequentialNodeObject), "►", null, switchNode, ref position,
+            Port.Capacity.Single);
+        port.style.alignSelf = Align.FlexEnd;
+
+        var container = new VisualElement
+        {
+            name = $"row{rowPosition}",
+            style =
+            {
+                flexDirection = FlexDirection.Row, alignItems = Align.FlexEnd, alignSelf = Align.FlexEnd, flexGrow = 1
+            }
+        };
+
+        var button = new Button(() => RemoveOutputPort(rowPosition))
+            { text = "-", style = { alignSelf = Align.FlexEnd, flexGrow = 0, flexShrink = 0 } };
+
+        container.Add(button);
+        port.contentContainer.Add(container);
+        outputContainer.Add(port);
+    }
+
+    void GenerateField(VisualElement container, int outputEntryPosition)
+    {
+        container?.Q("valueField")?.RemoveFromHierarchy();
+
+        if (switchNode.fact)
+        {
+            var localIndex = outputEntryPosition;
+            var outputEntry = switchNode.outputEntries[outputEntryPosition];
+
+            switch (switchNode.fact.factType)
+            {
+                case Fact.FactType.Float:
+                    FloatField floatField = new FloatField
+                        { name = "valueField", style = { flexGrow = 0, flexShrink = 1 } };
+                    floatField.SetValueWithoutNotify(outputEntry.floatValue);
+                    floatField.RegisterValueChangedCallback(e =>
+                        UpdateOutputEntriesAt(localIndex, e.newValue));
+                    container.Insert(0, floatField);
+
+                    break;
+                case Fact.FactType.String:
+                    TextField stringField = new TextField
+                        { name = "valueField", style = { flexGrow = 0, flexShrink = 1 } };
+                    stringField.SetValueWithoutNotify(outputEntry.stringValue);
+                    stringField.RegisterValueChangedCallback(e =>
+                        UpdateOutputEntriesAt(localIndex, e.newValue));
+                    container.Insert(0, stringField);
+                    break;
+            }
+        }
     }
 
     private void OnFactTypeChange(Fact.FactType newFactType = Fact.FactType.Float)
     {
-        GenerateOutputEntries(outputContainer);
+        // for (var i = 0; i < switchNode.outputEntries.Count; i++)
+        // {
+        //     GenerateField(outputContainer.Q($"row{i}"), i);
+        // }
     }
 
     void UpdateOutputEntriesAt(int index, object value)
@@ -66,65 +146,6 @@ public class SwitchNodeView : SequentialNodeView
         EditorUtility.SetDirty(switchNode);
         AssetDatabase.SaveAssets();
     }
-
-    private void GenerateOutputEntries(VisualElement container)
-    {
-        container.Q("OutputEntriesContainer")?.RemoveFromHierarchy();
-
-        VisualElement outputEntriesContainer = new VisualElement { name = "OutputEntriesContainer" };
-
-        if (switchNode.fact)
-        {
-            for (var i = 0; i < switchNode.outputEntries.Count; i++)
-            {
-                var outputEntry = switchNode.outputEntries[i];
-                VisualElement row = new VisualElement
-                {
-                    name = $"row{i}",
-                    style = { flexDirection = FlexDirection.Row, alignItems = Align.FlexEnd, alignSelf = Align.FlexEnd }
-                };
-                int position = i;
-
-
-                switch (switchNode.fact.factType)
-                {
-                    case Fact.FactType.Float:
-                        FloatField floatField = new FloatField();
-                        floatField.SetValueWithoutNotify(outputEntry.floatValue);
-                        floatField.RegisterValueChangedCallback(e => UpdateOutputEntriesAt(position, e.newValue));
-                        row.Add(floatField);
-                        break;
-                    case Fact.FactType.String:
-                        TextField stringField = new TextField();
-                        stringField.SetValueWithoutNotify(outputEntry.stringValue);
-                        stringField.RegisterValueChangedCallback(e => UpdateOutputEntriesAt(position, e.newValue));
-                        row.Add(stringField);
-                        break;
-                }
-
-                int startIndex = position + outputNodeStartIndex;
-
-                var button = new Button(() => RemoveOutputEntryAt(position))
-                    { text = "-", style = { alignSelf = Align.FlexEnd, flexGrow = 1, flexShrink = 1 } };
-
-                var port = CreateOutputPort(typeof(SequentialNodeObject), "►", null, switchNode, ref startIndex,
-                    Port.Capacity.Single);
-                port.style.alignSelf = Align.FlexEnd;
-                port.style.flexGrow = 1;
-
-                row.Add(button);
-                row.Add(port);
-                outputEntriesContainer.Add(row);
-            }
-        }
-        else{
-            outputEntriesContainer.Add(new Label("No Fact Selected!"){style = {unityTextAlign = TextAnchor.MiddleCenter}});
-        }
-
-        container.Add(outputEntriesContainer);
-    }
-    
-
 
     public override void OnConnectEdgeToInputPort(Edge edge)
     {
@@ -140,7 +161,8 @@ public class SwitchNodeView : SequentialNodeView
 
     public override void OnConnectEdgeToOutputPort(Edge edge)
     {
-        switchNode.outputEntries[Int32.Parse(new string( new [] {edge.output.viewDataKey.Last()})) - outputNodeStartIndex].output =
+        switchNode.outputEntries[
+                Int32.Parse(new string(new[] { edge.output.viewDataKey.Last() })) - outputNodeStartIndex].output =
             (edge.input.node as SequentialNodeView).NodeObject as SequentialNodeObject;
     }
 
@@ -157,6 +179,9 @@ public class SwitchNodeView : SequentialNodeView
 
     public override void OnDisconnectEdgeFromOutputPort(Edge edge)
     {
-        switchNode.outputEntries[Int32.Parse(new string( new [] {edge.output.viewDataKey.Last()})) - outputNodeStartIndex].output = null;
+        int disconnectEntryPosition =
+            Int32.Parse(new string(new[] { edge.output.viewDataKey.Last() })) - outputNodeStartIndex;
+        if (switchNode.outputEntries.Count > disconnectEntryPosition)
+            switchNode.outputEntries[disconnectEntryPosition].output = null;
     }
 }
