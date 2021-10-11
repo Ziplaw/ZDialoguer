@@ -48,7 +48,9 @@ public class PredicateNodeView : SequentialNodeView
         Button testButton = new Button(() =>
         {
             var window = EditorWindow.GetWindow<ZDialogueGraphEditorWindow>();
-            window.graphView.GetNodeByGuid(predicateNodeObject.SequenceChild.guid).Select(window.graphView, false);
+            var node = window.graphView.GetNodeByGuid(predicateNodeObject.SequenceChild.guid);
+            node.Select(window.graphView, false);
+            node.Focus();
         });
         testButton.text = "Test";
         outputContainer.Add(testButton);

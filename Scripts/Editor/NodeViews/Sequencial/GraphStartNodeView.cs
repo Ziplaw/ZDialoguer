@@ -11,10 +11,10 @@ public class GraphStartNodeView : SequentialNodeView
 {
     public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph)
     {
+        base.BuildNodeView(nodeObject, graph);
         int index = 0;
         GraphStartNodeObject startNodeObject = nodeObject as GraphStartNodeObject;
         capabilities ^= Capabilities.Deletable;
-        base.BuildNodeView(nodeObject, graph);
         title = "Entry";
         titleContainer.style.backgroundColor = new StyleColor(new Color(0.6f, 0.57f, 0.96f));
         mainContainer.style.alignItems = Align.Center;

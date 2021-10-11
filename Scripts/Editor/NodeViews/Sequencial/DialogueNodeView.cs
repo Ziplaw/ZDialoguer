@@ -13,9 +13,9 @@ public class DialogueNodeView : SequentialNodeView
 {
     public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph)
     {
+        base.BuildNodeView(nodeObject, graph);
         int index = 0;
         var dialogueNodeObject = nodeObject as DialogueNodeObject;
-        base.BuildNodeView(nodeObject, graph);
         CreateInputPort(typeof(SequentialNodeObject), "►", inputContainer, nodeObject, ref index, Port.Capacity.Multi);
         title = "Dialogue Node";
         CreateOutputPort(typeof(SequentialNodeObject), "►",outputContainer, nodeObject, ref index, Port.Capacity.Single);
@@ -24,8 +24,26 @@ public class DialogueNodeView : SequentialNodeView
         dialogueNodeObject.text.csvFile = graph.dialogueText;
         dialogueNodeObject.text.csvFileFullAssetPath = LocalisedString.GetFullAssetPath(dialogueNodeObject.text.csvFile);
 
-        mainContainer.Add(new LocalisedStringPropertyDrawer().CreatePropertyGUI(new SerializedObject(nodeObject).FindProperty("text")));
+        // Debug.Log(this.Q("title").Q<Button>());
+        // var container = new VisualElement();
+        // container.Add();
+
+        var propertyDrawer =
+            new LocalisedStringPropertyDrawer().CreatePropertyGUI(
+                new SerializedObject(nodeObject).FindProperty("text"));
+
+        propertyDrawer.style.marginBottom = 5;
+        propertyDrawer.style.marginLeft = 5;
+        propertyDrawer.style.marginRight = 5;
+        propertyDrawer.style.marginTop = 5;
+        extensionContainer.Add(propertyDrawer);
+
+        var ghostPort = InstantiatePort(Orientation.Vertical, Direction.Input, Port.Capacity.Single, null);
+        ghostPort.style.display = DisplayStyle.None;
+        ghostPort.viewDataKey = "⌂";
+        inputContainer.Add(ghostPort);
     }
+
     public override void OnConnectEdgeToOutputPort(Edge edge) => edge.IsInputKey('0', () => (NodeObject as DialogueNodeObject).connectedChild = (edge.input.node as NodeView).NodeObject as SequentialNodeObject);
     public override void OnDisconnectEdgeFromOutputPort(Edge edge) => edge.IsInputKey('0', () => (NodeObject as DialogueNodeObject).connectedChild = null);
     public override void OnConnectEdgeToInputPort(Edge edge) { }

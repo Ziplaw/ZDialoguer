@@ -7,6 +7,7 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using ZDialoguerEditor;
+using Object = UnityEngine.Object;
 using PointerType = UnityEngine.PointerType;
 
 namespace ZDialoguer
@@ -16,7 +17,12 @@ namespace ZDialoguer
         public Action<NodeView> OnNodeSelected;
         public NodeObject NodeObject;
         protected static ZDialoguerGraphView currentGraphView;
-        public abstract void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph);
+
+        public virtual void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph)
+        {
+            
+        }
+
         public abstract void OnConnectEdgeToInputPort(Edge edge);
         public abstract void OnConnectEdgeToOutputPort(Edge edge);
         public abstract void OnDisconnectEdgeFromInputPort(Edge edge);
@@ -26,11 +32,12 @@ namespace ZDialoguer
         {
             currentGraphView = graphView;
             NodeView nodeView = nodeViewMap[nodeObject.GetType()].Invoke();
-            
+
             nodeView.NodeObject = nodeObject;
             nodeView.viewDataKey = nodeObject.guid;
             nodeView.BuildNodeView(nodeObject, graphView.graph);
-            nodeView.SetPosition(new Rect(new Vector2(nodeObject.position.x, nodeObject.position.y),new Vector2(100,100)));
+            nodeView.SetPosition(new Rect(new Vector2(nodeObject.position.x, nodeObject.position.y),
+                new Vector2(100, 100)));
             nodeView.style.left = nodeObject.position.x;
             nodeView.style.top = nodeObject.position.y;
             nodeView.mainContainer.style.backgroundColor = new StyleColor(new Color(0.17f, 0.17f, 0.17f));
@@ -67,7 +74,8 @@ namespace ZDialoguer
             return input;
         }
 
-        protected Port CreateOutputPort(Type type, string portName, VisualElement container, NodeObject nodeObject, ref int index,
+        protected Port CreateOutputPort(Type type, string portName, VisualElement container, NodeObject nodeObject,
+            ref int index,
             Port.Capacity portCapacity = Port.Capacity.Multi, Orientation orientation = Orientation.Horizontal)
         {
             var output = InstantiatePort(orientation, Direction.Output, portCapacity, type);
@@ -111,7 +119,8 @@ namespace ZDialoguer
         {
             this.Query<Port>().ForEach(x =>
             {
-                Debug.Log($"[<color=#{ColorUtility.ToHtmlStringRGB(x.portColor)}>{x.portName}</color>]"+ " " + x.viewDataKey);
+                Debug.Log($"[<color=#{ColorUtility.ToHtmlStringRGB(x.portColor)}>{x.portName}</color>]" + " " +
+                          x.viewDataKey);
             });
         }
     }
@@ -139,6 +148,7 @@ namespace ZDialoguer
 
             return false;
         }
+
         public static string WithColor(this string str, Color color)
         {
             return $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{str}</color>";

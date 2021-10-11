@@ -41,4 +41,28 @@ public class InspectorView : VisualElement
             AssetDatabase.SaveAssets();   
         }){text = "Update Graph"});
     }
+
+    public static VisualElement GetNodeLabel(string labelText, Color color)
+    {
+        VisualElement labelContainer = new VisualElement
+        {
+            style =
+            {
+                backgroundColor = color, height = 40, borderTopLeftRadius = 10,
+                borderTopRightRadius = 10, borderBottomLeftRadius = 10, borderBottomRightRadius = 10
+            }
+        };
+        var label = new Label($"<color=black>{labelText}</color>")
+        {
+            style =
+            {
+                unityTextAlign = TextAnchor.MiddleCenter, fontSize = 30,
+                unityFont = Resources.Load<Font>("Fonts/FugazOne")
+            }
+        };
+        label.enableRichText = true;
+
+        labelContainer.Add(label);
+        return labelContainer;
+    }
 }

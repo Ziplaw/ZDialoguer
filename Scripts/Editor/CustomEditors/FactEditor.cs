@@ -48,27 +48,8 @@ public class FactEditor : Editor
     {
         root.style.backgroundColor = new Color(40 / 255f, 40 / 255f, 40 / 255f);
 
-        VisualElement labelContainer = new VisualElement
-        {
-            style =
-            {
-                backgroundColor = new Color(1f, 0.65f, 0f), height = 40, borderTopLeftRadius = 10,
-                borderTopRightRadius = 10, borderBottomLeftRadius = 10, borderBottomRightRadius = 10
-            }
-        };
-        var label = new Label("<color=black>Fact</color>")
-        {
-            style =
-            {
-                unityTextAlign = TextAnchor.MiddleCenter, fontSize = 30,
-                unityFont = Resources.Load<Font>("Fonts/FugazOne")
-            }
-        };
-        label.enableRichText = true;
 
-        labelContainer.Add(label);
-
-        root.Add(labelContainer);
+        root.Add(InspectorView.GetNodeLabel("Fact", new Color(1f, 0.65f, 0f)));
         var enumField = new EnumField("Fact Type", manager.factType);
         enumField.RegisterValueChangedCallback((e) =>
         {

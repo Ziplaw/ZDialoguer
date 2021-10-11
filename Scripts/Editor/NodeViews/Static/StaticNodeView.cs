@@ -6,11 +6,6 @@ using ZDialoguer;
 
 public abstract class StaticNodeView : NodeView
 {
-    public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph)
-    {
-        
-    }
-
     public abstract override void OnConnectEdgeToInputPort(Edge edge);
     public abstract override void OnConnectEdgeToOutputPort(Edge edge);
     public abstract override void OnDisconnectEdgeFromInputPort(Edge edge);

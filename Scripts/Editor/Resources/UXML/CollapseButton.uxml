@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <ui:Button display-tooltip-when-elided="true" name="CollapseButton" style="max-width: 20px; max-height: 20px; min-height: 20px; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; opacity: 1; overflow: hidden; visibility: visible; display: flex; min-width: 20px; border-left-width: 0; border-right-width: 0; border-top-width: 0; border-bottom-width: 0; background-color: rgba(88, 88, 88, 0);">
+        <ui:VisualElement focusable="false" picking-mode="Ignore" name="Off" style="max-width: 20px; max-height: 20px; min-height: 20px; min-width: 20px; background-image: resource(&apos;Icons/collapseOff&apos;); margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; visibility: visible; overflow: visible; display: flex;">
+            <ui:VisualElement focusable="false" picking-mode="Ignore" name="On" style="max-width: 20px; max-height: 20px; min-height: 20px; min-width: 20px; background-image: resource(&apos;Icons/collapseOn&apos;); margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; visibility: visible; overflow: visible; display: none;" />
+        </ui:VisualElement>
+    </ui:Button>
+</ui:UXML>

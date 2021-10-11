@@ -43,9 +43,9 @@ public class SwitchNodeView : SequentialNodeView
 
         Font font = Resources.Load<Font>("Fonts/FugazOne");
 
-        mainContainer.Add(new IMGUIContainer(() =>
+        extensionContainer.Add(new IMGUIContainer(() =>
         {
-            GUILayout.Label($"Output: {switchNode.GetValue(out int position) ?? "None"} - ({position+1})",
+            GUILayout.Label($"Output: {switchNode.GetValue(out int position) ?? "None"} - ({(position+1 == 0 ? "" : (position+1).ToString() )})",
                 new GUIStyle("label") { alignment = TextAnchor.MiddleCenter, fontSize = 20, font = font });
         }));
     }
@@ -62,26 +62,77 @@ public class SwitchNodeView : SequentialNodeView
 
     private void RemoveOutputPort(int position)
     {
+        for (var i = 0; i < currentGraphView.graph.edgeDatas.Count; i++)
+        {
+            for (int j = 0; j < switchNode.outputEntries.Count; j++)
+            {
+                if (currentGraphView.graph.edgeDatas.Count == 0) break;
+                var graphEdgeData = currentGraphView.graph.edgeDatas[i];
+                if (graphEdgeData.outputPortViewDataKey ==
+                    NodeObject.guid + " " + (position + j + outputNodeStartIndex))
+                {
+
+                    if (j != 0)
+                    {
+                        graphEdgeData.outputPortViewDataKey =
+                            NodeObject.guid + " " + (position + j + outputNodeStartIndex - 1);
+                    }
+                    else
+                    {
+                        currentGraphView.graph.edgeDatas.RemoveAt(i);
+                        if (i > 0) i--;
+                    }
+                }
+            }
+        }
+        
         switchNode.outputEntries.RemoveAt(position);
         var port = this.Query<Port>().ToList().First(p =>
-            Int32.Parse(new string(new[] { p.viewDataKey.Last() })) == position + outputNodeStartIndex);
+            Int32.Parse( p.viewDataKey.Split(' ').Last()) == position + outputNodeStartIndex);
 
-        GraphViewChange change = new GraphViewChange
-            { elementsToRemove = port.connections.Select(e => e as GraphElement).ToList() };
-        currentGraphView.graphViewChanged.Invoke(change);
+        // GraphViewChange change = new GraphViewChange
+        //     { elementsToRemove = port.connections.Select(e => e as GraphElement).ToList() };
+        // currentGraphView.graphViewChanged.Invoke(change);
 
-        foreach (var portConnection in port.connections)
+
+        for (var i = 0; i < port.connections.ToList().Count; i++)
         {
+            var portConnection = port.connections.ToList()[i];
+            portConnection.input.Disconnect(portConnection);
+            portConnection.output.Disconnect(portConnection);
             portConnection.RemoveFromHierarchy();
+            i--;
         }
+
         port.RemoveFromHierarchy();
+
+        var portList = outputContainer.Query<Port>().ToList();
+        
+        for (var i = 0; i < portList.Count; i++)
+        {
+            portList[i].viewDataKey = NodeObject.guid + " " + (i + outputNodeStartIndex);
+        }
+
+        
+
+        for (var i = 0; i < switchNode.outputEntries.Count; i++)
+        {
+            // Debug.Log(i <= position? i : i+1 );
+            // Debug.Log(outputContainer.Q($"row{(i <= position? i : i+1 )}"));
+            var currPort = portList[i];
+            port.viewDataKey= NodeObject.guid + " " + (i + outputNodeStartIndex);
+            var container = GenerateRowContainer(currPort, i);
+
+            GenerateField(container, i);
+        }
+        
+        
     }
 
-    void GenerateOutputPort(int position, int rowPosition)
+    VisualElement GenerateRowContainer(Port port, int rowPosition)
     {
-        var port = CreateOutputPort(typeof(SequentialNodeObject), "►", null, switchNode, ref position,
-            Port.Capacity.Single);
-        port.style.alignSelf = Align.FlexEnd;
+        port.contentContainer.Q($"row{rowPosition}")?.RemoveFromHierarchy();
+        port.contentContainer.Q($"row{rowPosition+1}")?.RemoveFromHierarchy();
 
         var container = new VisualElement
         {
@@ -92,17 +143,32 @@ public class SwitchNodeView : SequentialNodeView
             }
         };
 
-        var button = new Button(() => RemoveOutputPort(rowPosition))
-            { text = "-", style = { alignSelf = Align.FlexEnd, flexGrow = 0, flexShrink = 0 } };
-
-        container.Add(button);
+        
         port.contentContainer.Add(container);
+        return container;
+    }
+
+    Port GenerateOutputPort(int position, int rowPosition)
+    {
+        var port = CreateOutputPort(typeof(SequentialNodeObject), "►", null, switchNode, ref position,
+            Port.Capacity.Single);
+        port.style.alignSelf = Align.FlexEnd;
+
+        GenerateRowContainer(port, rowPosition);
+        
         outputContainer.Add(port);
+        return port;
     }
 
     void GenerateField(VisualElement container, int outputEntryPosition)
     {
         container?.Q("valueField")?.RemoveFromHierarchy();
+        container?.Q("removeButton")?.RemoveFromHierarchy();
+        
+        var button = new Button(() => RemoveOutputPort(outputEntryPosition))
+            { name = "removeButton", text = $"-", style = { alignSelf = Align.FlexEnd, flexGrow = 0, flexShrink = 0 } };
+
+        container?.Add(button);
 
         if (switchNode.fact)
         {
@@ -115,18 +181,20 @@ public class SwitchNodeView : SequentialNodeView
                     FloatField floatField = new FloatField
                         { name = "valueField", style = { flexGrow = 0, flexShrink = 1 } };
                     floatField.SetValueWithoutNotify(outputEntry.floatValue);
+                    // floatField.SetValueWithoutNotify(localIndex);
                     floatField.RegisterValueChangedCallback(e =>
                         UpdateOutputEntriesAt(localIndex, e.newValue));
-                    container.Insert(0, floatField);
+                    container?.Insert(0, floatField);
 
                     break;
                 case Fact.FactType.String:
                     TextField stringField = new TextField
                         { name = "valueField", style = { flexGrow = 0, flexShrink = 1 } };
                     stringField.SetValueWithoutNotify(outputEntry.stringValue);
+                    // stringField.SetValueWithoutNotify(localIndex.ToString());
                     stringField.RegisterValueChangedCallback(e =>
                         UpdateOutputEntriesAt(localIndex, e.newValue));
-                    container.Insert(0, stringField);
+                    container?.Insert(0, stringField);
                     break;
             }
         }
@@ -134,10 +202,10 @@ public class SwitchNodeView : SequentialNodeView
 
     private void OnFactTypeChange(Fact.FactType newFactType = Fact.FactType.Float)
     {
-        // for (var i = 0; i < switchNode.outputEntries.Count; i++)
-        // {
-        //     GenerateField(outputContainer.Q($"row{i}"), i);
-        // }
+        for (var i = 0; i < switchNode.outputEntries.Count; i++)
+        {
+            GenerateField(outputContainer.Q($"row{i}"), i);
+        }
     }
 
     void UpdateOutputEntriesAt(int index, object value)
@@ -162,7 +230,7 @@ public class SwitchNodeView : SequentialNodeView
     public override void OnConnectEdgeToOutputPort(Edge edge)
     {
         switchNode.outputEntries[
-                Int32.Parse(new string(new[] { edge.output.viewDataKey.Last() })) - outputNodeStartIndex].output =
+                Int32.Parse(edge.output.viewDataKey.Split(' ').Last()) - outputNodeStartIndex].output =
             (edge.input.node as SequentialNodeView).NodeObject as SequentialNodeObject;
     }
 
@@ -180,7 +248,7 @@ public class SwitchNodeView : SequentialNodeView
     public override void OnDisconnectEdgeFromOutputPort(Edge edge)
     {
         int disconnectEntryPosition =
-            Int32.Parse(new string(new[] { edge.output.viewDataKey.Last() })) - outputNodeStartIndex;
+            Int32.Parse(edge.output.viewDataKey.Split(' ').Last()) - outputNodeStartIndex;
         if (switchNode.outputEntries.Count > disconnectEntryPosition)
             switchNode.outputEntries[disconnectEntryPosition].output = null;
     }

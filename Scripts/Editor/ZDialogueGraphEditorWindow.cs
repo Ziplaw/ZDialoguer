@@ -17,13 +17,24 @@ namespace ZDialoguerEditor
         internal ZDialoguerGraphView graphView;
         private InspectorView inspectorView;
 
-        
+
         [MenuItem("Tools/ZDialoguer/Graph")]
         public static void OpenWindow()
         {
             ZDialogueGraphEditorWindow wnd = GetWindow<ZDialogueGraphEditorWindow>();
             // DestroyImmediate(wnd);
             wnd.titleContent = new GUIContent("Dialogue Graph");
+            var resolution = Screen.currentResolution;
+            Debug.Log(wnd.position);
+
+            if (float.IsNaN(wnd.position.height) ||
+                float.IsNaN(wnd.position.width) ||
+                float.IsNaN(wnd.position.x) ||
+                float.IsNaN(wnd.position.y))
+            {
+                wnd.position = new Rect(new Vector2(resolution.width * .5f - 1440 * .5f, resolution.height * .5f - 512 * .5f),
+                    new Vector2(1440, 512));
+            }
         }
 
         public void CreateGUI()
