@@ -65,7 +65,7 @@ namespace ZDialoguerEditor
 
             graphView.OnNodeSelected = OnNodeSelectionChanged;
             graphView.OnBlackboardFactSelected = OnFactSelectionChanged;
-            // OnSelectionChange();
+            OnSelectionChange();
 
             AssetDeleter.window = this;
         }

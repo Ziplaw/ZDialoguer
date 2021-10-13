@@ -52,7 +52,9 @@ public class InspectorView : VisualElement
                 borderTopRightRadius = 10, borderBottomLeftRadius = 10, borderBottomRightRadius = 10
             }
         };
-        var label = new Label($"<color=black>{labelText}</color>")
+        
+        
+        var label = new Label()
         {
             style =
             {
@@ -60,7 +62,14 @@ public class InspectorView : VisualElement
                 unityFont = Resources.Load<Font>("Fonts/FugazOne")
             }
         };
+
+    #if UNITY_2021_1_OR_NEWER
+        label.text = $"<color=black>{labelText}</color>";
         label.enableRichText = true;
+
+    #elif UNITY_2020_3_OR_NEWER
+        label.text = labelText;
+    #endif
 
         labelContainer.Add(label);
         return labelContainer;

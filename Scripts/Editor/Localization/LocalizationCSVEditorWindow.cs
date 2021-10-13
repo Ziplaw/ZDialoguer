@@ -286,8 +286,15 @@ public class LocalizationCSVEditorWindow : EditorWindow
 
         rootVisualElement.Q<ScrollView>().Clear();
         GenerateTableMenu(csvFileAssetPath, rootVisualElement.Q<ScrollView>());
-        var window = GetWindow<ZDialogueGraphEditorWindow>();
-        var view = window.graphView;
-        view.PopulateView(view.graph);
+    }
+
+    private void OnDestroy()
+    {
+        if (HasOpenInstances<ZDialogueGraphEditorWindow>())
+        {
+            var window = GetWindow<ZDialogueGraphEditorWindow>();
+            var view = window.graphView;
+            view.PopulateView(view.graph);
+        }
     }
 }
