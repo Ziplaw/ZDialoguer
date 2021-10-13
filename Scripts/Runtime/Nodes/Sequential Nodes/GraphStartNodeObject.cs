@@ -9,8 +9,26 @@ namespace ZDialoguer
     {
         public override SequentialNodeObject SequenceChild => childNodeObject;
         public SequentialNodeObject childNodeObject;
-        [SerializeField] SequentialNodeObject _next;//
-        
+        [SerializeField] SequentialNodeObject _next; //
+
+        public string GetNextText(ZDialogueGraph _graph)
+        {
+            var current = Next;
+            while (!(current as DialogueNodeObject))
+            {
+                if (current == null)
+                {
+                    Next = this;
+                    return null;
+                }
+
+                current = Next;
+            }
+
+            Debug.Log((current as DialogueNodeObject).text.ParseFacts(_graph));
+            return (current as DialogueNodeObject).text.ParseFacts(_graph);
+        }
+
         public SequentialNodeObject Next
         {
             get
@@ -33,16 +51,17 @@ namespace ZDialoguer
                 int start = _text.IndexOf('<');
                 int end = _text.IndexOf('>');
 
-                string tag = _text.Substring(start, end-start+1);
-                string factName = tag.Replace("<","").Replace(">","");
-
+                string tag = _text.Substring(start, end - start + 1);
+                string factName = tag.Replace("<", "").Replace(">", "");
+                
                 try
                 {
                     _text = _text.Replace(tag, graph.facts.First(f => f.nameID == factName).Value.ToString());
                 }
                 catch (InvalidOperationException)
                 {
-                    Debug.LogWarning($"You defined a Fact Tag ({tag}) in your Dialogue Text that doesn't exist in the current Dialogue Graph");
+                    Debug.LogWarning(
+                        $"You defined a Fact Tag ({tag}) in your Dialogue Text that doesn't exist in the current Dialogue Graph");
                     break;
                 }
 

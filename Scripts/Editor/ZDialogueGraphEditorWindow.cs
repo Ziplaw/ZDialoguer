@@ -29,18 +29,16 @@ namespace ZDialoguerEditor
                     new Vector2(resolution.width * .5f - 1440 * .5f, resolution.height * .5f - 512 * .5f),
                     new Vector2(1440, 512));
             }
+            // wnd.Close();
         }
 
         public void CreateGUI()
         {
             VisualElement root = rootVisualElement;
             var visualTree =
-                AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                    "Assets/com.Ziplaw.ZDialoguer/Scripts/Editor/ZDialogueGraphEditorWindow.uxml");
+                Resources.Load<VisualTreeAsset>(
+                    "UXML/ZDialogueGraphEditorWindow");
             visualTree.CloneTree(root);
-            // _styleSheet =
-            //     AssetDatabase.LoadAssetAtPath<StyleSheet>(
-            //         "Assets/com.Ziplaw.ZDialoguer/Scripts/Editor/ZDialogueGraphEditorWindow.uss");
             graphView = root.Q<ZDialoguerGraphView>();
             graphView._editorWindow = this;
             inspectorView = root.Q<InspectorView>();

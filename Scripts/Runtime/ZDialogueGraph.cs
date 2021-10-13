@@ -63,6 +63,17 @@ namespace ZDialoguer
             public string outputPortViewDataKey;
             public string inputPortViewDataKey;
         }
+
+        private void OnEnable()
+        {
+            var entryNode = GetEntryNode();
+            entryNode.Next = entryNode;
+        }
+
+        public GraphStartNodeObject GetEntryNode()
+        {
+            return (GraphStartNodeObject)nodes[0];
+        }
     }
 }
 

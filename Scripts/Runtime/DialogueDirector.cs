@@ -1,36 +1,32 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Events;
 using ZDialoguer;
-using ZDialoguer.Localization;
+using TMPro;
 
 public class DialogueDirector : MonoBehaviour
 {
-    public List<ZDialogueGraph> graphs;
-    public LocalisedString text;
-    
-    private void Start()
+    // public List<ZDialogueGraph> graphs;
+    public TextMeshProUGUI textComponent;
+    public ZDialogueGraph currentGraph;
+
+
+    public UnityEvent OnDialogueStart;
+
+    public void GetNextText()
     {
-        Print();
-        Print();
-        Print();
-        Print();
+        string parsedText = currentGraph.GetEntryNode().GetNextText(currentGraph);
+        if (!string.IsNullOrEmpty(parsedText))
+            ComposeText(parsedText);
     }
 
-    void Print()
+    async void ComposeText(string parsedText)
     {
-        // graphs.ForEach(g => g.facts.ForEach(f => Debug.LogError(f.value)));
-        Debug.Log((string)text);
-    }
-
-    private void OnGUI()
-    {
-        // if (GUILayout.Button("Modify"))
-        // {
-        //     graphs.FirstOrDefault().facts.FirstOrDefault().Value = 10;
-        //     Print();
-        // }
+        textComponent.text = "";
+        while (textComponent.text.Length < parsedText.Length)
+        {
+            textComponent.text += parsedText[textComponent.text.Length];
+            await Task.Yield();
+        }
     }
 }

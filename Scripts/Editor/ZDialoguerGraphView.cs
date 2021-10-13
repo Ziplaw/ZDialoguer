@@ -36,8 +36,8 @@ public class ZDialoguerGraphView : GraphView
         RegisterCallback<DragPerformEvent>(OnDragPerformEvent);
 
         var styleSheet =
-            AssetDatabase.LoadAssetAtPath<StyleSheet>(
-                "Assets/com.Ziplaw.ZDialoguer/Scripts/Editor/ZDialogueGraphEditorWindow.uss");
+            Resources.Load<StyleSheet>(
+                "UXML/ZDialogueGraphEditorWindow");
         styleSheets.Add(styleSheet);
     }
 
