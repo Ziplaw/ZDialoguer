@@ -16,10 +16,18 @@ namespace ZDialoguer
             var current = Next;
             while (!(current as DialogueNodeObject))
             {
-                if (current == null)
+                switch (current)
                 {
-                    Next = this;
-                    return null;
+                    case IEventNodeObject eventNodeObject:
+                        eventNodeObject.Execute();
+                        if (eventNodeObject is ChoiceNodeObject choiceNodeObject)
+                        {
+                            Next = choiceNodeObject;
+                        }
+                        break;
+                    case null:
+                        // Next = this;
+                        return null;
                 }
 
                 current = Next;
@@ -33,7 +41,7 @@ namespace ZDialoguer
         {
             get
             {
-                _next = _next.SequenceChild;
+                _next = _next != null ? _next.SequenceChild : null;
                 return _next;
             }
             internal set => _next = value;

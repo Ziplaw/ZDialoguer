@@ -1,17 +1,51 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 using ZDialoguer;
 using TMPro;
+using UnityEditor.Graphs;
 
 public class DialogueDirector : MonoBehaviour
 {
     // public List<ZDialogueGraph> graphs;
     public TextMeshProUGUI textComponent;
-    public ZDialogueGraph currentGraph;
+    [SerializeField] ZDialogueGraph currentGraph;
+    public UnityEvent<ChoiceNodeObject> OnGetChoice;
 
+    public ZDialogueGraph CurrentGraph
+    {
+        get => currentGraph;
+        set
+        {
+            SetupGraph(value);
+            currentGraph = value;
+        }
+    }
 
-    public UnityEvent OnDialogueStart;
+    private void SetupGraph(ZDialogueGraph graph)
+    {
+        if (graph)
+        {
+            Debug.Log("Setting Up Graph");
+            foreach (ChoiceNodeObject nodeObject in graph.nodes.Where(n => n is ChoiceNodeObject))
+            {
+                nodeObject.OnExecuteExternal = OnGetChoice.Invoke;
+            }
+        }
+    }
+
+    private void Start()
+    {
+        SetupGraph(currentGraph);
+    }
+
+    public void SetNextTo(SequentialNodeObject nodeObject)
+    {
+        currentGraph.GetEntryNode().Next = nodeObject;
+    }
+
 
     public void GetNextText()
     {

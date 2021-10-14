@@ -53,6 +53,7 @@ namespace ZDialoguer
                 { typeof(GraphStartNodeObject), () => new GraphStartNodeView() },
                 { typeof(PredicateNodeObject), () => new PredicateNodeView() },
                 { typeof(DialogueNodeObject), () => new DialogueNodeView() },
+                { typeof(ChoiceNodeObject), () => new ChoiceNodeView() },
                 { typeof(SwitchNodeObject), () => new SwitchNodeView() },
                 { typeof(FactNodeObject), () => new FactNodeView() },
             };

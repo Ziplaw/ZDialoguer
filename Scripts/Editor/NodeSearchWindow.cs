@@ -20,6 +20,7 @@ namespace ZDialoguer
                 new SearchTreeEntry(new GUIContent("Fact Node")) { userData = typeof(FactNodeObject), level = 2 },
                 new SearchTreeGroupEntry(new GUIContent("Dialogue Nodes"), 1),
                 new SearchTreeEntry(new GUIContent("Dialogue Node")) { userData = typeof(DialogueNodeObject), level = 2 },
+                new SearchTreeEntry(new GUIContent("Choice Node")) { userData = typeof(ChoiceNodeObject), level = 2 },
                 new SearchTreeGroupEntry(new GUIContent("Logic Nodes"), 1),
                 new SearchTreeEntry(new GUIContent("Predicate Node")) { userData = typeof(PredicateNodeObject), level = 2 },
                 new SearchTreeEntry(new GUIContent("Switch Node")) { userData = typeof(SwitchNodeObject), level = 2 },
