@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using ZDialoguer.Localization;
 
 namespace ZDialoguer
 {
@@ -16,7 +17,7 @@ namespace ZDialoguer
             }
         }
 
-        [SerializeField] SequentialNodeObject _sequenceChild;
+        [SerializeField] internal SequentialNodeObject _sequenceChild;
         public Action<ChoiceNodeObject> OnExecuteExternal;
 
         public List<Choice> choices;
@@ -37,10 +38,16 @@ namespace ZDialoguer
     [Serializable]
     public class Choice
     {
-        public enum DisabledVisibility {Visible, Hidden}
+        public Choice(LocalisedString choiceText)
+        {
+            this.choiceText = choiceText;
+            visibility = DisabledVisibility.Visible;
+        }
+
+        public enum DisabledVisibility {Hidden, Visible}
         
         
-        public string choiceText = "Choice";
+        public LocalisedString choiceText;
         public SequentialNodeObject output;
         public bool enabled = true;
         public DisabledVisibility visibility;

@@ -15,19 +15,35 @@ namespace ZDialoguer.Localization.Editor
 {
     public class LocalisedStringPropertyDrawer : PropertyDrawer
     {
+        internal int indexPosition = 0;
+        internal bool oneLine;
+
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            var node = property.serializedObject.targetObject as DialogueNodeObject;
-            node.text.output = string.Empty;
-            node.text.table = null;
+            LocalisedString self = GetTextFromNode(property.serializedObject.targetObject as NodeObject, indexPosition);
 
-            var root = new VisualElement();
-            var rowContainer = new VisualElement { style = { flexDirection = FlexDirection.Row } };
+            self.output = string.Empty;
+            self.table = null;
+
+            var root = new VisualElement(){name = "localisedStringContainer"};
+            root.style.marginBottom = oneLine ? 0 : 5;
+            root.style.marginLeft = oneLine ? 0 : 5;
+            root.style.marginRight = oneLine ? 0 : 5;
+            root.style.marginTop = oneLine ? 0 : 5;
+
+            var rowContainer = new VisualElement { style = { flexDirection = FlexDirection.Row, alignItems = Align.Center/*, maxHeight = oneLine?0:1000*/} };
 
             var currentText =
-                new HelpBox((property.serializedObject.targetObject as DialogueNodeObject).text,
+                new HelpBox(self,
                         HelpBoxMessageType.None)
-                    { style = { flexGrow = 1, maxHeight = 150, maxWidth = 150, minHeight = 24 } };
+                    { style = { flexGrow = 1, maxHeight = 150, maxWidth = 150, minHeight = 24} };
+            var label = currentText.Q<Label>();
+            label.style.overflow = Overflow.Hidden;
+            label.style.whiteSpace = oneLine ? WhiteSpace.NoWrap : WhiteSpace.Normal;
+                
+                //overflow = Overflow.Hidden, whiteSpace = oneLine ? WhiteSpace.NoWrap : WhiteSpace.Normal}
+                
+                //align items center max height 0
 
             var searchButton = new Button(() => SearchButton(property, currentText))
                 { style = { alignSelf = Align.FlexEnd, flexWrap = Wrap.Wrap, flexGrow = 0, height = 24, width = 24 } };
@@ -41,7 +57,17 @@ namespace ZDialoguer.Localization.Editor
 
         void SearchButton(SerializedProperty property, HelpBox currentText)
         {
-            LocalizationSearchWindow.Open(property, currentText);
+            LocalizationSearchWindow.Open(property, currentText, indexPosition);
+        }
+        
+        internal static LocalisedString GetTextFromNode(NodeObject nodeObject, int indexPosition)
+        {
+            switch (nodeObject)
+            {
+                case DialogueNodeObject dialogueNodeObject: return dialogueNodeObject.text;
+                case ChoiceNodeObject choiceNodeObject: return choiceNodeObject.choices[indexPosition].choiceText;
+                default: throw new NotImplementedException();
+            }
         }
     }
 
@@ -50,18 +76,22 @@ namespace ZDialoguer.Localization.Editor
         private static SerializedProperty _property;
         private static HelpBox _localisedTextBox;
         int indexToSelect;
+        private static int choiceNodeIndexPos;
         private bool hasSelected;
 
-        public static void Open(SerializedProperty property, HelpBox localisedTextBox)
+        public static void Open(SerializedProperty property, HelpBox localisedTextBox, int indexPosition)
         {
             LocalizationSearchWindow window = CreateInstance<LocalizationSearchWindow>();
             window.titleContent = new GUIContent("Localisation Search");
+            choiceNodeIndexPos = indexPosition;
             _property = property;
             _localisedTextBox = localisedTextBox;
             Vector2 mouse = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
             Rect r = new Rect(mouse.x - 450, mouse.y + 10, 10, 10);
             window.ShowAsDropDown(r, new Vector2(500, 300));
         }
+
+        
 
         private void CreateGUI()
         {
@@ -71,14 +101,16 @@ namespace ZDialoguer.Localization.Editor
             rootVisualElement.style.marginLeft = 5;
             rootVisualElement.style.marginTop = 5;
 
-            var node = _property.serializedObject.targetObject as DialogueNodeObject;
-            var text = node.text;
+            LocalisedString text = LocalisedStringPropertyDrawer.GetTextFromNode(_property.serializedObject.targetObject as NodeObject, choiceNodeIndexPos);
+            
+            // var node = _property.serializedObject.targetObject as DialogueNodeObject;
+            // var text = node.text;
             var table = LocalizationSystem.GetTable(text.csvFileFullAssetPath);
-            VisualElement root = new ScrollView()
+            VisualElement root = new ScrollView
             {
                 style =
                 {
-                    flexDirection = FlexDirection.Column, 
+                    flexDirection = FlexDirection.Column,
                     marginBottom = 5,
                     marginRight = 5,
                     marginLeft = 5,
@@ -111,7 +143,7 @@ namespace ZDialoguer.Localization.Editor
                             GUILayout.MinHeight(24), GUILayout.MaxHeight(height));
                         if (GUILayout.Button(selectIcon, GUILayout.Width(24), GUILayout.MinHeight(height)))
                         {
-                            SelectValue(tableEntry, table, text, node);
+                            SelectValue(tableEntry, table, text, _property.serializedObject.targetObject as NodeObject);
                         }
                     }
                 }

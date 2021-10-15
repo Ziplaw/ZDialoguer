@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.UIElements;
@@ -20,7 +21,6 @@ namespace ZDialoguer
 
         public virtual void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph)
         {
-            
         }
 
         public abstract void OnConnectEdgeToInputPort(Edge edge);
@@ -58,6 +58,32 @@ namespace ZDialoguer
                 { typeof(FactNodeObject), () => new FactNodeView() },
             };
 
+        private string nodeName;
+        private bool collapsed;
+
+        protected void RepopulateGraph()
+        {
+            var view = currentGraphView;
+            view.PopulateView(view.graph);
+        }
+
+        protected override void ToggleCollapse()
+        {
+            base.ToggleCollapse();
+            if (!collapsed)
+            {
+                nodeName = title;
+                if (title.Contains("Node")) title = nodeName.Substring(0, title.Length - 5);
+            }
+            else
+            {
+                title = nodeName;
+            }
+
+
+            collapsed = !collapsed;
+        }
+
 
         protected Port CreateInputPort(Type type, string portName, VisualElement container, NodeObject nodeObject,
             ref int index,
@@ -94,7 +120,8 @@ namespace ZDialoguer
         protected Dictionary<Type, Color> colorMap = new Dictionary<Type, Color>()
         {
             { typeof(Fact), new Color(1f, 0.65f, 0f) },
-            { typeof(SequentialNodeObject), new Color(0.55f, 0.42f, 1f) }
+            { typeof(SequentialNodeObject), new Color(0.55f, 0.42f, 1f) },
+            { typeof(bool), new Color(0.25f, 0.88f, 1f) }
         };
 
         public override void SetPosition(Rect newPos)
@@ -128,9 +155,9 @@ namespace ZDialoguer
 
     public static class Extensions
     {
-        public static bool IsOutputKey(this Edge edge, char key, Action action)
+        public static bool IsOutputKey(this Edge edge, string key, Action action)
         {
-            if (edge.output.viewDataKey.Last() == key)
+            if (edge.output.viewDataKey.Split(' ').Last() == key)
             {
                 action.Invoke();
                 return true;
@@ -139,9 +166,9 @@ namespace ZDialoguer
             return false;
         }
 
-        public static bool IsInputKey(this Edge edge, char key, Action action)
+        public static bool IsInputKey(this Edge edge, string key, Action action)
         {
-            if (edge.input.viewDataKey.Last() == key)
+            if (edge.input.viewDataKey.Split(' ').Last() == key)
             {
                 action.Invoke();
                 return true;

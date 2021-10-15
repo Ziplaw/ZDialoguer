@@ -161,7 +161,7 @@ public class PredicateNodeView : SequentialNodeView
 
     public override void OnConnectEdgeToInputPort(Edge edge)
     {
-        edge.IsInputKey('3',
+        edge.IsInputKey("3",
             () =>
             {
                 _predicateNodeObject.fact = ((FactNodeObject)((NodeView)edge.output.node).NodeObject).fact;
@@ -173,13 +173,13 @@ public class PredicateNodeView : SequentialNodeView
 
     public override void OnConnectEdgeToOutputPort(Edge edge)
     {
-        edge.IsOutputKey('1', () => _predicateNodeObject.childIfTrue = ((NodeView)edge.input.node).NodeObject);
-        edge.IsOutputKey('2', () => _predicateNodeObject.childIfFalse = ((NodeView)edge.input.node).NodeObject);
+        edge.IsOutputKey("1", () => _predicateNodeObject.childIfTrue = ((NodeView)edge.input.node).NodeObject);
+        edge.IsOutputKey("2", () => _predicateNodeObject.childIfFalse = ((NodeView)edge.input.node).NodeObject);
     }
 
     public override void OnDisconnectEdgeFromInputPort(Edge edge)
     {
-        edge.IsInputKey('3', () =>
+        edge.IsInputKey("3", () =>
         {
             _predicateNodeObject.fact.OnFactTypeChange -= OnFactTypeChange;
             _predicateNodeObject.fact = null;
@@ -189,7 +189,7 @@ public class PredicateNodeView : SequentialNodeView
 
     public override void OnDisconnectEdgeFromOutputPort(Edge edge)
     {
-        edge.IsOutputKey('1', () => _predicateNodeObject.childIfTrue = null);
-        edge.IsOutputKey('2', () => _predicateNodeObject.childIfFalse = null);
+        edge.IsOutputKey("1", () => _predicateNodeObject.childIfTrue = null);
+        edge.IsOutputKey("2", () => _predicateNodeObject.childIfFalse = null);
     }
 }

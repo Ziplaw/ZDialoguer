@@ -217,7 +217,7 @@ public class SwitchNodeView : SequentialNodeView
 
     public override void OnConnectEdgeToInputPort(Edge edge)
     {
-        edge.IsInputKey('1', () =>
+        edge.IsInputKey("1", () =>
         {
             var switchNode = NodeObject as SwitchNodeObject;
             switchNode.fact = ((edge.output.node as FactNodeView).NodeObject as FactNodeObject).fact;
@@ -236,7 +236,7 @@ public class SwitchNodeView : SequentialNodeView
 
     public override void OnDisconnectEdgeFromInputPort(Edge edge)
     {
-        edge.IsInputKey('1', () =>
+        edge.IsInputKey("1", () =>
         {
             var switchNode = NodeObject as SwitchNodeObject;
             switchNode.fact.OnFactTypeChange -= OnFactTypeChange;

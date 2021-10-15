@@ -8,6 +8,7 @@ using ZDialoguer;
 
 public class ChoiceSpawner : MonoBehaviour
 {
+    public GameObject buttonPrefab;
     public UnityEvent<ChoiceNodeObject> OnSubmitChoice;
     private ChoiceNodeObject currentChoiceNodeObject;
     public void SpawnChoices(ChoiceNodeObject choiceNodeObject)
@@ -15,12 +16,10 @@ public class ChoiceSpawner : MonoBehaviour
         gameObject.SetActive(true);
         Debug.Log("Spawning Choices for " + choiceNodeObject);
         currentChoiceNodeObject = choiceNodeObject;
-
-        var buttons = GetComponentsInChildren<Button>();
-        for (var i = 0; i < buttons.Length; i++)
+        for (var i = 0; i < choiceNodeObject.choices.Count; i++)
         {
+            var button = Instantiate(buttonPrefab, transform.position, Quaternion.identity, transform).GetComponent<Button>();
             int index = i;
-            var button = buttons[i];
             button.onClick.AddListener(() =>
             {
                 currentChoiceNodeObject.ConfirmChoice(choiceNodeObject.choices[index]);
