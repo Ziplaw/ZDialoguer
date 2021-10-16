@@ -87,8 +87,7 @@ public class SwitchNodeView : SequentialNodeView
         }
         
         switchNode.outputEntries.RemoveAt(position);
-        var port = this.Query<Port>().ToList().First(p =>
-            Int32.Parse( p.viewDataKey.Split(' ').Last()) == position + outputNodeStartIndex);
+        var port = this.Query<Port>().ToList().First(p => p.GetID() == position + outputNodeStartIndex);
 
         // GraphViewChange change = new GraphViewChange
         //     { elementsToRemove = port.connections.Select(e => e as GraphElement).ToList() };
@@ -217,7 +216,7 @@ public class SwitchNodeView : SequentialNodeView
 
     public override void OnConnectEdgeToInputPort(Edge edge)
     {
-        edge.IsInputKey("1", () =>
+        edge.IsInputKey(1, () =>
         {
             var switchNode = NodeObject as SwitchNodeObject;
             switchNode.fact = ((edge.output.node as FactNodeView).NodeObject as FactNodeObject).fact;
@@ -229,14 +228,13 @@ public class SwitchNodeView : SequentialNodeView
 
     public override void OnConnectEdgeToOutputPort(Edge edge)
     {
-        switchNode.outputEntries[
-                Int32.Parse(edge.output.viewDataKey.Split(' ').Last()) - outputNodeStartIndex].output =
+        switchNode.outputEntries[edge.output.GetID() - outputNodeStartIndex].output =
             (edge.input.node as SequentialNodeView).NodeObject as SequentialNodeObject;
     }
 
     public override void OnDisconnectEdgeFromInputPort(Edge edge)
     {
-        edge.IsInputKey("1", () =>
+        edge.IsInputKey(1, () =>
         {
             var switchNode = NodeObject as SwitchNodeObject;
             switchNode.fact.OnFactTypeChange -= OnFactTypeChange;
@@ -247,8 +245,7 @@ public class SwitchNodeView : SequentialNodeView
 
     public override void OnDisconnectEdgeFromOutputPort(Edge edge)
     {
-        int disconnectEntryPosition =
-            Int32.Parse(edge.output.viewDataKey.Split(' ').Last()) - outputNodeStartIndex;
+        int disconnectEntryPosition = edge.output.GetID() - outputNodeStartIndex;
         if (switchNode.outputEntries.Count > disconnectEntryPosition)
             switchNode.outputEntries[disconnectEntryPosition].output = null;
     }

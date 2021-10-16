@@ -13,6 +13,8 @@ namespace ZDialoguer
 
         public string GetNextText(ZDialogueGraph _graph)
         {
+            string dialogueText;
+            
             var current = Next;
             while (!(current as DialogueNodeObject))
             {
@@ -20,9 +22,12 @@ namespace ZDialoguer
                 {
                     case IEventNodeObject eventNodeObject:
                         eventNodeObject.Execute();
-                        if (eventNodeObject is ChoiceNodeObject choiceNodeObject)
+                        switch (eventNodeObject)
                         {
-                            Next = choiceNodeObject;
+                            case ChoiceNodeObject choiceNodeObject:
+                                Next = choiceNodeObject;
+                                break;
+
                         }
                         break;
                     case null:

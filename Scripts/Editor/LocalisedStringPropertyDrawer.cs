@@ -65,7 +65,7 @@ namespace ZDialoguer.Localization.Editor
             switch (nodeObject)
             {
                 case DialogueNodeObject dialogueNodeObject: return dialogueNodeObject.text;
-                case ChoiceNodeObject choiceNodeObject: return choiceNodeObject.choices[indexPosition].choiceText;
+                case ChoiceNodeObject choiceNodeObject: return indexPosition == -1 ? choiceNodeObject.dialogueText : choiceNodeObject.choices[indexPosition].choiceText;
                 default: throw new NotImplementedException();
             }
         }

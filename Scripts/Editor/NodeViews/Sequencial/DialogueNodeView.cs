@@ -36,8 +36,8 @@ public class DialogueNodeView : SequentialNodeView
         inputContainer.Add(ghostPort);
     }
 
-    public override void OnConnectEdgeToOutputPort(Edge edge) => edge.IsInputKey("0", () => (NodeObject as DialogueNodeObject).connectedChild = (edge.input.node as NodeView).NodeObject as SequentialNodeObject);
-    public override void OnDisconnectEdgeFromOutputPort(Edge edge) => edge.IsInputKey("0", () => (NodeObject as DialogueNodeObject).connectedChild = null);
+    public override void OnConnectEdgeToOutputPort(Edge edge) => edge.IsInputKey(0, () => (NodeObject as DialogueNodeObject).connectedChild = (edge.input.node as NodeView).NodeObject as SequentialNodeObject);
+    public override void OnDisconnectEdgeFromOutputPort(Edge edge) => edge.IsInputKey(0, () => (NodeObject as DialogueNodeObject).connectedChild = null);
     public override void OnConnectEdgeToInputPort(Edge edge) { }
     public override void OnDisconnectEdgeFromInputPort(Edge edge) { }
 }

@@ -19,6 +19,7 @@ namespace ZDialoguer
 
         [SerializeField] internal SequentialNodeObject _sequenceChild;
         public Action<ChoiceNodeObject> OnExecuteExternal;
+        public LocalisedString dialogueText;
 
         public List<Choice> choices = new List<Choice>();
 

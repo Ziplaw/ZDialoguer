@@ -41,7 +41,7 @@ public class TwoStateToggle<T> : VisualElement where T : struct
                 borderRightColor = new Color(0.34f, 0.34f, 0.34f),
                 borderTopColor = new Color(0.34f, 0.34f, 0.34f),
                 
-                // backgroundColor = colors[index],
+                backgroundColor = colors[index],
 
                 
                 height = 16,
@@ -62,7 +62,7 @@ public class TwoStateToggle<T> : VisualElement where T : struct
                 width = 24,
 
                 unityBackgroundScaleMode = ScaleMode.ScaleToFit,
-                // backgroundImage = icons[index],
+                backgroundImage = icons[index],
                 
                 borderBottomLeftRadius = 6,
                 borderBottomRightRadius = 6,

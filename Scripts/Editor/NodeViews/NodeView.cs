@@ -155,26 +155,31 @@ namespace ZDialoguer
 
     public static class Extensions
     {
-        public static bool IsOutputKey(this Edge edge, string key, Action action)
+        public static bool IsOutputKey(this Edge edge, int key, Action action = null)
         {
-            if (edge.output.viewDataKey.Split(' ').Last() == key)
+            if (edge.output.GetID() == key)
             {
-                action.Invoke();
+                action?.Invoke();
                 return true;
             }
 
             return false;
         }
 
-        public static bool IsInputKey(this Edge edge, string key, Action action)
+        public static bool IsInputKey(this Edge edge, int key, Action action = null)
         {
-            if (edge.input.viewDataKey.Split(' ').Last() == key)
+            if (edge.input.GetID() == key)
             {
-                action.Invoke();
+                action?.Invoke();
                 return true;
             }
 
             return false;
+        }
+
+        public static int GetID(this Port port)
+        {
+            return Convert.ToInt32(port.viewDataKey.Split(' ').Last());
         }
 
         public static string WithColor(this string str, Color color)
