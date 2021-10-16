@@ -41,14 +41,12 @@ namespace ZDialoguer
 
             titleContainer.Add(addButton);
             
-            
-            
             _choiceNodeObject.dialogueText.csvFile = currentGraphView.graph.dialogueText;
             _choiceNodeObject.dialogueText.csvFileFullAssetPath =
                 LocalisedString.GetFullAssetPath(_choiceNodeObject.dialogueText.csvFile);
 
             var propertyDrawer =
-                new LocalisedStringPropertyDrawer{indexPosition = -1}.CreatePropertyGUI(
+                new LocalisedStringPropertyDrawer{indexPosition = -1, stretch = true}.CreatePropertyGUI(
                     new SerializedObject(_choiceNodeObject).FindProperty("dialogueText"));
             
             extensionContainer.Add(propertyDrawer);
@@ -128,7 +126,7 @@ namespace ZDialoguer
         public override void OnConnectEdgeToInputPort(Edge edge)
         {
             if (!edge.IsInputKey(0))
-                _choiceNodeObject.choices[edge.input.GetID() - choiceStartPos]
+                _choiceNodeObject.choices[edge.input.GetID(Direction.Input) - choiceStartPos]
                     .overriddenNode = (edge.output.node as NodeView).NodeObject as PredicateNodeObject;
         }
 
@@ -139,18 +137,27 @@ namespace ZDialoguer
                 {
                     _choiceNodeObject._sequenceChild = (edge.input.node as NodeView).NodeObject as SequentialNodeObject;
                 });
+            if (!edge.IsOutputKey(1))
+            {
+                _choiceNodeObject.choices[edge.output.GetID(Direction.Output) - choiceStartPos].output = (edge.input.node as NodeView).NodeObject as SequentialNodeObject;
+            }
         }
 
         public override void OnDisconnectEdgeFromInputPort(Edge edge)
         {
             if (!edge.IsInputKey(0))
-                _choiceNodeObject.choices[Convert.ToInt32(edge.input.viewDataKey.Split(' ').Last()) - choiceStartPos]
+                _choiceNodeObject.choices[edge.input.GetID(Direction.Input) - choiceStartPos]
                     .overriddenNode = null;
         }
 
         public override void OnDisconnectEdgeFromOutputPort(Edge edge)
         {
             edge.IsOutputKey(1, () => { _choiceNodeObject._sequenceChild = null; });
+            
+            if (!edge.IsOutputKey(1))
+            {
+                _choiceNodeObject.choices[edge.output.GetID(Direction.Output) - choiceStartPos].output = null;
+            }
         }
     }
 }

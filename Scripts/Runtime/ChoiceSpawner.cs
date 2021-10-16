@@ -21,6 +21,16 @@ public class ChoiceSpawner : MonoBehaviour
         {
             var button = Instantiate(buttonPrefab, transform.position, Quaternion.identity, transform).GetComponent<Button>();
             button.GetComponentInChildren<TextMeshProUGUI>().text = choiceNodeObject.choices[i].choiceText;
+
+            if (!choiceNodeObject.choices[i].Enabled)
+            {
+                button.interactable = false;
+                if (choiceNodeObject.choices[i].visibility == Choice.DisabledVisibility.Hidden)
+                {
+                    button.gameObject.SetActive(false);
+                }
+                continue;
+            }
             int index = i;
             button.onClick.AddListener(() =>
             {
@@ -28,9 +38,8 @@ public class ChoiceSpawner : MonoBehaviour
                 OnSubmitChoice.Invoke(choiceNodeObject);
                 foreach (Transform tf in transform)
                 {
-                    Destroy(tf);
+                    Destroy(tf.gameObject);
                 }
-                // gameObject.SetActive(false);
             });
         }
     }

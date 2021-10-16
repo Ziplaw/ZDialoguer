@@ -7,17 +7,9 @@ namespace ZDialoguer
 {
     public class ChoiceNodeObject : SequentialNodeObject, IEventNodeObject
     {
-        public override SequentialNodeObject SequenceChild
-        {
-            get
-            {
-                var child = _sequenceChild;
-                _sequenceChild = null;
-                return child;
-            }
-        }
+        public override SequentialNodeObject SequenceChild => _sequenceChild;
 
-        [SerializeField] internal SequentialNodeObject _sequenceChild;
+            [SerializeField] internal SequentialNodeObject _sequenceChild;
         public Action<ChoiceNodeObject> OnExecuteExternal;
         public LocalisedString dialogueText;
 
@@ -25,14 +17,18 @@ namespace ZDialoguer
 
         public void Execute()
         {
-            Debug.Log("Displaying Choices");
             OnExecuteExternal?.Invoke(this);
         }
 
         public void ConfirmChoice(Choice choice)
         {
-            Debug.Log("Choice Confirmed");
-            _sequenceChild = choice.output;
+            graph.GetEntryNode().Next = choice.output;
+        }
+
+        public override (LocalisedString, SequentialNodeObject) OnRetrieve()
+        {
+            Execute();
+            return (dialogueText, SequenceChild);
         }
     }
 
@@ -50,7 +46,7 @@ namespace ZDialoguer
         
         public LocalisedString choiceText;
         public SequentialNodeObject output;
-        public bool enabled = true;
+        internal bool Enabled => overriddenNode ? overriddenNode.GetPredicate() : true;
 
         [SerializeField] internal PredicateNodeObject overriddenNode;
         public DisabledVisibility visibility;

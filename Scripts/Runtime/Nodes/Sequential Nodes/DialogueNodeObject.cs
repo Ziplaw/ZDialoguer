@@ -11,6 +11,11 @@ public class DialogueNodeObject : SequentialNodeObject
     public SequentialNodeObject connectedChild;
     public LocalisedString text;
 
+    public override (LocalisedString, SequentialNodeObject) OnRetrieve()
+    {
+        return (text, SequenceChild);
+    }
+
     public override bool Init(Vector2 position, ZDialogueGraph graph)
     {
         base.Init(position,graph);

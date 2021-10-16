@@ -105,7 +105,7 @@ public class PredicateNodeView : SequentialNodeView
     private void OperationChangeCallback(ChangeEvent<string> evt, PredicateNodeObject predicateNodeObject)
     {
         Dictionary<string, PredicateNodeObject.Operation> stringMap =
-            new Dictionary<string, PredicateNodeObject.Operation>()
+            new Dictionary<string, PredicateNodeObject.Operation>
             {
                 { "=", PredicateNodeObject.Operation.Equals },
                 { ">", PredicateNodeObject.Operation.Greater },

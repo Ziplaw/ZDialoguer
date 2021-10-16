@@ -17,6 +17,7 @@ namespace ZDialoguer.Localization.Editor
     {
         internal int indexPosition = 0;
         internal bool oneLine;
+        internal bool stretch;
 
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
@@ -36,7 +37,7 @@ namespace ZDialoguer.Localization.Editor
             var currentText =
                 new HelpBox(self,
                         HelpBoxMessageType.None)
-                    { style = { flexGrow = 1, maxHeight = 150, maxWidth = oneLine ? 70 : 150, minHeight = 24, minWidth = 70} };
+                    { style = { flexGrow = 1, maxHeight = 150, maxWidth = oneLine ? 70 : stretch ? new StyleLength(StyleKeyword.None) : 150, minHeight = 24, minWidth = 70} };
             var label = currentText.Q<Label>();
             label.style.overflow = Overflow.Hidden;
             label.style.whiteSpace = oneLine ? WhiteSpace.NoWrap : WhiteSpace.Normal;

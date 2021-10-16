@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using ZDialoguer;
+using ZDialoguer.Localization;
 
 
 namespace ZDialoguer
@@ -50,11 +51,10 @@ namespace ZDialoguer
         public NodeObject childIfTrue;
         public NodeObject childIfFalse;
 
-        public override bool Init(Vector2 _position, ZDialogueGraph graph)
+        public override (LocalisedString, SequentialNodeObject) OnRetrieve()
         {
-            return base.Init(_position, graph);
+            return SequenceChild.OnRetrieve();
         }
-
 
         public bool GetPredicate()
         {

@@ -87,7 +87,7 @@ public class SwitchNodeView : SequentialNodeView
         }
         
         switchNode.outputEntries.RemoveAt(position);
-        var port = this.Query<Port>().ToList().First(p => p.GetID() == position + outputNodeStartIndex);
+        var port = this.Query<Port>().ToList().First(p => p.GetID(Direction.Output) == position + outputNodeStartIndex);
 
         // GraphViewChange change = new GraphViewChange
         //     { elementsToRemove = port.connections.Select(e => e as GraphElement).ToList() };
@@ -228,7 +228,7 @@ public class SwitchNodeView : SequentialNodeView
 
     public override void OnConnectEdgeToOutputPort(Edge edge)
     {
-        switchNode.outputEntries[edge.output.GetID() - outputNodeStartIndex].output =
+        switchNode.outputEntries[edge.output.GetID(Direction.Output) - outputNodeStartIndex].output =
             (edge.input.node as SequentialNodeView).NodeObject as SequentialNodeObject;
     }
 
@@ -245,7 +245,7 @@ public class SwitchNodeView : SequentialNodeView
 
     public override void OnDisconnectEdgeFromOutputPort(Edge edge)
     {
-        int disconnectEntryPosition = edge.output.GetID() - outputNodeStartIndex;
+        int disconnectEntryPosition = edge.output.GetID(Direction.Output) - outputNodeStartIndex;
         if (switchNode.outputEntries.Count > disconnectEntryPosition)
             switchNode.outputEntries[disconnectEntryPosition].output = null;
     }

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using ZDialoguer.Localization;
 
 namespace ZDialoguer
 {
@@ -72,6 +73,11 @@ namespace ZDialoguer
 
             position = -1;
             return null;
+        }
+
+        public override (LocalisedString, SequentialNodeObject) OnRetrieve()
+        {
+            return SequenceChild.OnRetrieve();
         }
     }
 }

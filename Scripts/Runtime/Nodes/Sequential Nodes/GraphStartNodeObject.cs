@@ -9,48 +9,35 @@ namespace ZDialoguer
     {
         public override SequentialNodeObject SequenceChild => childNodeObject;
         public SequentialNodeObject childNodeObject;
-        [SerializeField] SequentialNodeObject _next; //
+        [SerializeField] SequentialNodeObject _current;
+        
+        public override (LocalisedString, SequentialNodeObject) OnRetrieve()
+        {
+            return SequenceChild.OnRetrieve();
+        }
 
         public string GetNextText(ZDialogueGraph _graph)
         {
-            string dialogueText;
-            
-            var current = Next;
-            while (!(current as DialogueNodeObject))
+            if (_current)
             {
-                switch (current)
-                {
-                    case IEventNodeObject eventNodeObject:
-                        eventNodeObject.Execute();
-                        switch (eventNodeObject)
-                        {
-                            case ChoiceNodeObject choiceNodeObject:
-                                Next = choiceNodeObject;
-                                break;
-
-                        }
-                        break;
-                    case null:
-                        // Next = this;
-                        return null;
-                }
-
-                current = Next;
+                var tuple = _current.OnRetrieve();
+                _current = tuple.Item2;
+                return tuple.Item1.ParseFacts(graph);
             }
-
-            Debug.Log((current as DialogueNodeObject).text.ParseFacts(_graph));
-            return (current as DialogueNodeObject).text.ParseFacts(_graph);
+            return null;
         }
 
         public SequentialNodeObject Next
         {
             get
             {
-                _next = _next != null ? _next.SequenceChild : null;
-                return _next;
+                _current = _current.SequenceChild;
+                return _current;
             }
-            internal set => _next = value;
+            internal set => _current = value;
         }
+
+        
     }
 
     public static class Extensions

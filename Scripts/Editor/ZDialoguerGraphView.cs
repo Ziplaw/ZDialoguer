@@ -22,6 +22,7 @@ public class ZDialoguerGraphView : GraphView
     internal DialogueBlackboard _blackBoard;
     internal NodeSearchWindow _nodeSearchWindow;
     internal ZDialogueGraphEditorWindow _editorWindow;
+    private bool repopulating;
 
     public ZDialoguerGraphView()
     {
@@ -56,6 +57,7 @@ public class ZDialoguerGraphView : GraphView
 
     public void PopulateView(ZDialogueGraph graph)
     {
+        repopulating = true;
         // _editorWindow.Close();
         this.graph = graph;
         graphViewChanged -= OnGraphViewChanged;
@@ -69,7 +71,7 @@ public class ZDialoguerGraphView : GraphView
                 }
             })
             .StartingIn(0);
-        
+
         DeleteElements(graphElements.ToList());
         graphViewChanged += OnGraphViewChanged;
 
@@ -77,6 +79,7 @@ public class ZDialoguerGraphView : GraphView
         GenerateBlackBoard();
         graph.nodes.ForEach(n => CreateNodeView(n));
         RestoreConnections();
+        repopulating = false;
     }
 
     private void AddSearchWindow()
@@ -130,11 +133,12 @@ public class ZDialoguerGraphView : GraphView
             if (e.newValue == null && graph.nodes.Any(n =>
                 n is DialogueNodeObject dialogueNodeObject && dialogueNodeObject.text.csvFile == e.previousValue))
             {
-                Debug.LogWarning("You can't remove the Dialogue Text from the graph when there are still Dialogue Nodes referencing it!");
+                Debug.LogWarning(
+                    "You can't remove the Dialogue Text from the graph when there are still Dialogue Nodes referencing it!");
                 textObjectField.SetValueWithoutNotify(e.previousValue);
                 return;
             }
-            
+
             graph.dialogueText = e.newValue as TextAsset;
             foreach (var o in graph.nodes.Where(n => n is DialogueNodeObject))
             {
@@ -144,6 +148,7 @@ public class ZDialoguerGraphView : GraphView
                     LocalisedString.GetFullAssetPath(dialogueNodeObject.text.csvFile);
                 dialogueNodeObject.text.Reset();
             }
+
             EditorWindow.GetWindow<ZDialogueGraphEditorWindow>().graphView.PopulateView(graph);
         });
         var editButton = new Button(() =>
@@ -153,7 +158,7 @@ public class ZDialoguerGraphView : GraphView
             Rect r = new Rect(currentResolution.width * .5f - 1024 * .5f, currentResolution.height * .5f - 512 * .5f,
                 10, 10);
             editWindow.ShowAsDropDown(r, new Vector2(1024, 512));
-            
+
 
             editWindow.rootVisualElement.Q<ObjectField>().SetValueWithoutNotify(textObjectField.value);
 
@@ -180,7 +185,7 @@ public class ZDialoguerGraphView : GraphView
             for (var i = 0; i < graphViewChange.elementsToRemove.Count; i++)
             {
                 var e = graphViewChange.elementsToRemove[i];
-                
+
                 switch (e)
                 {
                     case NodeView nV:
@@ -195,7 +200,8 @@ public class ZDialoguerGraphView : GraphView
                         if (graph.nodes.Any(n =>
                             n is FactNodeObject factNodeObject && factNodeObject.fact == factBlackboardField.fact))
                         {
-                            Debug.LogWarning("You can't delete this fact, as a Fact Node referencing it is present on the graph");
+                            Debug.LogWarning(
+                                "You can't delete this fact, as a Fact Node referencing it is present on the graph");
                             graphViewChange.elementsToRemove.Remove(factBlackboardField);
                             i--;
                         }
@@ -207,6 +213,8 @@ public class ZDialoguerGraphView : GraphView
                         break;
                 }
             }
+
+            if (!repopulating) PopulateView(graph);
         }
 
         if (graphViewChange.edgesToCreate != null)
@@ -219,6 +227,8 @@ public class ZDialoguerGraphView : GraphView
                 inputNodeView.OnConnectEdgeToInputPort(edge);
                 graph.edgeDatas.AddEdge(edge);
             }
+
+            if (!repopulating) PopulateView(graph);
         }
 
         SaveChangesToGraph(graph);

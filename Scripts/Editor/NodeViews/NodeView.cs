@@ -95,7 +95,7 @@ namespace ZDialoguer
             // S *= .5f;
             input.Q<Label>().style.color = Color.HSVToRGB(H, S, B);
             input.portColor = colorMap[type];
-            input.viewDataKey = nodeObject.guid + " " + index;
+            input.viewDataKey = index + " " + nodeObject.guid;
             index++;
             container?.Add(input);
             return input;
@@ -157,7 +157,7 @@ namespace ZDialoguer
     {
         public static bool IsOutputKey(this Edge edge, int key, Action action = null)
         {
-            if (edge.output.GetID() == key)
+            if (edge.output.GetID(Direction.Output) == key)
             {
                 action?.Invoke();
                 return true;
@@ -168,7 +168,7 @@ namespace ZDialoguer
 
         public static bool IsInputKey(this Edge edge, int key, Action action = null)
         {
-            if (edge.input.GetID() == key)
+            if (edge.input.GetID(Direction.Input) == key)
             {
                 action?.Invoke();
                 return true;
@@ -177,9 +177,15 @@ namespace ZDialoguer
             return false;
         }
 
-        public static int GetID(this Port port)
+        public static int GetID(this Port port, Direction portDirection)
         {
-            return Convert.ToInt32(port.viewDataKey.Split(' ').Last());
+            switch (portDirection)
+            {
+                case Direction.Input: return Convert.ToInt32(port.viewDataKey.Split(' ').First());
+                case Direction.Output: return Convert.ToInt32(port.viewDataKey.Split(' ').Last());
+                default: return -1;
+            }
+            
         }
 
         public static string WithColor(this string str, Color color)
