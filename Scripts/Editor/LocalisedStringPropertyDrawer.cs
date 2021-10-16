@@ -25,7 +25,7 @@ namespace ZDialoguer.Localization.Editor
             self.output = string.Empty;
             self.table = null;
 
-            var root = new VisualElement(){name = "localisedStringContainer"};
+            var root = new VisualElement{name = "localisedStringContainer"};
             root.style.marginBottom = oneLine ? 0 : 5;
             root.style.marginLeft = oneLine ? 0 : 5;
             root.style.marginRight = oneLine ? 0 : 5;
@@ -36,7 +36,7 @@ namespace ZDialoguer.Localization.Editor
             var currentText =
                 new HelpBox(self,
                         HelpBoxMessageType.None)
-                    { style = { flexGrow = 1, maxHeight = 150, maxWidth = 150, minHeight = 24} };
+                    { style = { flexGrow = 1, maxHeight = 150, maxWidth = oneLine ? 70 : 150, minHeight = 24, minWidth = 70} };
             var label = currentText.Q<Label>();
             label.style.overflow = Overflow.Hidden;
             label.style.whiteSpace = oneLine ? WhiteSpace.NoWrap : WhiteSpace.Normal;

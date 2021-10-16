@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using PlasticPipe.PlasticProtocol.Messages;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.UIElements.Experimental;
@@ -13,11 +14,12 @@ public class TwoStateToggle<T> : VisualElement where T : struct
     public TwoStateToggle(T defaultState, Action<TwoStateToggle<T>> clickEvent, List<Color> colors, List<Texture2D> icons)
     {
         state = defaultState;
-        style.flexDirection = FlexDirection.RowReverse;
+        style.flexDirection = FlexDirection.Row;
         style.alignItems = Align.Center;
-        style.left = -16;
+        // style.left = -16;
         T[] Arr = (T[])Enum.GetValues(state.GetType());
         index = Array.IndexOf(Arr, state);
+        float amount = Arr.Length;
         var box = new Box
         {
             pickingMode = PickingMode.Ignore,
@@ -38,8 +40,8 @@ public class TwoStateToggle<T> : VisualElement where T : struct
                 borderLeftColor = new Color(0.34f, 0.34f, 0.34f),
                 borderRightColor = new Color(0.34f, 0.34f, 0.34f),
                 borderTopColor = new Color(0.34f, 0.34f, 0.34f),
-                // backgroundColor = new Color(40f/255,40f/255,40f/255),
-                backgroundColor = colors[index],
+                
+                // backgroundColor = colors[index],
 
                 
                 height = 16,
@@ -53,14 +55,14 @@ public class TwoStateToggle<T> : VisualElement where T : struct
         {
             style =
             {
-                left = 20.1f * (index + 1),
+                left = -20.1f * (amount-index),
                 marginLeft = 0,
                 marginRight = -2,
                 height = 20,
                 width = 24,
 
                 unityBackgroundScaleMode = ScaleMode.ScaleToFit,
-                backgroundImage = icons[index],
+                // backgroundImage = icons[index],
                 
                 borderBottomLeftRadius = 6,
                 borderBottomRightRadius = 6,
@@ -75,7 +77,7 @@ public class TwoStateToggle<T> : VisualElement where T : struct
             state = state.Next();
             T[] Arr = (T[])Enum.GetValues(state.GetType());
             index = Array.IndexOf(Arr, state);
-            t.TopLeft(new Vector2(20.1f * (index + 1), 0), 100);
+            t.Start(element => element.style.left.value.value, -20.1f * (amount-index), 100, (element, f) => button.style.left = f);
             t.Start(element => box.style.backgroundColor.value, colors[index], 350, (element, color1) => box.style.backgroundColor = color1);
             button.style.backgroundImage = icons[index];
             clickEvent(this);

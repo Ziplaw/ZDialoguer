@@ -20,7 +20,7 @@ namespace ZDialoguer
         [SerializeField] internal SequentialNodeObject _sequenceChild;
         public Action<ChoiceNodeObject> OnExecuteExternal;
 
-        public List<Choice> choices;
+        public List<Choice> choices = new List<Choice>();
 
         public void Execute()
         {
@@ -50,6 +50,8 @@ namespace ZDialoguer
         public LocalisedString choiceText;
         public SequentialNodeObject output;
         public bool enabled = true;
+
+        [SerializeField] internal PredicateNodeObject overriddenNode;
         public DisabledVisibility visibility;
     }
 }

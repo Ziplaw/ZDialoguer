@@ -44,16 +44,17 @@ public class PredicateNodeView : SequentialNodeView
             OperationChangeCallback(e, predicateNodeObject));
 
         CreateInputPort(typeof(Fact), "Fact", inputContainer, predicateNodeObject, ref index);
+        CreateOutputPort(typeof(bool), "Predicate", outputContainer, predicateNodeObject, ref index);
 
-        Button testButton = new Button(() =>
-        {
-            var window = EditorWindow.GetWindow<ZDialogueGraphEditorWindow>();
-            var node = window.graphView.GetNodeByGuid(predicateNodeObject.SequenceChild.guid);
-            node.Select(window.graphView, false);
-            node.Focus();
-        });
-        testButton.text = "Test";
-        outputContainer.Add(testButton);
+        // Button testButton = new Button(() =>
+        // {
+        //     var window = EditorWindow.GetWindow<ZDialogueGraphEditorWindow>();
+        //     var node = window.graphView.GetNodeByGuid(predicateNodeObject.SequenceChild.guid);
+        //     node.Select(window.graphView, false);
+        //     node.Focus();
+        // });
+        // testButton.text = "Test";
+        // outputContainer.Add(testButton);
 
 
 
@@ -88,8 +89,8 @@ public class PredicateNodeView : SequentialNodeView
         horizontalContainer.Add(factNameContainer);
         horizontalContainer.Add(operationEnumField);
         GenerateValueField(horizontalContainer);
-        mainContainer.Add(horizontalContainer);
-        mainContainer.Add(autoUpdateContainer);
+        extensionContainer.Add(horizontalContainer);
+        extensionContainer.Add(autoUpdateContainer);
 
         title = "Predicate Node";
     }

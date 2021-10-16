@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -27,8 +29,9 @@ namespace ZDialoguer
             Button addButton = new Button (() =>
             {
                 _choiceNodeObject.choices.Add(new Choice(new LocalisedString(true)));
+                RepopulateGraph();
             }){ text = "+", style = { width = 24, height = 24, fontSize = 24 } };
-            
+
             for (int i = 0; i < _choiceNodeObject.choices.Count; i++)
             {
                 AddChoiceContainer(i);
@@ -40,28 +43,29 @@ namespace ZDialoguer
 
         public void AddChoiceContainer(int index)
         {
-            int portPosition = index + choiceStartPos;
+            int outputPortPos = index + choiceStartPos;
+            int inputPortPos = index + choiceStartPos;
             
-            Port port = CreateOutputPort(typeof(SequentialNodeObject), "", outputContainer, _choiceNodeObject,
-                ref portPosition);
-            port.Q<Label>().RemoveFromHierarchy();
+            Port outputPort = CreateOutputPort(typeof(SequentialNodeObject), $"Choice", outputContainer, _choiceNodeObject,
+                ref outputPortPos);
+            Port inputPort = CreateInputPort(typeof(bool), $"Predicate {index+1}", inputContainer, _choiceNodeObject,
+                ref inputPortPos);
+            // outputPort.Q<Label>().RemoveFromHierarchy();
             var container = GeneratePortContainer(index);
-            port.contentContainer.Add(container);
+            outputPort.contentContainer.Add(container);
         }
 
         VisualElement GeneratePortContainer(int choicePosition)
         {
-            // this.Q("choiceContentContainer")?.RemoveFromHierarchy();
+            this.Q($"choiceContentContainer{choicePosition}")?.RemoveFromHierarchy();
             
-            var container = new VisualElement{name = "choiceContentContainer", style={flexDirection = FlexDirection.Row, alignItems = Align.Center}};
+            var container = new VisualElement{name = $"choiceContentContainer{choicePosition}", style={flexDirection = FlexDirection.Row, alignItems = Align.Center}};
             var colorList = new List<Color> { new Color(40f/255,40f/255,40f/255), new Color(0.25f, 0.25f, 0.25f)/*titleContainer.style.backgroundColor.value*/ };
             var iconList = new List<Texture2D>
             {
                 Resources.Load<Texture2D>("Icons/hidden"),
                 Resources.Load<Texture2D>("Icons/visible"),
             };
-            
-            Debug.Log(choicePosition);
             
             var visibilityButton = new TwoStateToggle<Choice.DisabledVisibility>(_choiceNodeObject.choices[choicePosition].visibility, button => _choiceNodeObject.choices[choicePosition].visibility = button.state, colorList, iconList){name = "visibilityButton"};
             
@@ -77,12 +81,14 @@ namespace ZDialoguer
             var minusButton = new Button(() =>
             {
                 _choiceNodeObject.choices.RemoveAt(_choicePos);
-                RepopulateGraph(); 
+                RepopulateGraph();
             }) {text = "-", style = { width = 24, height = 24, fontSize = 24 }};
             
-            container.Add(visibilityButton);
+            if(_choiceNodeObject.choices[choicePosition].overriddenNode) container.Add(visibilityButton);
             container.Add(propertyDrawer);
             container.Add(minusButton);
+            
+            
             // var textField
             // var button = new Button();
             // var t = button as ITransitionAnimations;
@@ -93,6 +99,10 @@ namespace ZDialoguer
 
         public override void OnConnectEdgeToInputPort(Edge edge)
         {
+            Debug.Log("a");
+            Debug.Log(Convert.ToInt32(edge.input.viewDataKey.Split(' ').Last())-choiceStartPos);
+            Debug.Log((edge.input.node as NodeView).NodeObject as PredicateNodeObject);
+            _choiceNodeObject.choices[Convert.ToInt32(edge.input.viewDataKey.Split(' ').Last())-choiceStartPos].overriddenNode = (edge.output.node as NodeView).NodeObject as PredicateNodeObject;
         }
 
         public override void OnConnectEdgeToOutputPort(Edge edge)
@@ -105,6 +115,8 @@ namespace ZDialoguer
 
         public override void OnDisconnectEdgeFromInputPort(Edge edge)
         {
+            _choiceNodeObject.choices[Convert.ToInt32(edge.input.viewDataKey.Split(' ').Last())-choiceStartPos].overriddenNode = null;
+
         }
 
         public override void OnDisconnectEdgeFromOutputPort(Edge edge)
