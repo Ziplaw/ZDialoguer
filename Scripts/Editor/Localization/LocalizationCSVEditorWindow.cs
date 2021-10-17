@@ -207,7 +207,8 @@ public class LocalizationCSVEditorWindow : EditorWindow
                 unityTextAlign = TextAnchor.UpperLeft,
                 flexDirection = FlexDirection.Row,
                 whiteSpace = WhiteSpace.Normal,
-                flexShrink = 1
+                flexShrink = 1,
+                flexGrow = 1
             },
             value = label.text
         };

@@ -21,41 +21,34 @@ public class PredicateNodeView : SequentialNodeView
         var predicateNodeObject = nodeObject as PredicateNodeObject;
         base.BuildNodeView(nodeObject, graph);
         CreateInputPort(typeof(SequentialNodeObject), "►", inputContainer, nodeObject, ref index, Port.Capacity.Multi);
-        CreateOutputPort(typeof(SequentialNodeObject), "True ►", outputContainer, nodeObject, ref index, Port.Capacity.Single);
-        CreateOutputPort(typeof(SequentialNodeObject), "False ►", outputContainer, nodeObject, ref index, Port.Capacity.Single);
+        CreateOutputPort(typeof(SequentialNodeObject), "True ►", outputContainer, nodeObject, ref index,
+            Port.Capacity.Single);
+        CreateOutputPort(typeof(SequentialNodeObject), "False ►", outputContainer, nodeObject, ref index,
+            Port.Capacity.Single);
         titleContainer.style.backgroundColor = new StyleColor(new Color(0.64f, 0.96f, 0.88f));
 
+        List<string> stringList = !predicateNodeObject.fact || predicateNodeObject.fact && predicateNodeObject.fact.factType == Fact.FactType.Float
+            ? new List<string> { "=", ">", "<", "≥", "≤", "≠" }
+            : new List<string> { "=", "≠" };
+
         PopupField<string> operationEnumField =
-            new PopupField<string>(new List<string> { "=", ">", "<", "≥", "≤", "≠" },
+            new PopupField<string>(stringList,
                 (int)predicateNodeObject.operation);
         operationEnumField.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleCenter);
-        // Debug.Log(operationEnumField.Q<TextElement>());
         operationEnumField.Q<TextElement>().style.unityTextAlign = TextAnchor.MiddleCenter;
-        // Debug.LogWarning(operationEnumField.ElementAt(0));
         operationEnumField.Q<VisualElement>().Query<VisualElement>().ToList()
             .First(x => x.GetClasses().Any(c => c == "unity-base-popup-field__arrow")).RemoveFromHierarchy();
         operationEnumField.style.width = 20;
         operationEnumField.Q<TextElement>().style.width = 20;
         operationEnumField.ElementAt(0).style.width = 20;
         operationEnumField.ElementAt(0).style.minWidth = 0;
-        // operationEnumField.Query<VisualElement>().ForEach(Debug.Log);
-        // Debug.Log("---");
         operationEnumField.RegisterValueChangedCallback(e =>
             OperationChangeCallback(e, predicateNodeObject));
 
         CreateInputPort(typeof(Fact), "Fact", inputContainer, predicateNodeObject, ref index);
         CreateOutputPort(typeof(bool), "Predicate", outputContainer, predicateNodeObject, ref index);
-
-        // Button testButton = new Button(() =>
-        // {
-        //     var window = EditorWindow.GetWindow<ZDialogueGraphEditorWindow>();
-        //     var node = window.graphView.GetNodeByGuid(predicateNodeObject.SequenceChild.guid);
-        //     node.Select(window.graphView, false);
-        //     node.Focus();
-        // });
-        // testButton.text = "Test";
-        // outputContainer.Add(testButton);
-
+        if (predicateNodeObject.fact)
+            CreateInputPort(typeof(Fact), "Fact", inputContainer, predicateNodeObject, ref index);
 
 
         Font font = Resources.Load<Font>("Fonts/FugazOne");
@@ -119,35 +112,50 @@ public class PredicateNodeView : SequentialNodeView
         EditorUtility.SetDirty(predicateNodeObject);
         AssetDatabase.SaveAssets();
     }
+
     private void OnFactTypeChange(Fact.FactType newFactType)
     {
-        this.Q("factValueField").RemoveFromHierarchy();
-        GenerateValueField(this.Q("factFieldContainer"));
+        RepopulateGraph();
+        // this.Q("factValueField").RemoveFromHierarchy();
+        // GenerateValueField(this.Q("factFieldContainer"));
     }
 
     private void GenerateValueField(VisualElement horizontalContainer)
     {
         VisualElement valueField;
-        
+
         if (_predicateNodeObject.fact)
         {
-            switch (_predicateNodeObject.fact.factType)
+            if (_predicateNodeObject.secondFact)
             {
-                case Fact.FactType.Float:
-                    FloatField floatField = new FloatField();
-                    floatField.SetValueWithoutNotify((float)_predicateNodeObject.Value);
-                    floatField.RegisterValueChangedCallback(e =>
-                        UpdatePredicateNodeValue(e.newValue, _predicateNodeObject));
-                    valueField = floatField;
-                    break;
-                case Fact.FactType.String:
-                    TextField stringField = new TextField();
-                    stringField.SetValueWithoutNotify((string)_predicateNodeObject.Value);
-                    stringField.RegisterValueChangedCallback(e =>
-                        UpdatePredicateNodeValue(e.newValue, _predicateNodeObject));
-                    valueField = stringField;
-                    break;
-                default: throw new NotImplementedException();
+                Font font = Resources.Load<Font>("Fonts/FugazOne");
+                IMGUIContainer factNameContainer = new IMGUIContainer(() =>
+                {
+                    GUILayout.Label(_predicateNodeObject.secondFact.nameID,
+                        new GUIStyle("label") { alignment = TextAnchor.MiddleCenter, fontSize = 20, font = font });
+                });
+                valueField = factNameContainer;
+            }
+            else
+            {
+                switch (_predicateNodeObject.fact.factType)
+                {
+                    case Fact.FactType.Float:
+                        FloatField floatField = new FloatField();
+                        floatField.SetValueWithoutNotify((float)_predicateNodeObject.Value);
+                        floatField.RegisterValueChangedCallback(e =>
+                            UpdatePredicateNodeValue(e.newValue, _predicateNodeObject));
+                        valueField = floatField;
+                        break;
+                    case Fact.FactType.String:
+                        TextField stringField = new TextField();
+                        stringField.SetValueWithoutNotify((string)_predicateNodeObject.Value);
+                        stringField.RegisterValueChangedCallback(e =>
+                            UpdatePredicateNodeValue(e.newValue, _predicateNodeObject));
+                        valueField = stringField;
+                        break;
+                    default: throw new NotImplementedException();
+                }
             }
         }
         else
@@ -167,8 +175,14 @@ public class PredicateNodeView : SequentialNodeView
             {
                 _predicateNodeObject.fact = ((FactNodeObject)((NodeView)edge.output.node).NodeObject).fact;
                 _predicateNodeObject.fact.OnFactTypeChange += OnFactTypeChange;
-                OnFactTypeChange(default);
-                
+                // OnFactTypeChange(default);
+            });
+        edge.IsInputKey(5,
+            () =>
+            {
+                _predicateNodeObject.secondFact = ((FactNodeObject)((NodeView)edge.output.node).NodeObject).fact;
+                _predicateNodeObject.secondFact.OnFactTypeChange += OnFactTypeChange;
+                // OnFactTypeChange(default);
             });
     }
 
@@ -184,7 +198,13 @@ public class PredicateNodeView : SequentialNodeView
         {
             _predicateNodeObject.fact.OnFactTypeChange -= OnFactTypeChange;
             _predicateNodeObject.fact = null;
-            OnFactTypeChange(default);
+            // OnFactTypeChange(default);
+        });
+        edge.IsInputKey(5, () =>
+        {
+            _predicateNodeObject.secondFact.OnFactTypeChange -= OnFactTypeChange;
+            _predicateNodeObject.secondFact = null;
+            // OnFactTypeChange(default);
         });
     }
 

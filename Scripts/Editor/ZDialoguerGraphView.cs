@@ -58,7 +58,6 @@ public class ZDialoguerGraphView : GraphView
     public void PopulateView(ZDialogueGraph graph)
     {
         repopulating = true;
-        // _editorWindow.Close();
         this.graph = graph;
         graphViewChanged -= OnGraphViewChanged;
         _editorWindow.rootVisualElement.schedule
@@ -80,6 +79,8 @@ public class ZDialoguerGraphView : GraphView
         graph.nodes.ForEach(n => CreateNodeView(n));
         RestoreConnections();
         repopulating = false;
+        
+        // this.Q<Edge>().RemoveFromHierarchy();
     }
 
     private void AddSearchWindow()
@@ -99,11 +100,12 @@ public class ZDialoguerGraphView : GraphView
             Port output = GetPortByGuid(graphEdgeData.outputPortViewDataKey);
 
 
+            if (output == null || input == null) continue;
             Edge edge = output.ConnectTo(input);
             AddElement(edge);
             edgesToCreate.Add(edge);
         }
-
+        
         graphViewChanged.Invoke(new GraphViewChange { edgesToCreate = edgesToCreate });
     }
 
@@ -214,7 +216,10 @@ public class ZDialoguerGraphView : GraphView
                 }
             }
 
-            if (!repopulating) PopulateView(graph);
+            if (!repopulating)
+            {
+                schedule.Execute(() => PopulateView(graph)).StartingIn(0);
+            }
         }
 
         if (graphViewChange.edgesToCreate != null)
@@ -228,7 +233,10 @@ public class ZDialoguerGraphView : GraphView
                 graph.edgeDatas.AddEdge(edge);
             }
 
-            if (!repopulating) PopulateView(graph);
+            if (!repopulating)
+            {
+                schedule.Execute(() => PopulateView(graph)).StartingIn(0);
+            }
         }
 
         SaveChangesToGraph(graph);

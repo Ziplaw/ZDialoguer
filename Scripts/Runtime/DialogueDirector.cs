@@ -28,7 +28,6 @@ public class DialogueDirector : MonoBehaviour
     {
         if (graph)
         {
-            Debug.Log("Setting Up Graph");
             foreach (ChoiceNodeObject nodeObject in graph.nodes.Where(n => n is ChoiceNodeObject))
             {
                 nodeObject.OnExecuteExternal = OnGetChoice.Invoke;

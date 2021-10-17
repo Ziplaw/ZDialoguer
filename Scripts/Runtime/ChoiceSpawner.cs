@@ -14,8 +14,6 @@ public class ChoiceSpawner : MonoBehaviour
     private ChoiceNodeObject currentChoiceNodeObject;
     public void SpawnChoices(ChoiceNodeObject choiceNodeObject)
     {
-        // gameObject.SetActive(true);
-        Debug.Log("Spawning Choices for " + choiceNodeObject);
         currentChoiceNodeObject = choiceNodeObject;
         for (var i = 0; i < choiceNodeObject.choices.Count; i++)
         {
