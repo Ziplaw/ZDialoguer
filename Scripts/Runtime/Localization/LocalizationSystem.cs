@@ -28,6 +28,7 @@ public class LocalizationSystem
 
         var cc = new CsvContext();
         
+        
         var list = localizationTableType.GetMethod("GenerateTable").Invoke(null, new object[] {table});
         var method = typeof(CsvContext)
             .GetMethods().First(m =>
@@ -67,7 +68,7 @@ public class LocalizationSystem
 
 
     [Serializable]
-    public struct TableEntry
+    public class TableEntry
     {
         public string[] entry;
     }

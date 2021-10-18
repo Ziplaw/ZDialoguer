@@ -39,9 +39,6 @@ public class LocalizationCSVEditorWindow : EditorWindow
 
     public void CreateGUI()
     {
-        // Show();
-        // Open();
-        // Close();
         rootVisualElement.Clear();
         VisualElement root = rootVisualElement;
         var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
@@ -49,7 +46,7 @@ public class LocalizationCSVEditorWindow : EditorWindow
         VisualElement staticVisualElement = visualTree.Instantiate();
         root.Add(staticVisualElement);
         var scrollView = root.Q<ScrollView>();
-        
+
         root.style.marginBottom = 5;
         root.style.marginLeft = 5;
         root.style.marginRight = 5;
@@ -58,13 +55,8 @@ public class LocalizationCSVEditorWindow : EditorWindow
         scrollView.style.backgroundColor = new Color(0.16f, 0.16f, 0.16f);
         scrollView.style.flexGrow = 1;
         scrollView.style.flexDirection = FlexDirection.Column;
-        
-        // scrollView.Q("unity-content-viewport").style.flexGrow = 1;
-        // scrollView.Q("unity-content-viewport").style.flexDirection = FlexDirection.Column;
-        //
-        // scrollView.Q("unity-content-container").style.flexGrow = 1;
-        // scrollView.Q("unity-content-container").style.flexDirection = FlexDirection.Column;
-        
+
+
         var assetField = root.Q<ObjectField>();
         assetField.RegisterValueChangedCallback(e =>
         {
@@ -107,37 +99,70 @@ public class LocalizationCSVEditorWindow : EditorWindow
                 int tableEntryIndex = table.IndexOf(tableEntry);
                 VisualElement rowContainer = new VisualElement
                     { name = $"row{tableEntryIndex}", style = { flexDirection = FlexDirection.Row } };
-                var tree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                    "Assets/com.Ziplaw.ZDialoguer/Scripts/Editor/Localization/SelectorButton.uxml");
 
                 for (var i = 0; i < tableEntry.entry.Length; i++)
                 {
                     int j = i;
                     var entry = tableEntry.entry[i];
-                    var editButtonTemplateContainer = tree.Instantiate();
+                    // var editButtonTemplateContainer = tree.Instantiate();
+                    var textField = new TextField
+                    {
+                        multiline = true,
 
-                    editButtonTemplateContainer.Q<Button>().name = j.ToString();
-                    editButtonTemplateContainer.style.flexGrow = 1;
-                    editButtonTemplateContainer.style.width =
-                        new StyleLength(new Length(100f / LocalizationSettings.Instance.languages.Count,
-                            LengthUnit.Percent));
-                    editButtonTemplateContainer.style.minHeight = 24;
-                    var label = editButtonTemplateContainer.Q<Label>();
-                    label.text = entry;
-                    editButtonTemplateContainer.Q<Button>().clicked += () => EditButton(editButtonTemplateContainer,
-                        tableEntryIndex, j);
-                    editButtonTemplateContainer.Q<Button>().style.flexDirection = FlexDirection.Column;
-                    editButtonTemplateContainer.Q<Button>().style.alignItems = i == 0 ? Align.Center : Align.FlexStart;
-                    rowContainer.Add(editButtonTemplateContainer);
+                        style =
+                        {
+                            flexGrow = 1,
+                            minHeight = 24,
+                            width = 0,
+                            whiteSpace = WhiteSpace.Normal,
+                        }
+                    };
+                    textField.Q("unity-text-input").style.unityTextAlign = TextAnchor.UpperLeft;
+                    textField.RegisterValueChangedCallback(e => { tableEntry.entry[j] = e.newValue; });
+                    textField.RegisterCallback<BlurEvent>(e =>
+                    {
+                        var _table = new List<LocalizationSystem.TableEntry>(table);
+                        _table.RemoveAt(0);
+                        LocalizationSystem.SetTable(csvFileAssetPath, _table);
+                    });
+                    textField.RegisterCallback<KeyDownEvent>(e =>
+                    {
+                        if (e.keyCode == KeyCode.RightArrow)
+                        {
+                            if (j != LocalizationSettings.Instance.languages.Count - 1)
+                                rowContainer.ElementAt(j + 1).Focus();
+                        }
 
-                    // if (tableEntryIndex == (table.Count - 1) && j == 0)
-                    // {
-                    //     editButtonTemplateContainer.name = "editing";
-                    // }
+                        if (e.keyCode == KeyCode.LeftArrow)
+                        {
+                            if (j != 0)
+                                rowContainer.ElementAt(j - 1).Focus();
+                        }
+
+                        if (e.keyCode == KeyCode.UpArrow)
+                        {
+                            if (tableEntryIndex != 1)
+                                container.Q($"row{tableEntryIndex - 1}")?.ElementAt(j).Focus();
+                        }
+
+                        if (e.keyCode == KeyCode.DownArrow)
+                        {
+                            if (tableEntryIndex != table.Count-1)
+                                container.Q($"row{tableEntryIndex + 1}")?.ElementAt(j).Focus();
+                        }
+                    });
+                    textField.SetValueWithoutNotify(entry);
+                    rowContainer.Add(textField);
                 }
 
                 if (tableEntryIndex == 0)
                 {
+                    rowContainer.Query<TextField>().ToList().ForEach(t =>
+                    {
+                        t.Q("unity-text-input").style.unityTextAlign = TextAnchor.MiddleCenter;
+                        t.SetEnabled(false);
+                    });
+
                     rowContainer.Add(new Button(() =>
                     {
                         Selection.activeObject = LocalizationSettings.Instance;
@@ -155,8 +180,8 @@ public class LocalizationCSVEditorWindow : EditorWindow
                 {
                     rowContainer.Add(new Button(() =>
                     {
-                        table.RemoveAt(tableEntryIndex);
-                        table.RemoveAt(0);
+                        table = LocalizationSystem.GetTable(csvFileAssetPath);
+                        table.RemoveAt(tableEntryIndex - 1);
                         LocalizationSystem.SetTable(csvFileAssetPath, table);
                         GenerateTableMenu(csvFileAssetPath, container);
                     }) { text = "-" });
@@ -165,15 +190,23 @@ public class LocalizationCSVEditorWindow : EditorWindow
                 container.Add(rowContainer);
             }
 
-            container.Add(new Button(() =>
+            if (rootVisualElement.Q("addEntryButton") == null)
             {
-                table = AddEntry(table);
-                GenerateTableMenu(csvFileAssetPath, container);
-                var editContainer = rootVisualElement.Q<ScrollView>().Q<VisualElement>("unity-content-viewport")
-                    .Q<VisualElement>("unity-content-container").Q<VisualElement>($"row{table.Count - 1}")
-                    .Q<TemplateContainer>();
-                EditButton(editContainer, table.Count - 1, 0);
-            }) { text = "+", style = { fontSize = 24, height = 24 } });
+                rootVisualElement.Add(new Button(() =>
+                {
+                    var localTable = LocalizationSystem.GetTable(csvFileAssetPath);
+                    localTable.Add(new LocalizationSystem.TableEntry
+                        { entry = LocalizationSettings.Instance.languages.Select(s => "").ToArray() });
+                    LocalizationSystem.SetTable(csvFileAssetPath, localTable);
+                    GenerateTableMenu(csvFileAssetPath, container);
+                }) { name = "addEntryButton", text = "+", style = { fontSize = 24, height = 24 } });
+
+                // rootVisualElement.Add(new Button(() =>
+                //     {
+                //         // SubmitEntryAt();
+                //     })
+                //     { text = "Save & Apply", name = "saveAndApplyButton", style = { fontSize = 16, height = 24 } });
+            }
         }
         else
         {
@@ -183,93 +216,7 @@ public class LocalizationCSVEditorWindow : EditorWindow
 
     private List<LocalizationSystem.TableEntry> AddEntry(List<LocalizationSystem.TableEntry> table)
     {
-        table.Add(new LocalizationSystem.TableEntry
-            { entry = LocalizationSettings.Instance.languages.Select(s => "").ToArray() });
-        var tableNoLanguages = new List<LocalizationSystem.TableEntry>(table);
-        tableNoLanguages.RemoveAt(0);
-        LocalizationSystem.SetTable(csvFileAssetPath, tableNoLanguages);
         return table;
-    }
-
-    private void EditButton(VisualElement editButtonTemplateContainer, int tableIndex, int entryIndex)
-    {
-        var table = LocalizationSystem.GetTable(csvFileAssetPath);
-        var label = editButtonTemplateContainer.Q<Label>();
-        if (label == null) return;
-        label.RemoveFromHierarchy();
-
-        var textField = new TextField()
-        {
-            multiline = true,
-            style =
-            {
-                width = new StyleLength(new Length(98, LengthUnit.Percent)),
-                unityTextAlign = TextAnchor.UpperLeft,
-                flexDirection = FlexDirection.Row,
-                whiteSpace = WhiteSpace.Normal,
-                flexShrink = 1,
-                flexGrow = 1
-            },
-            value = label.text
-        };
-        textField.RegisterCallback<KeyDownEvent>(evt =>
-        {
-            if (evt.keyCode == KeyCode.Escape)
-            {
-                GenerateTableMenu(csvFileAssetPath, rootVisualElement.Q<ScrollView>());
-            }
-        });
-        var textElement = textField.Q<VisualElement>("unity-text-input");
-        textElement.style.unityTextAlign = TextAnchor.UpperLeft;
-        textElement.style.whiteSpace = WhiteSpace.Normal;
-        textElement.RegisterCallback<KeyDownEvent>(e =>
-        {
-            if (e.keyCode == KeyCode.Return)
-            {
-                if (!e.shiftKey)
-                {
-                    SubmitEntryAt(table, tableIndex, entryIndex, textField.value);
-                }
-                else
-                {
-                    // ((e.target as VisualElement).parent as TextField).SetValueWithoutNotify(((e.target as VisualElement).parent as TextField).value + "\n");
-
-                    rootVisualElement.schedule.Execute(() =>
-                    {
-                        textField.SetValueWithoutNotify(textField.value + "\n");
-                        textElement.Focus();
-                        rootVisualElement.schedule.Execute(() =>
-                        {
-                            var evt = MouseDownEvent.GetPooled(
-                                new Vector2(textElement.worldBound.x + textElement.worldBound.width-1,
-                                    textElement.worldBound.y + textElement.worldBound.height-1), 0,
-                                1,
-                                Vector2.zero);
-                            textElement.SendEvent(evt);
-                            evt.Dispose();
-                        });
-                    });
-                }
-            }
-        });
-
-        rootVisualElement.schedule.Execute(() => { textElement.Focus(); });
-        // textElement.Focus();
-
-        var color = new Color(40 / 255f, 40 / 255f, 40 / 255f);
-        editButtonTemplateContainer.Q<Button>().Add(textField);
-
-        var submit = new Button(() => SubmitEntryAt(table, tableIndex, entryIndex, textField.value))
-        {
-            style =
-            {
-                height = 24,
-                width = new StyleLength(new Length(98, LengthUnit.Percent)), backgroundColor = color,
-                unityBackgroundScaleMode = ScaleMode.ScaleToFit,
-                backgroundImage = Resources.Load<Texture2D>("Icons/select"),
-            }
-        };
-        editButtonTemplateContainer.Q<Button>().Add(submit);
     }
 
     private void SubmitEntryAt(List<LocalizationSystem.TableEntry> table, int tableIndex, int entryIndex,
