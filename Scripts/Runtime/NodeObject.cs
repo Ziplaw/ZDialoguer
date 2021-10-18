@@ -17,7 +17,7 @@ namespace ZDialoguer
     {
         public Vector2 position;
         public string guid;
-        [SerializeField]protected ZDialogueGraph graph;
+        [SerializeField]protected internal ZDialogueGraph graph;
 
 
         #if UNITY_EDITOR

@@ -13,15 +13,14 @@ public class DialogueDirector : MonoBehaviour
     public TextMeshProUGUI textComponent;
     [SerializeField] ZDialogueGraph currentGraph;
     public UnityEvent<ChoiceNodeObject> OnGetChoice;
+    public UnityEvent OnRequestDialogue;
+    public UnityEvent OnEndDialogue;
 
-    public ZDialogueGraph CurrentGraph
+
+    public void EndDialogue()
     {
-        get => currentGraph;
-        set
-        {
-            SetupGraph(value);
-            currentGraph = value;
-        }
+        
+        OnEndDialogue.Invoke();
     }
 
     private void SetupGraph(ZDialogueGraph graph)
@@ -35,16 +34,23 @@ public class DialogueDirector : MonoBehaviour
         }
     }
 
-    private void Start()
+    public void RequestDialogue(ZDialogueGraph graph, params FactData[] factDatas)
     {
-        SetupGraph(currentGraph);
+        currentGraph = ProcessGraph(graph);
+        currentGraph.SetupGraph();
+        currentGraph.InitializeFacts(factDatas);
+        
+        OnRequestDialogue?.Invoke();
+        GetNextText();
     }
 
-    public void SetNextTo(SequentialNodeObject nodeObject)
+    private ZDialogueGraph ProcessGraph(ZDialogueGraph graph)
     {
-        currentGraph.GetEntryNode().Next = nodeObject;
+        var cloneGraph = Instantiate(graph);
+        cloneGraph.nodes = cloneGraph.nodes.Select(n => Instantiate(n)).ToList();
+        cloneGraph.facts = cloneGraph.facts.Select(f => Instantiate(f)).ToList();
+        return cloneGraph;
     }
-
 
     public void GetNextText()
     {
@@ -61,5 +67,17 @@ public class DialogueDirector : MonoBehaviour
             textComponent.text += parsedText[textComponent.text.Length];
             await Task.Yield();
         }
+    }
+}
+
+public class FactData
+{
+    public string nameID;
+    public object value;
+
+    public FactData(string nameID, object value)
+    {
+        this.nameID = nameID;
+        this.value = value;
     }
 }

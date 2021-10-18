@@ -21,16 +21,16 @@ public class Fact : ScriptableObject
             {
                 case FactType.Float: return floatValue;
                 case FactType.String: return stringValue;
-                default: throw new NotImplementedException();
+                default: throw new InvalidCastException("Specified value is neither string nor float");
             }
         }
         set
         {
-            switch (factType)
+            switch (value)
             {
-                case FactType.Float: floatValue = (float)value; break;
-                case FactType.String: stringValue = (string)value; break;
-                default: throw new NotImplementedException();
+                case float _floatValue: floatValue = _floatValue; break;
+                case string _stringValue: stringValue = _stringValue; break;
+                default: throw new InvalidCastException("Specified value is neither string nor float");
             }
         }
     }

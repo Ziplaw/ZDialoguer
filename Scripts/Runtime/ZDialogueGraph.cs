@@ -20,6 +20,10 @@ namespace ZDialoguer
         public List<Fact> facts = new List<Fact>();
         public List<EdgeData> edgeDatas = new List<EdgeData>();
         public TextAsset dialogueText;
+
+        public Dictionary<string, Fact> FactMap => _factMap ??= facts.ToDictionary(f => f.nameID, f => f);
+
+        private Dictionary<string, Fact> _factMap; 
 #if UNITY_EDITOR
 
 
@@ -73,6 +77,19 @@ namespace ZDialoguer
         public GraphStartNodeObject GetEntryNode()
         {
             return (GraphStartNodeObject)nodes[0];
+        }
+
+        public void SetupGraph()
+        {
+            nodes.ForEach(n => n.graph = this);
+        }
+
+        public void InitializeFacts(FactData[] factDatas)
+        {
+            foreach (var factData in factDatas)
+            {
+                FactMap[factData.nameID].Value = factData.value;
+            }
         }
     }
 }

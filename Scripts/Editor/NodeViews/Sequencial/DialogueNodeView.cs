@@ -29,11 +29,6 @@ public class DialogueNodeView : SequentialNodeView
                 new SerializedObject(nodeObject).FindProperty("text"));
 
         extensionContainer.Add(propertyDrawer);
-
-        var ghostPort = InstantiatePort(Orientation.Vertical, Direction.Input, Port.Capacity.Single, null);
-        ghostPort.style.display = DisplayStyle.None;
-        ghostPort.viewDataKey = "⌂";
-        inputContainer.Add(ghostPort);
     }
 
     public override void OnConnectEdgeToOutputPort(Edge edge) => edge.IsInputKey(0, () => (NodeObject as DialogueNodeObject).connectedChild = (edge.input.node as NodeView).NodeObject as SequentialNodeObject);

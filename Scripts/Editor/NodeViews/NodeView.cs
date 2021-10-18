@@ -21,6 +21,7 @@ namespace ZDialoguer
 
         public virtual void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph)
         {
+            
         }
 
         public abstract void OnConnectEdgeToInputPort(Edge edge);

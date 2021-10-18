@@ -13,32 +13,35 @@ public class FactNodeView : StaticNodeView
 {
     public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph)
     {
+        this.Q("title-button-container").RemoveFromHierarchy();
+        
         int index = 0;
         FactNodeObject factNodeObject = nodeObject as FactNodeObject;
 
         base.BuildNodeView(nodeObject, graph);
         titleContainer.style.backgroundColor = new StyleColor(colorMap[typeof(Fact)]);
+        //
+        // PopupField<Fact> factEnumField = new PopupField<Fact>(graph.facts, factNodeObject.fact);
+        // currentGraphView._blackBoard.editTextRequested += (blackboard, element, factName) => currentGraphView.schedule
+        //     .Execute(() =>
+        //     {
+        //         factEnumField.RemoveFromHierarchy();
+        //         factEnumField = new PopupField<Fact>(graph.facts, factNodeObject.fact);
+        //         inputContainer.Insert(0, factEnumField);
+        //     }).ForDuration(100);
+        // factEnumField.RegisterValueChangedCallback(e => FactEnumChangeCallback(e, factNodeObject));
+        //
+        // var valueField = GenerateValueField(factNodeObject);
+        //
+        // inputContainer.style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Row);
+        // inputContainer.Add(factEnumField);
 
-        PopupField<Fact> factEnumField = new PopupField<Fact>(graph.facts, factNodeObject.fact);
-        currentGraphView._blackBoard.editTextRequested += (blackboard, element, factName) => currentGraphView.schedule
-            .Execute(() =>
-            {
-                factEnumField.RemoveFromHierarchy();
-                factEnumField = new PopupField<Fact>(graph.facts, factNodeObject.fact);
-                inputContainer.Insert(0, factEnumField);
-            }).ForDuration(100);
-        factEnumField.RegisterValueChangedCallback(e => FactEnumChangeCallback(e, factNodeObject));
-
-        var valueField = GenerateValueField(factNodeObject);
-
-        inputContainer.style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Row);
-        inputContainer.Add(factEnumField);
-
-        inputContainer.Add(valueField);
-        int valueFieldIndex = inputContainer.IndexOf(valueField);
-        factNodeObject.fact.OnFactTypeChange += type => OnFactTypeChange(valueFieldIndex, factNodeObject);
-        CreateOutputPort(typeof(Fact), "Fact", outputContainer, nodeObject, ref index);
-        title = "Fact Node";
+        // inputContainer.Add(valueField);
+        // int valueFieldIndex = inputContainer.IndexOf(valueField);
+        // factNodeObject.fact.OnFactTypeChange += type => OnFactTypeChange(valueFieldIndex, factNodeObject);
+        var port = CreateOutputPort(typeof(Fact), "", titleContainer, nodeObject, ref index);
+        port.style.alignSelf = Align.Center;
+        title = factNodeObject.fact.nameID;
     }
 
     private void OnFactTypeChange(int valueFieldIndex, FactNodeObject factNodeObject)
