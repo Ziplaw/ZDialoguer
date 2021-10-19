@@ -52,12 +52,14 @@ public class PredicateNodeView : SequentialNodeView
 
 
         Font font = Resources.Load<Font>("Fonts/FugazOne");
+        Label factNameLabel = new Label(predicateNodeObject.fact ? predicateNodeObject.fact.nameID : "Fact")
+            { style = { unityTextAlign = TextAnchor.MiddleCenter, fontSize = 20, unityFont = font } };
 
-        IMGUIContainer factNameContainer = new IMGUIContainer((() =>
-        {
-            GUILayout.Label(predicateNodeObject.fact ? predicateNodeObject.fact.nameID : "Fact",
-                new GUIStyle("label") { alignment = TextAnchor.MiddleCenter, fontSize = 20, font = font });
-        }));
+        // IMGUIContainer factNameContainer = new IMGUIContainer((() =>
+        // {
+        //     GUILayout.Label(predicateNodeObject.fact ? predicateNodeObject.fact.nameID : "Fact",
+        //         new GUIStyle("label") { alignment = TextAnchor.MiddleCenter, fontSize = 20, font = font });
+        // }));
 
         IMGUIContainer autoUpdateContainer = new IMGUIContainer(() =>
         {
@@ -79,7 +81,8 @@ public class PredicateNodeView : SequentialNodeView
                 flexDirection = FlexDirection.Row
             }
         };
-        horizontalContainer.Add(factNameContainer);
+        horizontalContainer.Add(factNameLabel);
+        // horizontalContainer.Add(factNameContainer);
         horizontalContainer.Add(operationEnumField);
         GenerateValueField(horizontalContainer);
         extensionContainer.Add(horizontalContainer);

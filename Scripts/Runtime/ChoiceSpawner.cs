@@ -11,7 +11,7 @@ public class ChoiceSpawner : MonoBehaviour
 {
     public GameObject buttonPrefab;
     public UnityEvent<ChoiceNodeObject> OnSubmitChoice;
-    private ChoiceNodeObject currentChoiceNodeObject;
+    public ChoiceNodeObject currentChoiceNodeObject;
     public void SpawnChoices(ChoiceNodeObject choiceNodeObject)
     {
         currentChoiceNodeObject = choiceNodeObject;

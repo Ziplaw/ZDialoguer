@@ -17,7 +17,7 @@ namespace ZDialoguer
 
         public void Execute()
         {
-            OnExecuteExternal?.Invoke(this);
+            OnExecuteExternal.Invoke(this);
         }
 
         public void ConfirmChoice(Choice choice)

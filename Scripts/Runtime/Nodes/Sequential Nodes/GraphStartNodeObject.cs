@@ -16,12 +16,13 @@ namespace ZDialoguer
             return SequenceChild.OnRetrieve();
         }
 
-        public string GetNextText(ZDialogueGraph _graph)
+        public string GetNextText()
         {
             if (_current)
             {
                 var tuple = _current.OnRetrieve();
                 _current = tuple.Item2;
+                if (tuple.Item1 == null) return null;
                 return tuple.Item1.ParseFacts(graph);
             }
             return null;

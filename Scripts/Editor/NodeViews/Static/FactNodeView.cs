@@ -19,7 +19,8 @@ public class FactNodeView : StaticNodeView
         FactNodeObject factNodeObject = nodeObject as FactNodeObject;
 
         base.BuildNodeView(nodeObject, graph);
-        titleContainer.style.backgroundColor = new StyleColor(colorMap[typeof(Fact)]);
+        this.Q("title-label").style.color = colorMap[typeof(Fact)];
+        // titleContainer.style.backgroundColor = new StyleColor(colorMap[typeof(Fact)]);
         //
         // PopupField<Fact> factEnumField = new PopupField<Fact>(graph.facts, factNodeObject.fact);
         // currentGraphView._blackBoard.editTextRequested += (blackboard, element, factName) => currentGraphView.schedule

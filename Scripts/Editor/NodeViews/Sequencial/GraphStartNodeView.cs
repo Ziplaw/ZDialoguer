@@ -20,32 +20,33 @@ public class GraphStartNodeView : SequentialNodeView
         titleContainer.style.backgroundColor = new StyleColor(new Color(0.6f, 0.57f, 0.96f));
         mainContainer.style.alignItems = Align.Center;
 
-        Button testButton = new Button(() =>
-        {
-            var current = startNodeObject.Next;
-            var graphView = EditorWindow.GetWindow<ZDialogueGraphEditorWindow>().graphView;
-            while (current != null)
-            {
-                while (!(current as DialogueNodeObject))
-                {
-                    if (current == null)
-                    {
-                        startNodeObject.Next = startNodeObject;
-                        return;
-                    }
-                    current = startNodeObject.Next;
-                }
-
-                graphView.AddToSelection(graphView.GetNodeByGuid(current.guid));
-                Debug.Log((current as DialogueNodeObject).text.ParseFacts(graph));
-                current = startNodeObject.Next;
-            }
-
-            startNodeObject.Next = startNodeObject;
-        }) { text = "Test Graph" };
-
-        mainContainer.Add(testButton);
-        CreateOutputPort(typeof(SequentialNodeObject), "", mainContainer, nodeObject, ref index, Port.Capacity.Single, Orientation.Vertical);
+        // Button testButton = new Button(() =>
+        // {
+        //     var current = startNodeObject.Next;
+        //     var graphView = EditorWindow.GetWindow<ZDialogueGraphEditorWindow>().graphView;
+        //     while (current != null)
+        //     {
+        //         while (!(current as DialogueNodeObject))
+        //         {
+        //             if (current == null)
+        //             {
+        //                 startNodeObject.Next = startNodeObject;
+        //                 return;
+        //             }
+        //             current = startNodeObject.Next;
+        //         }
+        //
+        //         graphView.AddToSelection(graphView.GetNodeByGuid(current.guid));
+        //         Debug.Log((current as DialogueNodeObject).text.ParseFacts(graph));
+        //         current = startNodeObject.Next;
+        //     }
+        //
+        //     startNodeObject.Next = startNodeObject;
+        // }) { text = "Test Graph" };
+        //
+        // mainContainer.Add(testButton);
+        var port = CreateOutputPort(typeof(SequentialNodeObject), "", mainContainer, nodeObject, ref index, Port.Capacity.Single, Orientation.Vertical);
+        port.Q<Label>().RemoveFromHierarchy();
         startNodeObject.Next = startNodeObject;
     }
 

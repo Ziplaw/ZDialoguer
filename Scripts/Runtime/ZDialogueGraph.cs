@@ -26,7 +26,6 @@ namespace ZDialoguer
         private Dictionary<string, Fact> _factMap; 
 #if UNITY_EDITOR
 
-
         public void Init(Vector2 graphEntryPosition)
         {
             var start = CreateInstance<GraphStartNodeObject>();
@@ -68,18 +67,18 @@ namespace ZDialoguer
             public string inputPortViewDataKey;
         }
 
-        private void OnEnable()
-        {
-            var entryNode = GetEntryNode();
-            entryNode.Next = entryNode;
-        }
+        // private void OnEnable()
+        // {
+        //     var entryNode = GetEntryNode();
+        //     entryNode.Next = entryNode;
+        // }
 
         public GraphStartNodeObject GetEntryNode()
         {
             return (GraphStartNodeObject)nodes[0];
         }
 
-        public void SetupGraph()
+        public void Setup()
         {
             nodes.ForEach(n => n.graph = this);
         }

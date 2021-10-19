@@ -101,6 +101,9 @@ namespace ZDialoguer
 
             EditorUtility.SetDirty(_field.fact);
             ZDialoguerGraphView.SaveChangesToGraph(graphView.graph);
+
+            var view = bb.graphView as ZDialoguerGraphView;
+            view.PopulateView(view.graph);
         }
     }
 }

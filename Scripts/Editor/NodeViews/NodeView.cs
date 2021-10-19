@@ -57,6 +57,7 @@ namespace ZDialoguer
                 { typeof(ChoiceNodeObject), () => new ChoiceNodeView() },
                 { typeof(SwitchNodeObject), () => new SwitchNodeView() },
                 { typeof(FactNodeObject), () => new FactNodeView() },
+                { typeof(ExitNodeObject), () => new ExitNodeView() },
             };
 
         private string nodeName;
