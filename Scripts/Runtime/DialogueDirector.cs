@@ -55,12 +55,12 @@ public class DialogueDirector : MonoBehaviour
         }
     }
 
-    public void RequestDialogue(ZDialogueGraph graph, params FactData[] factDatas)
+    public void RequestDialogue(ZDialogueGraph graph, params FactData[] context)
     {
         currentGraph = ProcessGraph(graph);
         SetupGraphExternal(currentGraph);
         currentGraph.Setup();
-        currentGraph.InitializeFacts(factDatas);
+        currentGraph.InitializeFacts(context);
 
         OnRequestDialogue?.Invoke();
         GetNextText();
