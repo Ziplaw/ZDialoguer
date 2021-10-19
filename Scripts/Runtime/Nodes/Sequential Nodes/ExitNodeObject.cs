@@ -12,6 +12,7 @@ namespace ZDialoguer
         public override (LocalisedString, SequentialNodeObject) OnRetrieve()
         {
             OnExitDialogue.Invoke();
+            graph.Dispose();
             return (null, null);
         }
 

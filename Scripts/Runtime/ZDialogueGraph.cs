@@ -109,6 +109,13 @@ namespace ZDialoguer
                 factInstanceMap[current] = Instantiate(current);
             return factInstanceMap[current];
         }
+
+        public void Dispose()
+        {
+            nodes.ForEach(n => Destroy(n));
+            facts.ForEach(n => Destroy(n));
+            Destroy(this);
+        }
     }
 }
 

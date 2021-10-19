@@ -58,8 +58,8 @@ public class DialogueDirector : MonoBehaviour
     public void RequestDialogue(ZDialogueGraph graph, params FactData[] context)
     {
         currentGraph = ProcessGraph(graph);
-        SetupGraphExternal(currentGraph);
         currentGraph.Setup();
+        SetupGraphExternal(currentGraph);
         currentGraph.InitializeFacts(context);
 
         OnRequestDialogue?.Invoke();
@@ -68,8 +68,11 @@ public class DialogueDirector : MonoBehaviour
 
     private ZDialogueGraph ProcessGraph(ZDialogueGraph graph)
     {
+        graph.factInstanceMap.Clear();
+        graph.nodeObjectMap.Clear();
+        
         var cloneGraph = Instantiate(graph);
-
+        
         cloneGraph.nodes = cloneGraph.nodes.Select(n => n.DeepClone()).ToList();
         cloneGraph.facts = cloneGraph.facts.Select(f => cloneGraph.GetOrCreateFactInstance(f)).ToList();
 
