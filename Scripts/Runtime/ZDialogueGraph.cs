@@ -22,8 +22,11 @@ namespace ZDialoguer
         public TextAsset dialogueText;
 
         public Dictionary<string, Fact> FactMap => _factMap ??= facts.ToDictionary(f => f.nameID, f => f);
+        private Dictionary<string, Fact> _factMap;
 
-        private Dictionary<string, Fact> _factMap; 
+        public Dictionary<NodeObject, NodeObject> nodeObjectMap = new Dictionary<NodeObject, NodeObject>();
+        public Dictionary<Fact, Fact> factInstanceMap = new Dictionary<Fact, Fact>();
+
 #if UNITY_EDITOR
 
         public void Init(Vector2 graphEntryPosition)
@@ -70,7 +73,7 @@ namespace ZDialoguer
         // private void OnEnable()
         // {
         //     var entryNode = GetEntryNode();
-        //     entryNode.Next = entryNode;
+        //     entryNode.Current = entryNode;
         // }
 
         public GraphStartNodeObject GetEntryNode()
@@ -89,6 +92,22 @@ namespace ZDialoguer
             {
                 FactMap[factData.nameID].Value = factData.value;
             }
+        }
+
+        internal NodeObject GetOrCreateNodeInstance(NodeObject current)
+        {
+            if (current == null) return null;
+            if (!nodeObjectMap.ContainsKey(current))
+                nodeObjectMap[current] = Instantiate(current);
+            return nodeObjectMap[current];
+        }
+        
+        internal Fact GetOrCreateFactInstance(Fact current)
+        {
+            if (current == null) return null;
+            if (!factInstanceMap.ContainsKey(current))
+                factInstanceMap[current] = Instantiate(current);
+            return factInstanceMap[current];
         }
     }
 }

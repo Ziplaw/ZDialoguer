@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using ZDialoguer.Localization;
@@ -27,18 +28,18 @@ namespace ZDialoguer
             }
             return null;
         }
-
-        public SequentialNodeObject Next
+        public SequentialNodeObject Current
         {
-            get
-            {
-                _current = _current.SequenceChild;
-                return _current;
-            }
-            internal set => _current = value;
+            set => _current = value;
         }
 
-        
+        public override NodeObject DeepClone()
+        {
+            GraphStartNodeObject instance = (GraphStartNodeObject)graph.GetOrCreateNodeInstance(this);
+            instance.childNodeObject = (SequentialNodeObject)graph.GetOrCreateNodeInstance(childNodeObject);
+            instance._current = (SequentialNodeObject)graph.GetOrCreateNodeInstance(_current);
+            return instance;
+        }
     }
 
     public static class Extensions

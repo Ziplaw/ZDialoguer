@@ -115,5 +115,15 @@ namespace ZDialoguer
         public override SequentialNodeObject SequenceChild => GetPredicate()
             ? childIfTrue as SequentialNodeObject
             : childIfFalse as SequentialNodeObject;
+
+        public override NodeObject DeepClone()
+        {
+            PredicateNodeObject instance = (PredicateNodeObject)graph.GetOrCreateNodeInstance(this);
+            instance.fact = graph.GetOrCreateFactInstance(fact);
+            instance.secondFact = graph.GetOrCreateFactInstance(secondFact);
+            instance.childIfTrue = graph.GetOrCreateNodeInstance(childIfTrue);
+            instance.childIfFalse = graph.GetOrCreateNodeInstance(childIfFalse);
+            return instance;
+        }
     }
 }

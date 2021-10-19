@@ -79,5 +79,13 @@ namespace ZDialoguer
         {
             return SequenceChild.OnRetrieve();
         }
+
+        public override NodeObject DeepClone()
+        {
+            SwitchNodeObject instance = (SwitchNodeObject)graph.GetOrCreateNodeInstance(this);
+            instance.fact = graph.GetOrCreateFactInstance(fact);
+            instance.outputEntries.ForEach(outputEntry => outputEntry.output = graph.GetOrCreateNodeInstance(outputEntry.output));
+            return instance;
+        }
     }
 }

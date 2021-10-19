@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using ZDialoguer.Localization;
 
@@ -12,6 +13,11 @@ namespace ZDialoguer
         {
             OnExitDialogue.Invoke();
             return (null, null);
+        }
+
+        public override NodeObject DeepClone()
+        {
+            return graph.GetOrCreateNodeInstance(this);
         }
     }
 }

@@ -16,6 +16,13 @@ public class DialogueNodeObject : SequentialNodeObject
         return (text, SequenceChild);
     }
 
+    public override NodeObject DeepClone()
+    {
+        DialogueNodeObject instance = (DialogueNodeObject)graph.GetOrCreateNodeInstance(this);
+        instance.connectedChild = (SequentialNodeObject)graph.GetOrCreateNodeInstance(connectedChild);
+        return instance;
+    }
+
     public override bool Init(Vector2 position, ZDialogueGraph graph)
     {
         base.Init(position,graph);

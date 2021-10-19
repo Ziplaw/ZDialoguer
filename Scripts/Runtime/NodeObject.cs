@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Transactions;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -18,11 +19,11 @@ namespace ZDialoguer
         public Vector2 position;
         public string guid;
         [SerializeField]protected internal ZDialogueGraph graph;
-        
+
+        public abstract NodeObject DeepClone();
 
 
-
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         public virtual bool Init(Vector2 position, ZDialogueGraph graph)
         {
             this.graph = graph;

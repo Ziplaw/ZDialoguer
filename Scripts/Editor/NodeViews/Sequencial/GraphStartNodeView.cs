@@ -22,7 +22,7 @@ public class GraphStartNodeView : SequentialNodeView
 
         // Button testButton = new Button(() =>
         // {
-        //     var current = startNodeObject.Next;
+        //     var current = startNodeObject.Current;
         //     var graphView = EditorWindow.GetWindow<ZDialogueGraphEditorWindow>().graphView;
         //     while (current != null)
         //     {
@@ -30,24 +30,24 @@ public class GraphStartNodeView : SequentialNodeView
         //         {
         //             if (current == null)
         //             {
-        //                 startNodeObject.Next = startNodeObject;
+        //                 startNodeObject.Current = startNodeObject;
         //                 return;
         //             }
-        //             current = startNodeObject.Next;
+        //             current = startNodeObject.Current;
         //         }
         //
         //         graphView.AddToSelection(graphView.GetNodeByGuid(current.guid));
         //         Debug.Log((current as DialogueNodeObject).text.ParseFacts(graph));
-        //         current = startNodeObject.Next;
+        //         current = startNodeObject.Current;
         //     }
         //
-        //     startNodeObject.Next = startNodeObject;
+        //     startNodeObject.Current = startNodeObject;
         // }) { text = "Test Graph" };
         //
         // mainContainer.Add(testButton);
         var port = CreateOutputPort(typeof(SequentialNodeObject), "", mainContainer, nodeObject, ref index, Port.Capacity.Single, Orientation.Vertical);
         port.Q<Label>().RemoveFromHierarchy();
-        startNodeObject.Next = startNodeObject;
+        startNodeObject.Current = startNodeObject;
     }
 
     public override void OnConnectEdgeToInputPort(Edge edge)

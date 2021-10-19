@@ -22,13 +22,25 @@ namespace ZDialoguer
 
         public void ConfirmChoice(Choice choice)
         {
-            graph.GetEntryNode().Next = choice.output;
+            graph.GetEntryNode().Current = choice.output;
         }
 
         public override (LocalisedString, SequentialNodeObject) OnRetrieve()
         {
             Execute();
             return (dialogueText, SequenceChild);
+        }
+
+        public override NodeObject DeepClone()
+        {
+            ChoiceNodeObject instance = (ChoiceNodeObject)graph.GetOrCreateNodeInstance(this);
+            instance._sequenceChild = (SequentialNodeObject)graph.GetOrCreateNodeInstance(instance._sequenceChild);
+            instance.choices.ForEach(c =>
+            {
+                c.overriddenNode = (PredicateNodeObject)graph.GetOrCreateNodeInstance(c.overriddenNode);
+                c.output = (SequentialNodeObject)graph.GetOrCreateNodeInstance(c.output);
+            });
+            return instance;
         }
     }
 

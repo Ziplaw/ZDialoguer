@@ -70,46 +70,10 @@ public class DialogueDirector : MonoBehaviour
     {
         var cloneGraph = Instantiate(graph);
 
-        var nodeMap = cloneGraph.nodes.ToDictionary(n => n, n => Instantiate(n));
-        var factMap = cloneGraph.facts.ToDictionary(fact => fact, fact => Instantiate(fact));
-        
-        cloneGraph.nodes = nodeMap.Select(n => n.Value).ToList();
-        cloneGraph.facts = factMap.Select(f => f.Value).ToList();
-        
-        foreach (var o in cloneGraph.nodes.Where(n => n is ChoiceNodeObject))
-        {
-            var choiceNodeObject = (ChoiceNodeObject)o;
-            foreach (var choice in choiceNodeObject.choices)
-            {
-                choice.overriddenNode = (PredicateNodeObject)(choice.overriddenNode ? nodeMap[choice.overriddenNode] : null);
-                choice.output = (SequentialNodeObject)(choice.output ? nodeMap[choice.output] : null);
-            }
-        }
-
-        DeepCloneReferences(ref cloneGraph.nodes, nodeMap);
-        DeepCloneReferences(ref cloneGraph.facts, factMap);
+        cloneGraph.nodes = cloneGraph.nodes.Select(n => n.DeepClone()).ToList();
+        cloneGraph.facts = cloneGraph.facts.Select(f => cloneGraph.GetOrCreateFactInstance(f)).ToList();
 
         return cloneGraph;
-    }
-
-    void DeepCloneReferences<T>(ref List<T> list, Dictionary<T, T> map) where T : ScriptableObject
-    {
-        foreach (var clonedMember in list)
-        {
-            foreach (var fieldInfo in clonedMember.GetType()
-                .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                .Where(f => typeof(T).IsAssignableFrom(f.FieldType)))
-            {
-                var memberReference = fieldInfo.GetValue(clonedMember);
-                if (memberReference != null)
-                {
-                    if (map.ContainsKey((T)memberReference))
-                        fieldInfo.SetValue(clonedMember, map[(T)memberReference]);
-                    else if(map.ContainsValue((T)memberReference))
-                        fieldInfo.SetValue(clonedMember, (T)memberReference);
-                }
-            }
-        }
     }
 
     public void GetNextText()
