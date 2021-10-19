@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -9,7 +10,7 @@ namespace ZDialoguerEditor
 {
     public class ZDialogueGraphEditorWindow : EditorWindow
     {
-        internal ZDialoguerGraphView graphView;
+        public ZDialoguerGraphView graphView;
         private InspectorView inspectorView;
 
         [MenuItem("Tools/ZDialoguer/Graph")]
@@ -71,7 +72,7 @@ namespace ZDialoguerEditor
         private void OnSelectionChange()
         {
             var graph = Selection.activeObject as ZDialogueGraph;
-            
+
             if (graph)
             {
                 graphView.PopulateView(graph);

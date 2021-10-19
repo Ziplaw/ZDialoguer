@@ -9,11 +9,7 @@ public abstract class SequentialNodeView : NodeView
 {
     public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph)
     {
-        // base.BuildNodeView(nodeObject, graph);
-        var ghostPort = InstantiatePort(Orientation.Vertical, Direction.Input, Port.Capacity.Single, null);
-        ghostPort.style.display = DisplayStyle.None;
-        ghostPort.viewDataKey = "⌂";
-        inputContainer.Add(ghostPort);
+        
     }
 
     public abstract override void OnConnectEdgeToInputPort(Edge edge);

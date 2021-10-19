@@ -62,6 +62,7 @@ namespace ZDialoguer
             AssetDatabase.RemoveObjectFromAsset(fact);
             AssetDatabase.SaveAssets();
         }
+
 #endif
         [Serializable]
         public class EdgeData
@@ -69,12 +70,6 @@ namespace ZDialoguer
             public string outputPortViewDataKey;
             public string inputPortViewDataKey;
         }
-
-        // private void OnEnable()
-        // {
-        //     var entryNode = GetEntryNode();
-        //     entryNode.Current = entryNode;
-        // }
 
         public GraphStartNodeObject GetEntryNode()
         {
@@ -106,7 +101,11 @@ namespace ZDialoguer
         {
             if (current == null) return null;
             if (!factInstanceMap.ContainsKey(current))
-                factInstanceMap[current] = Instantiate(current);
+            {
+                if (factInstanceMap.ContainsValue(current)) return factInstanceMap.Values.First(f => f == current);
+                    factInstanceMap[current] = Instantiate(current);
+            }
+
             return factInstanceMap[current];
         }
 

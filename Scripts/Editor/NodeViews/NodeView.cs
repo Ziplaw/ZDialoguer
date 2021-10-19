@@ -24,6 +24,14 @@ namespace ZDialoguer
             
         }
 
+        protected void ForceCollapsable()
+        {
+            var ghostPort = InstantiatePort(Orientation.Vertical, Direction.Input, Port.Capacity.Single, null);
+            ghostPort.style.display = DisplayStyle.None;
+            ghostPort.viewDataKey = "⌂";
+            inputContainer.Add(ghostPort);
+        }
+
         public abstract void OnConnectEdgeToInputPort(Edge edge);
         public abstract void OnConnectEdgeToOutputPort(Edge edge);
         public abstract void OnDisconnectEdgeFromInputPort(Edge edge);

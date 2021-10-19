@@ -41,20 +41,7 @@ public class ZDialoguerGraphView : GraphView
                 "UXML/ZDialogueGraphEditorWindow");
         styleSheets.Add(styleSheet);
     }
-
-    public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
-    {
-        base.BuildContextualMenu(evt);
-        evt.menu.AppendAction("Refresh", (a) => PopulateView(graph));
-    }
-
-    public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
-    {
-        return ports.ToList()
-            .Where(endPort => endPort.direction != startPort.direction && endPort.node != startPort.node &&
-                              startPort.portType == endPort.portType).ToList();
-    }
-
+    
     public void PopulateView(ZDialogueGraph graph)
     {
         repopulating = true;
@@ -79,18 +66,8 @@ public class ZDialoguerGraphView : GraphView
         graph.nodes.ForEach(n => CreateNodeView(n));
         RestoreConnections();
         repopulating = false;
-        
-        // this.Q<Edge>().RemoveFromHierarchy();
     }
-
-    private void AddSearchWindow()
-    {
-        _nodeSearchWindow = ScriptableObject.CreateInstance<NodeSearchWindow>();
-        _nodeSearchWindow.graphView = this;
-        nodeCreationRequest = context =>
-            SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), _nodeSearchWindow);
-    }
-
+    
     private void RestoreConnections()
     {
         List<Edge> edgesToCreate = new List<Edge>();
@@ -105,8 +82,29 @@ public class ZDialoguerGraphView : GraphView
             AddElement(edge);
             edgesToCreate.Add(edge);
         }
-        
+
         graphViewChanged.Invoke(new GraphViewChange { edgesToCreate = edgesToCreate });
+    }
+
+    public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
+    {
+        base.BuildContextualMenu(evt);
+        evt.menu.AppendAction("Refresh", (a) => PopulateView(graph));
+    }
+
+    public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
+    {
+        return ports.ToList()
+            .Where(endPort => endPort.direction != startPort.direction && endPort.node != startPort.node &&
+                              startPort.portType == endPort.portType).ToList();
+    }
+
+    private void AddSearchWindow()
+    {
+        _nodeSearchWindow = ScriptableObject.CreateInstance<NodeSearchWindow>();
+        _nodeSearchWindow.graphView = this;
+        nodeCreationRequest = context =>
+            SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), _nodeSearchWindow);
     }
 
     void GenerateBlackBoard()
@@ -303,4 +301,6 @@ public class ZDialoguerGraphView : GraphView
         AddElement(nodeView);
         return nodeView;
     }
+
+    
 }

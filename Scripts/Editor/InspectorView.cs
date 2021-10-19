@@ -14,10 +14,6 @@ public class InspectorView : VisualElement
 
     private Editor editor;
 
-    public InspectorView()
-    {
-    }
-
     public void UpdateSelection(ZDialogueGraph graph, Editor _editor)
     {
         Clear();
