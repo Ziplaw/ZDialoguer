@@ -45,8 +45,8 @@ public class GraphStartNodeView : SequentialNodeView
         // }) { text = "Test Graph" };
         //
         // mainContainer.Add(testButton);
-        var port = CreateOutputPort(typeof(SequentialNodeObject), "", mainContainer, nodeObject, ref index, Port.Capacity.Single, Orientation.Vertical);
-        port.Q<Label>().RemoveFromHierarchy();
+        /*var port =*/ CreateOutputPort(typeof(SequentialNodeObject), "", mainContainer, nodeObject, ref index, Port.Capacity.Single, Orientation.Vertical);
+        // port.Q<Label>().RemoveFromHierarchy();
         startNodeObject.Current = startNodeObject;
     }
 

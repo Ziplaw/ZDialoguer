@@ -71,8 +71,8 @@ namespace ZDialoguerEditor
         private void OnSelectionChange()
         {
             var graph = Selection.activeObject as ZDialogueGraph;
-
-            if (graph && graph.GetInstanceID() > 0)
+            
+            if (graph)
             {
                 graphView.PopulateView(graph);
             }
