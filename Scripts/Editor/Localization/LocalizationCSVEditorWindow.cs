@@ -127,25 +127,25 @@ public class LocalizationCSVEditorWindow : EditorWindow
                     });
                     textField.RegisterCallback<KeyDownEvent>(e =>
                     {
-                        if (e.keyCode == KeyCode.RightArrow)
+                        if (e.keyCode == KeyCode.RightArrow && e.shiftKey)
                         {
                             if (j != LocalizationSettings.Instance.languages.Count - 1)
                                 rowContainer.ElementAt(j + 1).Focus();
                         }
 
-                        if (e.keyCode == KeyCode.LeftArrow)
+                        if (e.keyCode == KeyCode.LeftArrow && e.shiftKey)
                         {
                             if (j != 0)
                                 rowContainer.ElementAt(j - 1).Focus();
                         }
 
-                        if (e.keyCode == KeyCode.UpArrow)
+                        if (e.keyCode == KeyCode.UpArrow && e.shiftKey)
                         {
                             if (tableEntryIndex != 1)
                                 container.Q($"row{tableEntryIndex - 1}")?.ElementAt(j).Focus();
                         }
 
-                        if (e.keyCode == KeyCode.DownArrow)
+                        if (e.keyCode == KeyCode.DownArrow && e.shiftKey)
                         {
                             if (tableEntryIndex != table.Count-1)
                                 container.Q($"row{tableEntryIndex + 1}")?.ElementAt(j).Focus();
