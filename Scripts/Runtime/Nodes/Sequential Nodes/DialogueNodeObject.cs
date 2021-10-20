@@ -13,6 +13,7 @@ public class DialogueNodeObject : SequentialNodeObject
 
     public override (LocalisedString, SequentialNodeObject) OnRetrieve()
     {
+        text.GenerateOutput();
         return (text, SequenceChild);
     }
 

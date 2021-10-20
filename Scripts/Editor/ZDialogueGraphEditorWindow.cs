@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Codice.Client.ChangeTrackerService.Serialization;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -33,6 +34,14 @@ namespace ZDialoguerEditor
             // wnd.Close();
         }
 
+        public static void TryRepopulate()
+        {
+            if (HasOpenInstances<ZDialogueGraphEditorWindow>())
+            {
+                var wnd = GetWindow<ZDialogueGraphEditorWindow>().graphView;
+                wnd.PopulateView(wnd.graph);
+            }
+        }
         public void CreateGUI()
         {
             VisualElement root = rootVisualElement;
@@ -44,18 +53,16 @@ namespace ZDialoguerEditor
             graphView._editorWindow = this;
             inspectorView = root.Q<InspectorView>();
             PopupField<string> languagePopup = new PopupField<string>(LocalizationSettings.Instance.languages,
-                LocalizationSettings.Instance.selectedLanguage);
+                LocalizationSettings.Instance.selectedLanguage){name = "LanguagePopup"};
+
+            LocalizationSettings.Instance.OnLanguageChange += s => languagePopup.SetValueWithoutNotify(s);
+            
             languagePopup.RegisterValueChangedCallback(e =>
             {
                 LocalizationSettings.Instance.selectedLanguage =
                     LocalizationSettings.Instance.languages.IndexOf(e.newValue);
 
-                foreach (var node in graphView.nodes.ToList().Where(n => n is DialogueNodeView))
-                {
-                    var nodeObject = (node as DialogueNodeView).NodeObject as DialogueNodeObject;
-                    nodeObject.text.Reset();
-                    (node as DialogueNodeView).Q<HelpBox>().text = nodeObject.text;
-                }
+                TryRepopulate();
 
                 EditorUtility.SetDirty(LocalizationSettings.Instance);
                 AssetDatabase.SaveAssets();

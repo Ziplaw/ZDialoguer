@@ -27,6 +27,9 @@ namespace ZDialoguer
 
         public override (LocalisedString, SequentialNodeObject) OnRetrieve()
         {
+            dialogueText.GenerateOutput();
+            choices.ForEach(c => c.choiceText.GenerateOutput());
+            
             Execute();
             return (dialogueText, SequenceChild);
         }

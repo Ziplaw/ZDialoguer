@@ -34,15 +34,5 @@ public class Fact : ScriptableObject
             }
         }
     }
-
-#if UNITY_EDITOR
-    public void FactTypeChange(ChangeEvent<Enum> evt)
-    {
-        OnFactTypeChange((FactType)evt.newValue);
-        UnityEditor.EditorUtility.SetDirty(this);
-        UnityEditor.AssetDatabase.SaveAssets();
-    }
-#endif
-    
 }
 

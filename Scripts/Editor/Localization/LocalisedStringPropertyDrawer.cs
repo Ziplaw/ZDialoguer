@@ -23,7 +23,6 @@ namespace ZDialoguer.Localization.Editor
         {
             LocalisedString self = GetTextFromNode(property.serializedObject.targetObject as NodeObject, indexPosition);
 
-            self.output = string.Empty;
             self.table = null;
 
             var root = new VisualElement{name = "localisedStringContainer"};

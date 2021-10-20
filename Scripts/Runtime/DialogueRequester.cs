@@ -9,6 +9,6 @@ public class DialogueRequester : MonoBehaviour
     
     public void RequestDialogue()
     {
-        FindObjectOfType<DialogueDirector>().RequestDialogue(graph, new FactData("playerName", "AlbertoRequested"));
+        FindObjectOfType<DialogueDirector>().RequestDialogue(graph);
     }
 }

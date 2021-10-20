@@ -30,18 +30,6 @@ public class FactEditor : Editor
             default:
                 return;
         }
-
-        manager.OnFactTypeChange += FactChange;
-    }
-
-    private void OnDisable()
-    {
-        if (manager) manager.OnFactTypeChange -= FactChange;
-    }
-
-    public void FactChange(Fact.FactType newFactType)
-    {
-        manager.factType = newFactType;
     }
 
     public override VisualElement CreateInspectorGUI()
@@ -51,9 +39,10 @@ public class FactEditor : Editor
 
         root.Add(InspectorView.GetNodeLabel("Fact", new Color(1f, 0.65f, 0f)));
         var enumField = new EnumField("Fact Type", manager.factType);
-        enumField.RegisterValueChangedCallback((e) =>
+        enumField.RegisterValueChangedCallback(e =>
         {
-            manager.FactTypeChange(e);
+            manager.factType = (Fact.FactType)e.newValue;
+            ZDialogueGraphEditorWindow.TryRepopulate();
             root.Clear();
             CreateInspectorGUI();
         });

@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
+
 [assembly: InternalsVisibleTo("com.Ziplaw.ZDialoguer.Editor")]
 
 namespace ZDialoguer.Localization
@@ -15,42 +16,43 @@ namespace ZDialoguer.Localization
         public TextAsset csvFile;
         [SerializeField, HideInInspector] private bool csvDictatedByDialogueGraph;
         [SerializeField] internal List<LocalizationSystem.TableEntry> table;
-        [SerializeField] internal string output;
+        [SerializeField] internal string Output => GenerateOutput();
         [SerializeField] internal string csvFileFullAssetPath;
 
-#if UNITY_EDITOR
-        
-        #endif
         public LocalisedString(bool csvDictatedByDialogueGraph = false)
         {
             this.csvDictatedByDialogueGraph = csvDictatedByDialogueGraph;
             value = default;
             csvFile = default;
             table = default;
-            output = default;
         }
 
         public static implicit operator string(LocalisedString textField)
         {
-            if (string.IsNullOrEmpty(textField.output))
+            if (textField.table == null || textField.table.Count == 0)
             {
-                if (textField.table == null || textField.table.Count == 0)
-                {
-                    textField.table = LocalizationSystem.GetTable(textField.csvFileFullAssetPath);
-                }
-                if (textField.table != null && textField.table.Count > 0 && textField.table.Count > textField.value && textField.table[textField.value].entry != null)
-                {
-                    textField.output = textField.table[textField.value].entry[LocalizationSettings.Instance.selectedLanguage];
-                }
+                textField.table = LocalizationSystem.GetTable(textField.csvFileFullAssetPath);
             }
-            return textField.output;
+
+            if (textField.table != null && textField.table.Count > 0 && textField.table.Count > textField.value &&
+                textField.table[textField.value].entry != null)
+            {
+                textField.GenerateOutput();
+            }
+
+            return textField.Output;
         }
+
+        public string GenerateOutput()
+        {
+            return table[value].entry[LocalizationSettings.Instance.selectedLanguage];
+        }
+
 
         public void Reset()
         {
             value = default;
             table = null;
-            output = string.Empty;
         }
 
         public static string GetFullAssetPath(TextAsset textCsvFile)
@@ -59,6 +61,4 @@ namespace ZDialoguer.Localization
                 AssetDatabase.GetAssetPath(textCsvFile));
         }
     }
-
-    
 }

@@ -149,7 +149,7 @@ public class ZDialoguerGraphView : GraphView
                 dialogueNodeObject.text.Reset();
             }
 
-            EditorWindow.GetWindow<ZDialogueGraphEditorWindow>().graphView.PopulateView(graph);
+            ZDialogueGraphEditorWindow.TryRepopulate();
         });
         var editButton = new Button(() =>
         {

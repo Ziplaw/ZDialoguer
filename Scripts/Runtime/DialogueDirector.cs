@@ -57,6 +57,8 @@ public class DialogueDirector : MonoBehaviour
 
     public void RequestDialogue(ZDialogueGraph graph, params FactData[] context)
     {
+        LocalizationSettings.Instance.SetLanguage("ID");
+        
         currentGraph = ProcessGraph(graph);
         SetupGraphExternal(currentGraph);
         currentGraph.InitializeFacts(context);

@@ -22,7 +22,7 @@ namespace ZDialoguer
         public TextAsset dialogueText;
 
         public Dictionary<string, Fact> FactMap => _factMap ??= facts.ToDictionary(f => f.nameID, f => f);
-        private Dictionary<string, Fact> _factMap;
+        private Dictionary<string, Fact> _factMap = new Dictionary<string, Fact>();
 
         public Dictionary<NodeObject, NodeObject> nodeObjectMap = new Dictionary<NodeObject, NodeObject>();
         public Dictionary<Fact, Fact> factInstanceMap = new Dictionary<Fact, Fact>();
