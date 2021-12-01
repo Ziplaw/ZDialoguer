@@ -10,47 +10,97 @@ using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using UnityEngine.PlayerLoop;
 using ZDialoguer.Localization;
+using ZDialoguerEditor;
 
 namespace ZDialoguer.Localization.Editor
 {
     public class LocalisedStringPropertyDrawer : PropertyDrawer
     {
+        internal NodeView _nodeView;
         internal int indexPosition = 0;
         internal bool oneLine;
         internal bool stretch;
+        private bool editingText;
+        public VisualElement _container;
+        public int _containerPosition;
 
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            LocalisedString self = GetTextFromNode(property.serializedObject.targetObject as NodeObject, indexPosition);
+            var self = GetTextFromNode(property.serializedObject.targetObject as NodeObject, indexPosition);
 
             self.table = null;
 
-            var root = new VisualElement{name = "localisedStringContainer"};
+            var root = new VisualElement { name = "localisedStringContainer" };
             root.style.marginBottom = oneLine ? 0 : 5;
             root.style.marginLeft = oneLine ? 0 : 5;
             root.style.marginRight = oneLine ? 0 : 5;
             root.style.marginTop = oneLine ? 0 : 5;
 
-            var rowContainer = new VisualElement { style = { flexDirection = FlexDirection.Row, alignItems = Align.Center/*, maxHeight = oneLine?0:1000*/} };
+            var rowContainer = new VisualElement
+            {
+                style =
+                {
+                    flexDirection = FlexDirection.Row, alignItems = Align.Center /*, maxHeight = oneLine?0:1000*/
+                }
+            };
 
             var currentText =
                 new HelpBox(self,
-                        HelpBoxMessageType.None)
-                    { style = { flexGrow = 1, maxHeight = 150, maxWidth = oneLine ? 70 : stretch ? new StyleLength(StyleKeyword.None) : 150, minHeight = 24, minWidth = 70} };
+                    HelpBoxMessageType.None)
+                {
+                    style =
+                    {
+                        flexGrow = 1, maxHeight = 150,
+                        maxWidth = oneLine ? 70 : stretch ? new StyleLength(StyleKeyword.None) : 150,
+                        minHeight = oneLine ? 24 : 56, minWidth = 70
+                    }
+                };
             var label = currentText.Q<Label>();
             label.style.overflow = Overflow.Hidden;
             label.style.whiteSpace = oneLine ? WhiteSpace.NoWrap : WhiteSpace.Normal;
-                
-                //overflow = Overflow.Hidden, whiteSpace = oneLine ? WhiteSpace.NoWrap : WhiteSpace.Normal}
-                
-                //align items center max height 0
+
+            var textField = new TextField
+            {
+                value = self,
+                multiline = true,
+                style =
+                {
+                    flexGrow = 1, maxHeight = 150,
+                    maxWidth = oneLine ? 70 : stretch ? new StyleLength(StyleKeyword.None) : 150, 
+                    minHeight = oneLine ? 24 : 56,
+                    minWidth = 70,
+                    whiteSpace = oneLine ? WhiteSpace.NoWrap : WhiteSpace.Normal,
+                }
+            };
+
+            //overflow = Overflow.Hidden, whiteSpace = oneLine ? WhiteSpace.NoWrap : WhiteSpace.Normal}
+
+            //align items center max height 0
+
+            VisualElement columnContainer = new VisualElement { style = { alignSelf = Align.FlexEnd, flexDirection = oneLine ? FlexDirection.Row : FlexDirection.Column} };
+
+            var searchIcon = Resources.Load<Texture2D>("Icons/search");
+            var editIcon = Resources.Load<Texture2D>(editingText ? "Icons/select" : "Icons/edit");
+            
 
             var searchButton = new Button(() => SearchButton(property, currentText))
                 { style = { alignSelf = Align.FlexEnd, flexWrap = Wrap.Wrap, flexGrow = 0, height = 24, width = 24 } };
-            searchButton.style.backgroundImage = Resources.Load<Texture2D>("Icons/search");
+            searchButton.style.backgroundImage = searchIcon;
 
-            rowContainer.Add(currentText);
-            rowContainer.Add(searchButton);
+            var editButton = new Button(() => EditButton(property, self, textField))
+                { style = { alignSelf = Align.FlexEnd, flexWrap = Wrap.Wrap, flexGrow = 0, height = 24, width = 24 } };
+            editButton.style.backgroundImage = editIcon;
+
+            columnContainer.Add(editButton);
+            columnContainer.Add(searchButton);
+
+            
+            if (editingText)
+                rowContainer.Add(textField);
+            else
+                rowContainer.Add(currentText);
+
+            rowContainer.Add(columnContainer);
             root.Add(rowContainer);
             return root;
         }
@@ -59,14 +109,33 @@ namespace ZDialoguer.Localization.Editor
         {
             LocalizationSearchWindow.Open(property, currentText, indexPosition);
         }
-        
+
+        void EditButton(SerializedProperty property, LocalisedString localisedString, TextField textField)
+        {
+            editingText = !editingText;
+
+            if (!editingText)
+            {
+                localisedString.table[localisedString.value].entry[LocalizationSettings.Instance.selectedLanguage] =
+                    textField.value;
+                LocalizationSystem.SetTable(localisedString.csvFileFullAssetPath, localisedString.table);
+            }
+
+            _container.Q("localisedStringContainer")?.RemoveFromHierarchy();
+            
+            _container.Insert(_containerPosition,CreatePropertyGUI(property) );
+        }
+
         internal static LocalisedString GetTextFromNode(NodeObject nodeObject, int indexPosition)
         {
             switch (nodeObject)
             {
                 case DialogueNodeObject dialogueNodeObject: return dialogueNodeObject.text;
-                case ChoiceNodeObject choiceNodeObject: return indexPosition == -1 ? choiceNodeObject.dialogueText : choiceNodeObject.choices[indexPosition].choiceText;
-                default: throw new NotImplementedException();
+                case ChoiceNodeObject choiceNodeObject:
+                    return indexPosition == -1
+                        ? choiceNodeObject.dialogueText
+                        : choiceNodeObject.choices[indexPosition].choiceText;
+                default: throw new ArgumentOutOfRangeException();
             }
         }
     }
@@ -91,7 +160,6 @@ namespace ZDialoguer.Localization.Editor
             window.ShowAsDropDown(r, new Vector2(500, 300));
         }
 
-        
 
         private void CreateGUI()
         {
@@ -101,8 +169,10 @@ namespace ZDialoguer.Localization.Editor
             rootVisualElement.style.marginLeft = 5;
             rootVisualElement.style.marginTop = 5;
 
-            LocalisedString text = LocalisedStringPropertyDrawer.GetTextFromNode(_property.serializedObject.targetObject as NodeObject, choiceNodeIndexPos);
-            
+            LocalisedString text =
+                LocalisedStringPropertyDrawer.GetTextFromNode(_property.serializedObject.targetObject as NodeObject,
+                    choiceNodeIndexPos);
+
             // var node = _property.serializedObject.targetObject as DialogueNodeObject;
             // var text = node.text;
             var table = LocalizationSystem.GetTable(text.csvFileFullAssetPath);
@@ -125,8 +195,7 @@ namespace ZDialoguer.Localization.Editor
             root.Add(new IMGUIContainer(() =>
             {
                 foreach (var tableEntry in table.Where(e =>
-                    e.entry[LocalizationSettings.Instance.selectedLanguage].ToLower()
-                        .Contains(searchField.value.ToLower())))
+                    e.entry.Any(s => s.ToLower().Contains(searchField.value.ToLower()))))
                 {
                     using (new GUILayout.HorizontalScope())
                     {

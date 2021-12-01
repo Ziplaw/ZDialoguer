@@ -25,10 +25,12 @@ public class DialogueNodeView : SequentialNodeView
         dialogueNodeObject.text.csvFileFullAssetPath = LocalisedString.GetFullAssetPath(dialogueNodeObject.text.csvFile);
 
         var propertyDrawer =
-            new LocalisedStringPropertyDrawer().CreatePropertyGUI(
+            new LocalisedStringPropertyDrawer{_nodeView = this, _container = extensionContainer, _containerPosition = 0}.CreatePropertyGUI(
                 new SerializedObject(nodeObject).FindProperty("text"));
 
         extensionContainer.Add(propertyDrawer);
+
+        ForceCollapsable();
     }
 
     public override void OnConnectEdgeToOutputPort(Edge edge) => edge.IsInputKey(0, () => (NodeObject as DialogueNodeObject).connectedChild = (edge.input.node as NodeView).NodeObject as SequentialNodeObject);

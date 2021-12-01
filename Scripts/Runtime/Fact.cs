@@ -2,37 +2,64 @@ using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-[Serializable]
-public class Fact : ScriptableObject
+namespace ZDialoguer
 {
-    public enum FactType {Float, String}
-
-    public Action<FactType> OnFactTypeChange;
-    public string nameID;
-    [SerializeField,HideInInspector] string stringValue = "New Fact";
-    [SerializeField,HideInInspector] float floatValue = 0f;
-    public FactType factType;
-
-    public object Value
+    [Serializable]
+    public class Fact : DialogueData
     {
-        get
+        public Fact()
         {
-            switch (factType)
+            nameID = "New Fact";
+        }
+
+        public Fact(Fact fact)
+        {
+            nameID = fact.nameID;
+            factType = fact.factType;
+            stringValue = fact.stringValue;
+            floatValue = fact.floatValue;
+        }
+
+        public enum FactType
+        {
+            Float,
+            String
+        }
+
+        // public Action<FactType> OnFactTypeChange;
+        [SerializeField] public bool initialized;
+        [SerializeField, HideInInspector] string stringValue = "New Fact";
+        [SerializeField, HideInInspector] float floatValue = 0f;
+        public FactType factType;
+
+        public object Value
+        {
+            get
             {
-                case FactType.Float: return floatValue;
-                case FactType.String: return stringValue;
-                default: throw new InvalidCastException("Specified value is neither string nor float");
+                switch (factType)
+                {
+                    case FactType.Float: return floatValue;
+                    case FactType.String: return stringValue;
+                    default: throw new InvalidCastException("Specified value is neither string nor float");
+                }
+            }
+            set
+            {
+                switch (value)
+                {
+                    case float _floatValue:
+                        floatValue = _floatValue;
+                        break;
+                    case string _stringValue:
+                        stringValue = _stringValue;
+                        break;
+                    default: throw new InvalidCastException("Specified value is neither string nor float");
+                }
             }
         }
-        set
-        {
-            switch (value)
-            {
-                case float _floatValue: floatValue = _floatValue; break;
-                case string _stringValue: stringValue = _stringValue; break;
-                default: throw new InvalidCastException("Specified value is neither string nor float");
-            }
-        }
+
+        public static Fact Null => _null ??= new Fact();
+        private static Fact _null;
     }
 }
 

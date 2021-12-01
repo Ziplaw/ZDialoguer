@@ -9,7 +9,7 @@ using UnityEngine.UIElements;
 using ZDialoguer;
 using ZDialoguerEditor;
 
-[CustomEditor(typeof(Fact))]
+[CustomEditor(typeof(FactNodeObject))]
 public class FactEditor : Editor
 {
     private Fact manager;
@@ -21,11 +21,11 @@ public class FactEditor : Editor
 
         switch (target)
         {
-            case Fact fact:
-                manager = fact;
-                break;
+            // case Fact fact:
+            //     manager = fact;
+            //     break;
             case FactNodeObject factNodeObject:
-                manager = factNodeObject.fact;
+                manager = GlobalData.Instance.facts[factNodeObject.factIndex];
                 break;
             default:
                 return;

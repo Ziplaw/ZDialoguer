@@ -5,12 +5,12 @@ namespace ZDialoguer
 {
     public class FactNodeObject : StaticNodeObject
     {
-        public Fact fact;
+        public int factIndex;
 
         public override NodeObject DeepClone()
         {
             FactNodeObject instance = (FactNodeObject)graph.GetOrCreateNodeInstance(this);
-            instance.fact = graph.GetOrCreateFactInstance(fact);
+            instance.factIndex = factIndex;
             return instance;
         }
 
@@ -19,7 +19,7 @@ namespace ZDialoguer
             base.Init(position, graph);
             if (graph.facts.Count > 0)
             {
-                fact = graph.facts[0];
+                factIndex = graph.facts[0];
                 return true;
             }
             Debug.LogWarning("There's no Facts in the current graph!");

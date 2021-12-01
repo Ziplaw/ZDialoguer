@@ -20,7 +20,7 @@ public class FactNodeEditor : Editor
 
     public override VisualElement CreateInspectorGUI()
     {
-        Editor editor = CreateEditor(manager.fact);
+        Editor editor = CreateEditor(manager);
         root.Add(editor.CreateInspectorGUI());
         return root;
     }

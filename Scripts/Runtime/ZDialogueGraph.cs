@@ -17,15 +17,13 @@ namespace ZDialoguer
 #endif
         public bool initialized;
         public List<NodeObject> nodes = new List<NodeObject>();
-        public List<Fact> facts = new List<Fact>();
+        public List<int> facts = new List<int>();
+        public List<int> characters = new List<int>();
         public List<EdgeData> edgeDatas = new List<EdgeData>();
         public TextAsset dialogueText;
 
-        public Dictionary<string, Fact> FactMap => _factMap ??= facts.ToDictionary(f => f.nameID, f => f);
-        private Dictionary<string, Fact> _factMap = new Dictionary<string, Fact>();
 
         public Dictionary<NodeObject, NodeObject> nodeObjectMap = new Dictionary<NodeObject, NodeObject>();
-        public Dictionary<Fact, Fact> factInstanceMap = new Dictionary<Fact, Fact>();
 
 #if UNITY_EDITOR
 
@@ -36,19 +34,6 @@ namespace ZDialoguer
             initialized = true;
         }
 
-        public Fact CreateFact(string nameID)
-        {
-            Fact fact = CreateInstance<Fact>();
-            fact.name = nameID;
-            fact.nameID = nameID;
-            fact.Value = default(float);
-            facts.Add(fact);
-            AssetDatabase.AddObjectToAsset(fact, this);
-            AssetDatabase.SaveAssets();
-
-            return fact;
-        }
-
         public void DeleteNode(NodeObject nodeObject)
         {
             nodes.Remove(nodeObject);
@@ -56,10 +41,9 @@ namespace ZDialoguer
             AssetDatabase.SaveAssets();
         }
 
-        public void DeleteFact(Fact fact)
+        public void DeleteFact(int factIndex)
         {
-            facts.Remove(fact);
-            AssetDatabase.RemoveObjectFromAsset(fact);
+            facts.Remove(factIndex);
             AssetDatabase.SaveAssets();
         }
 
@@ -85,7 +69,7 @@ namespace ZDialoguer
         {
             foreach (var factData in factDatas)
             {
-                FactMap[factData.nameID].Value = factData.value;
+                GlobalData.Instance.facts.First(f => f.nameID == factData.nameID).Value = factData.value;
             }
         }
 
@@ -96,23 +80,11 @@ namespace ZDialoguer
                 nodeObjectMap[current] = Instantiate(current);
             return nodeObjectMap[current];
         }
-        
-        internal Fact GetOrCreateFactInstance(Fact current)
-        {
-            if (current == null) return null;
-            if (!factInstanceMap.ContainsKey(current))
-            {
-                if (factInstanceMap.ContainsValue(current)) return factInstanceMap.Values.First(f => f == current);
-                    factInstanceMap[current] = Instantiate(current);
-            }
-
-            return factInstanceMap[current];
-        }
 
         public void Dispose()
         {
             nodes.ForEach(n => Destroy(n));
-            facts.ForEach(n => Destroy(n));
+            facts.Clear();
             Destroy(this);
         }
     }

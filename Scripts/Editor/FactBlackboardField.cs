@@ -4,19 +4,24 @@ using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
-public class FactBlackboardField : BlackboardField
+namespace ZDialoguer
 {
-    public Fact fact;
-    public Action<Fact> OnBlackboardFactSelected; 
-    
-    public FactBlackboardField(Fact fact)
-    {
-        this.fact = fact;
-    }
 
-    public override void OnSelected()
+
+    public class FactBlackboardField : BlackboardField
     {
-        base.OnSelected();
-        OnBlackboardFactSelected?.Invoke(fact);
+        public int factIndex;
+        public Action<Fact> OnBlackboardFactSelected;
+
+        public FactBlackboardField(int factIndex)
+        {
+            this.factIndex = factIndex;
+        }
+
+        public override void OnSelected()
+        {
+            base.OnSelected();
+            OnBlackboardFactSelected?.Invoke(GlobalData.Instance.facts[factIndex]);
+        }
     }
 }

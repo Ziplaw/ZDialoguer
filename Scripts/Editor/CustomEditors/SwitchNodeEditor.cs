@@ -27,10 +27,10 @@ public class SwitchNodeEditor : Editor
         IMGUIContainer factElementContainer = new IMGUIContainer(() =>
         {
             GUILayout.Label(
-                $"<color=#FFA600>Selected Fact: </color>{(manager.fact != null ? manager.fact.ToString() : "None")}",
+                $"<color=#FFA600>Selected Fact: </color>{(manager.FactInstance != null ? manager.FactInstance.ToString() : "None")}",
                 new GUIStyle("label") { richText = true });
 
-            if (manager.fact)
+            if (manager.FactInstance != null)
                 for (int i = 0; i < manager.outputEntries.Count; i++)
                 {
                     if (manager.outputEntries[i].output)
@@ -51,7 +51,7 @@ public class SwitchNodeEditor : Editor
                         }
                         
                         GUILayout.Label(
-                            $"<color=#9991F5>{manager.outputEntries[i].GetValue(manager.fact.factType)}</color> <color=#94F5AD>→</color> {stringOutput}",
+                            $"<color=#9991F5>{manager.outputEntries[i].GetValue(manager.FactInstance.factType)}</color> <color=#94F5AD>→</color> {stringOutput}",
                             new GUIStyle("label") { richText = true });
                     }
                 }

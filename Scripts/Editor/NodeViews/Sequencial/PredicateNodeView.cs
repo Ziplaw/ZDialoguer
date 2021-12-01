@@ -14,6 +14,8 @@ using ZDialoguerEditor;
 public class PredicateNodeView : SequentialNodeView
 {
     private PredicateNodeObject _predicateNodeObject => NodeObject as PredicateNodeObject;
+    private Fact fact;
+    private Fact secondFact;
 
     public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph)
     {
@@ -27,7 +29,10 @@ public class PredicateNodeView : SequentialNodeView
             Port.Capacity.Single);
         titleContainer.style.backgroundColor = new StyleColor(new Color(0.64f, 0.96f, 0.88f));
 
-        List<string> stringList = !predicateNodeObject.fact || predicateNodeObject.fact && predicateNodeObject.fact.factType == Fact.FactType.Float
+        fact = predicateNodeObject.factIndex == -1 ? new Fact() : GlobalData.Instance.facts[predicateNodeObject.factIndex];
+        secondFact = predicateNodeObject.secondFactIndex == -1 ? new Fact() : GlobalData.Instance.facts[predicateNodeObject.secondFactIndex];
+
+        List<string> stringList = !fact.initialized || fact.initialized && fact.factType == Fact.FactType.Float
             ? new List<string> { "=", ">", "<", "≥", "≤", "≠" }
             : new List<string> { "=", "≠" };
 
@@ -47,17 +52,17 @@ public class PredicateNodeView : SequentialNodeView
 
         CreateInputPort(typeof(Fact), "Fact", inputContainer, predicateNodeObject, ref index);
         CreateOutputPort(typeof(bool), "Predicate", outputContainer, predicateNodeObject, ref index);
-        if (predicateNodeObject.fact)
+        if (fact.initialized)
             CreateInputPort(typeof(Fact), "Fact", inputContainer, predicateNodeObject, ref index);
 
 
         Font font = Resources.Load<Font>("Fonts/FugazOne");
-        Label factNameLabel = new Label(predicateNodeObject.fact ? predicateNodeObject.fact.nameID : "Fact")
+        Label factNameLabel = new Label(fact.initialized ? fact.nameID : "Fact")
             { style = { unityTextAlign = TextAnchor.MiddleCenter, fontSize = 20, unityFont = font } };
 
         // IMGUIContainer factNameContainer = new IMGUIContainer((() =>
         // {
-        //     GUILayout.Label(predicateNodeObject.fact ? predicateNodeObject.fact.nameID : "Fact",
+        //     GUILayout.Label(predicateNodeObject.factNodeObject ? predicateNodeObject.factNodeObject.nameID : "Fact",
         //         new GUIStyle("label") { alignment = TextAnchor.MiddleCenter, fontSize = 20, font = font });
         // }));
 
@@ -116,32 +121,26 @@ public class PredicateNodeView : SequentialNodeView
         AssetDatabase.SaveAssets();
     }
 
-    private void OnFactTypeChange(Fact.FactType newFactType)
-    {
-        RepopulateGraph();
-        // this.Q("factValueField").RemoveFromHierarchy();
-        // GenerateValueField(this.Q("factFieldContainer"));
-    }
 
     private void GenerateValueField(VisualElement horizontalContainer)
     {
         VisualElement valueField;
 
-        if (_predicateNodeObject.fact)
+        if (fact.initialized)
         {
-            if (_predicateNodeObject.secondFact)
+            if (secondFact.initialized)
             {
                 Font font = Resources.Load<Font>("Fonts/FugazOne");
                 IMGUIContainer factNameContainer = new IMGUIContainer(() =>
                 {
-                    GUILayout.Label(_predicateNodeObject.secondFact.nameID,
+                    GUILayout.Label(secondFact.nameID,
                         new GUIStyle("label") { alignment = TextAnchor.MiddleCenter, fontSize = 20, font = font });
                 });
                 valueField = factNameContainer;
             }
             else
             {
-                switch (_predicateNodeObject.fact.factType)
+                switch (fact.factType)
                 {
                     case Fact.FactType.Float:
                         FloatField floatField = new FloatField();
@@ -157,7 +156,7 @@ public class PredicateNodeView : SequentialNodeView
                             UpdatePredicateNodeValue(e.newValue, _predicateNodeObject));
                         valueField = stringField;
                         break;
-                    default: throw new NotImplementedException();
+                    default: throw new ArgumentOutOfRangeException();
                 }
             }
         }
@@ -176,15 +175,15 @@ public class PredicateNodeView : SequentialNodeView
         edge.IsInputKey(3,
             () =>
             {
-                _predicateNodeObject.fact = ((FactNodeObject)((NodeView)edge.output.node).NodeObject).fact;
-                _predicateNodeObject.fact.OnFactTypeChange += OnFactTypeChange;
+                _predicateNodeObject.factIndex = ((FactNodeObject)((NodeView)edge.output.node).NodeObject).factIndex;
+                // _predicateNodeObject.fact.OnFactTypeChange += OnFactTypeChange;
                 // OnFactTypeChange(default);
             });
         edge.IsInputKey(5,
             () =>
             {
-                _predicateNodeObject.secondFact = ((FactNodeObject)((NodeView)edge.output.node).NodeObject).fact;
-                _predicateNodeObject.secondFact.OnFactTypeChange += OnFactTypeChange;
+                _predicateNodeObject.secondFactIndex = ((FactNodeObject)((NodeView)edge.output.node).NodeObject).factIndex;
+                // _predicateNodeObject.secondFact.OnFactTypeChange += OnFactTypeChange;
                 // OnFactTypeChange(default);
             });
     }
@@ -199,14 +198,14 @@ public class PredicateNodeView : SequentialNodeView
     {
         edge.IsInputKey(3, () =>
         {
-            _predicateNodeObject.fact.OnFactTypeChange -= OnFactTypeChange;
-            _predicateNodeObject.fact = null;
+            // _predicateNodeObject.fact.OnFactTypeChange -= OnFactTypeChange;
+            _predicateNodeObject.factIndex = -1;
             // OnFactTypeChange(default);
         });
         edge.IsInputKey(5, () =>
         {
-            _predicateNodeObject.secondFact.OnFactTypeChange -= OnFactTypeChange;
-            _predicateNodeObject.secondFact = null;
+            // _predicateNodeObject.secondFact.OnFactTypeChange -= OnFactTypeChange;
+            _predicateNodeObject.secondFactIndex = -1;
             // OnFactTypeChange(default);
         });
     }

@@ -46,7 +46,7 @@ namespace ZDialoguer
                 LocalisedString.GetFullAssetPath(_choiceNodeObject.dialogueText.csvFile);
 
             var propertyDrawer =
-                new LocalisedStringPropertyDrawer{indexPosition = -1, stretch = true}.CreatePropertyGUI(
+                new LocalisedStringPropertyDrawer{indexPosition = -1, stretch = true, _nodeView = this, _container = extensionContainer, _containerPosition = 0}.CreatePropertyGUI(
                     new SerializedObject(_choiceNodeObject).FindProperty("dialogueText"));
             
             extensionContainer.Add(propertyDrawer);
@@ -60,7 +60,7 @@ namespace ZDialoguer
             Port outputPort = CreateOutputPort(typeof(SequentialNodeObject), $"Choice", outputContainer,
                 _choiceNodeObject,
                 ref outputPortPos);
-            Port inputPort = CreateInputPort(typeof(bool), $"Predicate {index + 1}", inputContainer, _choiceNodeObject,
+            CreateInputPort(typeof(bool), $"Predicate {index + 1}", inputContainer, _choiceNodeObject,
                 ref inputPortPos);
             // outputPort.Q<Label>().RemoveFromHierarchy();
             var container = GeneratePortContainer(index);
@@ -98,7 +98,7 @@ namespace ZDialoguer
                 LocalisedString.GetFullAssetPath(_choiceNodeObject.choices[choicePosition].choiceText.csvFile);
 
             var propertyDrawer =
-                new LocalisedStringPropertyDrawer { indexPosition = choicePosition, oneLine = true }.CreatePropertyGUI(
+                new LocalisedStringPropertyDrawer { indexPosition = choicePosition, oneLine = true, _nodeView = this, _container = container, _containerPosition = _choiceNodeObject.choices[choicePosition].overriddenNode ? 1 : 0}.CreatePropertyGUI(
                     new SerializedObject(_choiceNodeObject).FindProperty("choices")
                         .GetArrayElementAtIndex(choicePosition).FindPropertyRelative("choiceText"));
 

@@ -12,7 +12,7 @@ public class ZDialogueGraphEditor : Editor
     {
         if (GUILayout.Button("Open Graph"))
         {
-            ZDialogueGraphEditorWindow.OpenWindow();
+            ZDialogueGraphEditorWindow.OpenWindow(target as ZDialogueGraph);
         }
         base.OnInspectorGUI();
     }

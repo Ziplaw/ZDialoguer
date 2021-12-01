@@ -13,21 +13,23 @@ namespace ZDialoguer
         {
             get
             {
-                if (!fact) return null;
-                switch (fact.factType)
+                if (FactInstance == null) return null;
+                switch (FactInstance.factType)
                 {
                     case Fact.FactType.Float:
-                        return outputEntries.FirstOrDefault(o => o.floatValue == (float)fact.Value)?.output as
+                        return outputEntries.FirstOrDefault(o => o.floatValue == (float)FactInstance.Value)?.output as
                             SequentialNodeObject;
                     case Fact.FactType.String:
-                        return outputEntries.FirstOrDefault(o => o.stringValue == (string)fact.Value)?.output as
+                        return outputEntries.FirstOrDefault(o => o.stringValue == (string)FactInstance.Value)?.output as
                             SequentialNodeObject;
                     default: return null;
                 }
             }
         }
 
-        public Fact fact;
+        public Fact FactInstance => factIndex == -1? Fact.Null : GlobalData.Instance.facts[factIndex];
+
+        public int factIndex = -1;
         [SerializeField] internal List<OutputEntry> outputEntries = new List<OutputEntry>();
 
         [Serializable]
@@ -63,12 +65,12 @@ namespace ZDialoguer
 
         public object GetValue(out int position)
         {
-            if (fact)
+            if (FactInstance != null)
             {
-                var value = outputEntries.FirstOrDefault(e => e.GetValue(fact.factType).Equals(fact.Value));
+                var value = outputEntries.FirstOrDefault(e => e.GetValue(FactInstance.factType).Equals(FactInstance.Value));
                 position = outputEntries.IndexOf(value);
                     
-                return value?.GetValue(fact.factType);
+                return value?.GetValue(FactInstance.factType);
             }
 
             position = -1;
@@ -83,7 +85,6 @@ namespace ZDialoguer
         public override NodeObject DeepClone()
         {
             SwitchNodeObject instance = (SwitchNodeObject)graph.GetOrCreateNodeInstance(this);
-            instance.fact = graph.GetOrCreateFactInstance(fact);
             instance.outputEntries.ForEach(outputEntry => outputEntry.output = graph.GetOrCreateNodeInstance(outputEntry.output));
             return instance;
         }

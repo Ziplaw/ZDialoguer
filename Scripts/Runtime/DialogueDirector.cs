@@ -69,15 +69,12 @@ public class DialogueDirector : MonoBehaviour
 
     private ZDialogueGraph ProcessGraph(ZDialogueGraph graph)
     {
-        graph.FactMap.Clear();
-        graph.factInstanceMap.Clear();
         graph.nodeObjectMap.Clear();
         
         var cloneGraph = Instantiate(graph);
         cloneGraph.Setup();
 
         cloneGraph.nodes = cloneGraph.nodes.Select(n => n.DeepClone()).ToList();
-        cloneGraph.facts = cloneGraph.facts.Select(f => cloneGraph.GetOrCreateFactInstance(f)).ToList();
 
         return cloneGraph;
     }

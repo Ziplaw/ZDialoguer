@@ -21,26 +21,26 @@ namespace ZDialoguer
             Not
         };
 
-        public Fact fact;
+        public int factIndex = -1;
         public Operation operation;
         [SerializeField] float floatValue;
         [SerializeField] string stringValue;
-        [SerializeField] internal Fact secondFact;
+        [SerializeField] internal int secondFactIndex = -1;
 
         public object Value
         {
             get
             {
-                switch (fact.factType)
+                switch (GlobalData.Instance.facts[factIndex].factType)
                 {
                     case Fact.FactType.Float: return floatValue;
                     case Fact.FactType.String: return stringValue;
-                    default: throw new NotImplementedException();
+                    default: throw new ArgumentOutOfRangeException();
                 }
             }
             set
             {
-                switch (fact.factType)
+                switch (GlobalData.Instance.facts[factIndex].factType)
                 {
                     case Fact.FactType.Float:
                         floatValue = (float)value;
@@ -48,7 +48,7 @@ namespace ZDialoguer
                     case Fact.FactType.String:
                         stringValue = (string)value;
                         break;
-                    default: throw new NotImplementedException();
+                    default: throw new ArgumentOutOfRangeException();
                 }
             }
         }
@@ -61,14 +61,26 @@ namespace ZDialoguer
             return SequenceChild.OnRetrieve();
         }
 
+        bool errorPrinted = false;
+
         public bool GetPredicate()
         {
-            if (fact)
+            var fact = factIndex == -1 ? Fact.Null : GlobalData.Instance.facts[factIndex];
+            var secondFact = secondFactIndex == -1 ? Fact.Null :GlobalData.Instance.facts[secondFactIndex];
+            
+            if (fact.initialized)
             {
-                if (secondFact)
+                if (secondFact.initialized)
                 {
                     if (secondFact.factType != fact.factType)
+                    {
+                        if(errorPrinted) return false;
+                        
+                        errorPrinted = true;
                         throw new ArgumentException($"{fact.nameID} and {secondFact.nameID} are not of the same type");
+                    }
+
+                    errorPrinted = false;
 
                     switch (fact.factType)
                     {
@@ -94,7 +106,7 @@ namespace ZDialoguer
             {
                 case Operation.Equals: return value1 == value2;
                 case Operation.Not: return value1 != value2;
-                default: throw new NotImplementedException();
+                default: throw new ArgumentOutOfRangeException();
             }
         }
 
@@ -108,7 +120,7 @@ namespace ZDialoguer
                 case Operation.GreaterEqual: return value1 >= value2;
                 case Operation.LowerEqual: return value1 <= value2;
                 case Operation.Not: return !Mathf.Approximately(value1, value2);
-                default: throw new NotImplementedException();
+                default: throw new ArgumentOutOfRangeException();
             }
         }
 
@@ -119,8 +131,8 @@ namespace ZDialoguer
         public override NodeObject DeepClone()
         {
             PredicateNodeObject instance = (PredicateNodeObject)graph.GetOrCreateNodeInstance(this);
-            instance.fact = graph.GetOrCreateFactInstance(fact);
-            instance.secondFact = graph.GetOrCreateFactInstance(secondFact);
+            instance.factIndex = factIndex;
+            instance.secondFactIndex = secondFactIndex;
             instance.childIfTrue = graph.GetOrCreateNodeInstance(childIfTrue);
             instance.childIfFalse = graph.GetOrCreateNodeInstance(childIfFalse);
             return instance;

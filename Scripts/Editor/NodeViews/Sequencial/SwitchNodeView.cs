@@ -169,12 +169,12 @@ public class SwitchNodeView : SequentialNodeView
 
         container?.Add(button);
 
-        if (switchNode.fact)
+        if (switchNode.FactInstance != null)
         {
             var localIndex = outputEntryPosition;
             var outputEntry = switchNode.outputEntries[outputEntryPosition];
 
-            switch (switchNode.fact.factType)
+            switch (switchNode.FactInstance.factType)
             {
                 case Fact.FactType.Float:
                     FloatField floatField = new FloatField
@@ -209,7 +209,7 @@ public class SwitchNodeView : SequentialNodeView
 
     void UpdateOutputEntriesAt(int index, object value)
     {
-        switchNode.outputEntries[index].SetValue(value, switchNode.fact.factType);
+        switchNode.outputEntries[index].SetValue(value, switchNode.FactInstance.factType);
         EditorUtility.SetDirty(switchNode);
         AssetDatabase.SaveAssets();
     }
@@ -219,8 +219,8 @@ public class SwitchNodeView : SequentialNodeView
         edge.IsInputKey(1, () =>
         {
             var switchNode = NodeObject as SwitchNodeObject;
-            switchNode.fact = ((edge.output.node as FactNodeView).NodeObject as FactNodeObject).fact;
-            switchNode.fact.OnFactTypeChange += OnFactTypeChange;
+            switchNode.factIndex = ((edge.output.node as FactNodeView).NodeObject as FactNodeObject).factIndex;
+            // switchNode.fact.OnFactTypeChange += OnFactTypeChange;
             OnFactTypeChange();
         });
     }
@@ -237,8 +237,8 @@ public class SwitchNodeView : SequentialNodeView
         edge.IsInputKey(1, () =>
         {
             var switchNode = NodeObject as SwitchNodeObject;
-            switchNode.fact.OnFactTypeChange -= OnFactTypeChange;
-            switchNode.fact = null;
+            // switchNode.fact.OnFactTypeChange -= OnFactTypeChange;
+            switchNode.factIndex = -1;
             OnFactTypeChange();
         });
     }

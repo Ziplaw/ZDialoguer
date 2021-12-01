@@ -58,7 +58,7 @@ namespace ZDialoguer
                 
                 try
                 {
-                    _text = _text.Replace(tag, graph.facts.First(f => f.nameID == factName).Value.ToString());
+                    _text = _text.Replace(tag, graph.facts.Select(i => GlobalData.Instance.facts[i]).First(f => f.nameID == factName).Value.ToString());
                 }
                 catch (InvalidOperationException)
                 {

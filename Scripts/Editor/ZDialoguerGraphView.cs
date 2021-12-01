@@ -41,22 +41,22 @@ public class ZDialoguerGraphView : GraphView
                 "UXML/ZDialogueGraphEditorWindow");
         styleSheets.Add(styleSheet);
     }
-    
+
     public void PopulateView(ZDialogueGraph graph)
     {
         repopulating = true;
         this.graph = graph;
         graphViewChanged -= OnGraphViewChanged;
-        _editorWindow.rootVisualElement.schedule
-            .Execute(() =>
-            {
-                if (!graph.initialized)
+        if (!graph.initialized)
+        {
+            _editorWindow.rootVisualElement.schedule
+                .Execute(() =>
                 {
                     graph.Init(new Vector2(resolvedStyle.width * .25f, resolvedStyle.height * .25f));
                     PopulateView(graph);
-                }
-            })
-            .StartingIn(0);
+                })
+                .StartingIn(0);
+        }
 
         DeleteElements(graphElements.ToList());
         graphViewChanged += OnGraphViewChanged;
@@ -67,7 +67,7 @@ public class ZDialoguerGraphView : GraphView
         RestoreConnections();
         repopulating = false;
     }
-    
+
     private void RestoreConnections()
     {
         List<Edge> edgesToCreate = new List<Edge>();
@@ -125,7 +125,7 @@ public class ZDialoguerGraphView : GraphView
         section.Q<TemplateContainer>().style.flexGrow = 1;
         section.Q<TemplateContainer>().Q<VisualElement>("rowsContainer").style.flexDirection = FlexDirection.Row;
 
-        var textObjectField = new ObjectField()
+        var textObjectField = new ObjectField
             { objectType = typeof(TextAsset), style = { flexGrow = 1, flexShrink = 1 } };
         textObjectField.SetValueWithoutNotify(graph.dialogueText);
         textObjectField.RegisterValueChangedCallback(e =>
@@ -190,6 +190,12 @@ public class ZDialoguerGraphView : GraphView
                 {
                     case NodeView nV:
                         graph.DeleteNode(nV.NodeObject);
+                        edges.Where(edge => edge.input.node == nV || edge.output.node == nV).ToList().ForEach(edge =>
+                        {
+                            (edge.output.node as NodeView).OnDisconnectEdgeFromOutputPort(edge);
+                            (edge.input.node as NodeView).OnDisconnectEdgeFromInputPort(edge);
+                            graph.edgeDatas.RemoveEdge(edge);
+                        });
                         break;
                     case Edge edge:
                         (edge.output.node as NodeView).OnDisconnectEdgeFromOutputPort(edge);
@@ -198,16 +204,16 @@ public class ZDialoguerGraphView : GraphView
                         break;
                     case FactBlackboardField factBlackboardField:
                         if (graph.nodes.Any(n =>
-                            n is FactNodeObject factNodeObject && factNodeObject.fact == factBlackboardField.fact))
+                            n is FactNodeObject factNodeObject && factNodeObject.factIndex == factBlackboardField.factIndex))
                         {
                             Debug.LogWarning(
-                                "You can't delete this fact, as a Fact Node referencing it is present on the graph");
+                                "You can't delete this factNodeObject, as a Fact Node referencing it is present on the graph");
                             graphViewChange.elementsToRemove.Remove(factBlackboardField);
                             i--;
                         }
                         else
                         {
-                            graph.DeleteFact(factBlackboardField.fact);
+                            graph.DeleteFact(factBlackboardField.factIndex);
                         }
 
                         break;
@@ -237,12 +243,12 @@ public class ZDialoguerGraphView : GraphView
             }
         }
 
-        SaveChangesToGraph(graph);
+        SaveChangesToObject(graph);
 
         return graphViewChange;
     }
 
-    public static void SaveChangesToGraph(ZDialogueGraph graph)
+    public static void SaveChangesToObject(ScriptableObject graph)
     {
         EditorUtility.SetDirty(graph);
         AssetDatabase.SaveAssets();
@@ -264,11 +270,11 @@ public class ZDialoguerGraphView : GraphView
         foreach (FactBlackboardField field in fields)
         {
             var node = CreateNode<FactNodeObject>(TransformMousePosition(e.localMousePosition), false);
-            (node as FactNodeObject).fact = field.fact;
-            CreateNodeView(node); // creating node here because we gotta assign fact first hehe;
+            (node as FactNodeObject).factIndex = field.factIndex;
+            CreateNodeView(node); // creating node here because we gotta assign factNodeObject first hehe;
         }
 
-        SaveChangesToGraph(graph);
+        SaveChangesToObject(graph);
     }
 
     internal Vector2 TransformMousePosition(Vector2 eventLocalMousePosition)
@@ -301,6 +307,4 @@ public class ZDialoguerGraphView : GraphView
         AddElement(nodeView);
         return nodeView;
     }
-
-    
 }

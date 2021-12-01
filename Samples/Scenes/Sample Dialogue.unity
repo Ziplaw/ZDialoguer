@@ -270,6 +270,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000, guid: b00c38c2eb68e6543bc352c3a4b4552b, type: 2}
+  playerName: Manuel
 --- !u!1 &79546868
 GameObject:
   m_ObjectHideFlags: 0

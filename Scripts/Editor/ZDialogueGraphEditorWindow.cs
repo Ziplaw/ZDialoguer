@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Codice.Client.ChangeTrackerService.Serialization;
 using UnityEditor;
+using UnityEditor.Callbacks;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
@@ -9,18 +10,36 @@ using ZDialoguer;
 
 namespace ZDialoguerEditor
 {
+    public class MyAssetHandler
+    {
+        [OnOpenAsset(OnOpenAssetAttributeMode.Execute)]
+        public static bool OpenAsset(int instanceID, int line)
+        {
+            var obj = EditorUtility.InstanceIDToObject(instanceID);
+            if (obj is ZDialogueGraph graph)
+            {
+                Selection.activeObject = obj;
+                ZDialogueGraphEditorWindow.OpenWindow(graph);
+            }
+
+            return true;
+        }
+    }
+
     public class ZDialogueGraphEditorWindow : EditorWindow
     {
+        public ZDialogueGraph graph;
         public ZDialoguerGraphView graphView;
         private InspectorView inspectorView;
 
-        [MenuItem("Tools/ZDialoguer/Graph")]
-        public static void OpenWindow()
+        public static void OpenWindow(ZDialogueGraph graph)
         {
             ZDialogueGraphEditorWindow wnd = GetWindow<ZDialogueGraphEditorWindow>();
-            // DestroyImmediate(wnd);
             wnd.titleContent = new GUIContent("Dialogue Graph");
+            wnd.graph = graph;
+            wnd.graphView.PopulateView(wnd.graph);
             var resolution = Screen.currentResolution;
+
 
             if (float.IsNaN(wnd.position.height) ||
                 float.IsNaN(wnd.position.width) ||
@@ -28,7 +47,7 @@ namespace ZDialoguerEditor
                 float.IsNaN(wnd.position.y))
             {
                 wnd.position = new Rect(
-                    new Vector2(resolution.width * .5f - 1440 * .5f, resolution.height * .5f - 512 * .5f),
+                    new Vector2(resolution.width * .5f - 1440 * .5f, resolution.height * .5f - 512 * .5f), //
                     new Vector2(1440, 512));
             }
             // wnd.Close();
@@ -42,21 +61,20 @@ namespace ZDialoguerEditor
                 wnd.PopulateView(wnd.graph);
             }
         }
+
         public void CreateGUI()
         {
             VisualElement root = rootVisualElement;
-            var visualTree =
-                Resources.Load<VisualTreeAsset>(
-                    "UXML/ZDialogueGraphEditorWindow");
+            var visualTree = Resources.Load<VisualTreeAsset>("UXML/ZDialogueGraphEditorWindow");
             visualTree.CloneTree(root);
             graphView = root.Q<ZDialoguerGraphView>();
             graphView._editorWindow = this;
             inspectorView = root.Q<InspectorView>();
             PopupField<string> languagePopup = new PopupField<string>(LocalizationSettings.Instance.languages,
-                LocalizationSettings.Instance.selectedLanguage){name = "LanguagePopup"};
+                LocalizationSettings.Instance.selectedLanguage) { name = "LanguagePopup" };
 
-            LocalizationSettings.Instance.OnLanguageChange += s => languagePopup.SetValueWithoutNotify(s);
-            
+            LocalizationSettings.Instance.OnLanguageChange += s => languagePopup.SetValueWithoutNotify(s); //
+
             languagePopup.RegisterValueChangedCallback(e =>
             {
                 LocalizationSettings.Instance.selectedLanguage =
@@ -71,19 +89,11 @@ namespace ZDialoguerEditor
 
             graphView.OnNodeSelected = OnNodeSelectionChanged;
             graphView.OnBlackboardFactSelected = OnFactSelectionChanged;
-            OnSelectionChange();
 
             AssetDeleter.window = this;
-        }
-
-        private void OnSelectionChange()
-        {
-            var graph = Selection.activeObject as ZDialogueGraph;
 
             if (graph)
-            {
                 graphView.PopulateView(graph);
-            }
         }
 
         void OnNodeSelectionChanged(NodeView nodeView)
@@ -93,7 +103,7 @@ namespace ZDialoguerEditor
 
         void OnFactSelectionChanged(Fact fact)
         {
-            inspectorView.UpdateSelection(graphView.graph, Editor.CreateEditor(fact));
+            // inspectorView.UpdateSelection(graphView.graph, Editor.CreateEditor(fact));
         }
     }
 
