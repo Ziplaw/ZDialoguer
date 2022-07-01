@@ -12,23 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6d4a1547015442cb901fb9bac3337d3, type: 3}
   m_Name: Global Dialogue Data
   m_EditorClassIdentifier: 
-  copiedFacts: []
   facts:
   - nameID: playerName
     initialized: 1
     stringValue: Alberto
     floatValue: 0
     factType: 1
-  - nameID: New Fact
-    initialized: 1
-    stringValue: New Fact
-    floatValue: 0
-    factType: 0
-  - nameID: New Fact (1)
-    initialized: 1
-    stringValue: New Fact
-    floatValue: 0
-    factType: 0
   - nameID: New Fact (2)
     initialized: 1
     stringValue: alberto

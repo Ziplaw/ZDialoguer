@@ -45,6 +45,10 @@ namespace ZDialoguer
             nodeView.NodeObject = nodeObject;
             nodeView.viewDataKey = nodeObject.guid;
             nodeView.BuildNodeView(nodeObject, graphView.graph);
+            var font = Resources.Load<Font>("Fonts/FugazOne");
+            nodeView.Q<Label>("title-label").style.unityFont = font;
+            nodeView.Q<Label>("title-label").style.unityFontDefinition = new StyleFontDefinition(font);
+
             nodeView.SetPosition(new Rect(new Vector2(nodeObject.position.x, nodeObject.position.y),
                 new Vector2(100, 100)));
             nodeView.style.left = nodeObject.position.x;

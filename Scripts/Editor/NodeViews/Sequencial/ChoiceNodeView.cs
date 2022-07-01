@@ -25,7 +25,7 @@ namespace ZDialoguer
             title = "Choice Node";
 
 
-            CreateInputPort(typeof(SequentialNodeObject), "►", inputContainer, NodeObject, ref index);
+            CreateInputPort(typeof(SequentialNodeObject), "►", inputContainer, NodeObject, ref index, Port.Capacity.Multi);
             CreateOutputPort(typeof(SequentialNodeObject), "►", outputContainer, NodeObject, ref index);
             Button addButton = new Button(() =>
             {

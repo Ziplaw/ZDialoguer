@@ -28,7 +28,12 @@ public class ZDialoguerGraphView : GraphView
     {
         Insert(0, new GridBackground());
 
-        this.AddManipulator(new ContentZoomer());
+        var zoomer = new ContentZoomer();
+        zoomer.maxScale = 2;
+        Debug.Log(zoomer.maxScale);
+        Debug.Log(zoomer.minScale);
+        
+        this.AddManipulator(zoomer);
         this.AddManipulator(new ContentDragger());
         this.AddManipulator(new SelectionDragger());
         this.AddManipulator(new RectangleSelector());

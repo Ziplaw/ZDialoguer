@@ -27,7 +27,7 @@ namespace ZDialoguer
         }
 
         // public Action<FactType> OnFactTypeChange;
-        [SerializeField] public bool initialized;
+        [SerializeField, HideInInspector] public bool initialized;
         [SerializeField, HideInInspector] string stringValue = "New Fact";
         [SerializeField, HideInInspector] float floatValue = 0f;
         public FactType factType;

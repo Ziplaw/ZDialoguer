@@ -48,14 +48,16 @@ public class InspectorView : VisualElement
                 borderTopRightRadius = 10, borderBottomLeftRadius = 10, borderBottomRightRadius = 10
             }
         };
-        
+
+        var font = Resources.Load<Font>("Fonts/FugazOne");
         
         var label = new Label()
         {
             style =
             {
                 unityTextAlign = TextAnchor.MiddleCenter, fontSize = 30,
-                unityFont = Resources.Load<Font>("Fonts/FugazOne")
+                unityFont = font,
+                unityFontDefinition = new StyleFontDefinition(font)
             }
         };
 

@@ -58,7 +58,7 @@ public class PredicateNodeView : SequentialNodeView
 
         Font font = Resources.Load<Font>("Fonts/FugazOne");
         Label factNameLabel = new Label(fact.initialized ? fact.nameID : "Fact")
-            { style = { unityTextAlign = TextAnchor.MiddleCenter, fontSize = 20, unityFont = font } };
+            { style = { unityTextAlign = TextAnchor.MiddleCenter, fontSize = 20, unityFont = font, unityFontDefinition = new StyleFontDefinition(font)} };
 
         // IMGUIContainer factNameContainer = new IMGUIContainer((() =>
         // {

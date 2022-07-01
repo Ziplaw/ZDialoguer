@@ -95,10 +95,12 @@ namespace ZDialoguer
             var menuRect = new Rect(menuPosition, Vector2.zero);
             
             var menu = new GenericMenu();
-            menu.AddItem(new GUIContent("Fact"),false, data => GlobalDataSearchWindow.Open(graphView.graph, GlobalData.Instance.facts,
-                fact => AddFactToBlackBoard(blackboard, fact), 
-                list => GlobalData.Instance.Create<Fact>(FixNewFactName("New Fact", GlobalData.Instance.facts.Select(f => f.nameID))),
-                fact => GlobalData.Instance.Delete(fact), 
+            menu.AddItem(new GUIContent("Fact"), false, data => GlobalDataSearchWindow.Open(graphView.graph,
+                GlobalData.Instance.facts,
+                factIndex => AddFactToBlackBoard(blackboard, factIndex),
+                list => GlobalData.Instance.Create<Fact>(FixNewFactName("New Fact",
+                    GlobalData.Instance.facts.Select(f => f.nameID))),
+                factIndex => GlobalData.Instance.Delete(GlobalData.Instance.facts[factIndex]), 
                 GUIUtility.GUIToScreenRect(menuRect).position), null);
             menu.AddItem(new GUIContent("Character"),false, data => AddCharacterToBlackboard(blackboard), null);
             

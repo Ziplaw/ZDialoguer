@@ -64,7 +64,7 @@ namespace ZDialoguer
         {
             switch (obj)
             {
-                case Fact fact: facts.Remove(fact);
+                case Fact fact : facts.Remove(fact);
                     break;
                 case Character character: characters.Remove(character);
                     break;

@@ -107,7 +107,7 @@ namespace ZDialoguerEditor
         }
     }
 
-    public class AssetDeleter : UnityEditor.AssetModificationProcessor
+    public class AssetDeleter : AssetModificationProcessor
     {
         public static ZDialogueGraphEditorWindow window;
 
