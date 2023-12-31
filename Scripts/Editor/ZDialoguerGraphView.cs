@@ -30,8 +30,6 @@ public class ZDialoguerGraphView : GraphView
 
         var zoomer = new ContentZoomer();
         zoomer.maxScale = 2;
-        Debug.Log(zoomer.maxScale);
-        Debug.Log(zoomer.minScale);
         
         this.AddManipulator(zoomer);
         this.AddManipulator(new ContentDragger());

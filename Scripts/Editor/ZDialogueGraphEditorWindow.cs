@@ -20,9 +20,10 @@ namespace ZDialoguerEditor
             {
                 Selection.activeObject = obj;
                 ZDialogueGraphEditorWindow.OpenWindow(graph);
+                return true;
             }
 
-            return true;
+            return false;
         }
     }
 
