@@ -9,36 +9,39 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using ZDialoguer;
 
-public class FactNodeView : StaticNodeView
+namespace ZGraph.DialogueSystem
 {
-    public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph)
+    public class FactZNodeView : StaticZNodeView
     {
-        this.Q("title-button-container").RemoveFromHierarchy();
-        
-        int index = 0;
-        FactNodeObject factNodeObject = nodeObject as FactNodeObject;
+        public override void BuildNodeView(ZNode Node, ZGraph graph)
+        {
+            this.Q("title-button-container").RemoveFromHierarchy();
 
-        base.BuildNodeView(nodeObject, graph);
-        this.Q("title-label").style.color = colorMap[typeof(Fact)];
-        var port = CreateOutputPort(typeof(Fact), "", titleContainer, nodeObject, ref index);
-        port.style.alignSelf = Align.Center;
+            int index = 0;
+            FactDialogueNode factDialogueNode = Node as FactDialogueNode;
 
-        title = GlobalData.Instance.facts[factNodeObject.factIndex].nameID;
-    }
+            base.BuildNodeView(Node, graph);
+            this.Q("title-label").style.color = colorMap[typeof(Fact)];
+            var port = CreateOutputPort(typeof(Fact), "", titleContainer, Node, ref index);
+            port.style.alignSelf = Align.Center;
 
-    public override void OnConnectEdgeToInputPort(Edge edge)
-    {
-    }
+            title = factDialogueNode.fact.nameID;
+        }
 
-    public override void OnConnectEdgeToOutputPort(Edge edge)
-    {
-    }
-
-    public override void OnDisconnectEdgeFromInputPort(Edge edge)
-    {
-    }
-
-    public override void OnDisconnectEdgeFromOutputPort(Edge edge)
-    {
+        // public override void OnConnectEdgeToInputPort(Edge edge)
+        // {
+        // }
+        //
+        // public override void OnConnectEdgeToOutputPort(Edge edge)
+        // {
+        // }
+        //
+        // public override void OnDisconnectEdgeFromInputPort(Edge edge)
+        // {
+        // }
+        //
+        // public override void OnDisconnectEdgeFromOutputPort(Edge edge)
+        // {
+        // }
     }
 }

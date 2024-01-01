@@ -3,22 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using ZDialoguer.Localization;
 
-namespace ZDialoguer
+namespace ZGraph.DialogueSystem
 {
-    public class ExitNodeObject : SequentialNodeObject
+    [ZNodeDisplay("#9991F5","Exit")]
+    public class ExitDialogueNodeObject : SequentialDialogueNodeObject
     {
-        public override SequentialNodeObject SequenceChild { get; }
-        public Action OnExitDialogue;
-        public override (LocalisedString, SequentialNodeObject) OnRetrieve()
+        [Input(PortOptions.Multiple)]
+        public ZNode Input(EdgeData edgeData)
         {
-            OnExitDialogue.Invoke();
-            graph.Dispose();
-            return (null, null);
-        }
-
-        public override NodeObject DeepClone()
-        {
-            return graph.GetOrCreateNodeInstance(this);
+            var node = graph.GetNode(edgeData.outputPortViewDataKey);
+            Debug.Log($"Input: {node}");
+            return node;
         }
     }
 }

@@ -6,10 +6,10 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using ZDialoguer;
+using ZGraph.DialogueSystem;
 using ZDialoguerEditor;
 
-[CustomEditor(typeof(FactNodeObject))]
+[CustomEditor(typeof(FactDialogueNode))]
 public class FactEditor : Editor
 {
     private Fact manager;
@@ -24,8 +24,8 @@ public class FactEditor : Editor
             // case Fact fact:
             //     manager = fact;
             //     break;
-            case FactNodeObject factNodeObject:
-                manager = GlobalData.Instance.facts[factNodeObject.factIndex];
+            case FactDialogueNode factNodeObject:
+                manager = factNodeObject.fact;
                 break;
             default:
                 return;

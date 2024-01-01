@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using ZDialoguer;
+using ZGraph.DialogueSystem;
 
     [CustomEditor(typeof(GlobalData))]
     public class GlobalDataCustomEditor : Editor

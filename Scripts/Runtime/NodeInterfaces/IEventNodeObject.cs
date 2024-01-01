@@ -1,4 +1,4 @@
-﻿namespace ZDialoguer
+﻿namespace ZGraph.DialogueSystem
 {
     public interface IEventNodeObject
     {

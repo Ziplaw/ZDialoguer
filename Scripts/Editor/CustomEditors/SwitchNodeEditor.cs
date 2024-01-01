@@ -3,20 +3,20 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using ZDialoguer;
+using ZGraph.DialogueSystem;
 using ZDialoguerEditor;
 
-[CustomEditor(typeof(SwitchNodeObject))]
+[CustomEditor(typeof(SwitchDialogueNodeObject))]
 public class SwitchNodeEditor : Editor
 {
-    private SwitchNodeObject manager;
+    private SwitchDialogueNodeObject manager;
     private VisualElement root;
 
     private void OnEnable()
     {
         root = new VisualElement();
 
-        manager = target as SwitchNodeObject;
+        manager = target as SwitchDialogueNodeObject;
     }
 
     public override VisualElement CreateInspectorGUI()
@@ -40,7 +40,7 @@ public class SwitchNodeEditor : Editor
                         if (output is DialogueNodeObject _dialogueNodeObject)
                         {
                             string parsedText =
-                                _dialogueNodeObject.text.ParseFacts(graphWindow.graphView.graph);
+                                _dialogueNodeObject.text.ParseFacts(graphWindow.graphView.graph as ZDialogueGraph);
                             var split = parsedText.Split('\n')[0];
                             stringOutput = split.Substring(0, Mathf.Min(30, split.Length)) +
                                            "(...)";

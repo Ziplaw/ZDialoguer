@@ -7,9 +7,9 @@ using ZDialoguer;
 using ZDialoguer.Localization;
 
 
-namespace ZDialoguer
+namespace ZGraph.DialogueSystem
 {
-    public class PredicateNodeObject : SequentialNodeObject
+    public class PredicateDialogueNodeObject : SequentialDialogueNodeObject
     {
         public enum Operation
         {
@@ -53,13 +53,8 @@ namespace ZDialoguer
             }
         }
 
-        public NodeObject childIfTrue;
-        public NodeObject childIfFalse;
-
-        public override (LocalisedString, SequentialNodeObject) OnRetrieve()
-        {
-            return SequenceChild.OnRetrieve();
-        }
+        public ZNode childIfTrue;
+        public ZNode childIfFalse;
 
         bool errorPrinted = false;
 
@@ -122,20 +117,6 @@ namespace ZDialoguer
                 case Operation.Not: return !Mathf.Approximately(value1, value2);
                 default: throw new ArgumentOutOfRangeException();
             }
-        }
-
-        public override SequentialNodeObject SequenceChild => GetPredicate()
-            ? childIfTrue as SequentialNodeObject
-            : childIfFalse as SequentialNodeObject;
-
-        public override NodeObject DeepClone()
-        {
-            PredicateNodeObject instance = (PredicateNodeObject)graph.GetOrCreateNodeInstance(this);
-            instance.factIndex = factIndex;
-            instance.secondFactIndex = secondFactIndex;
-            instance.childIfTrue = graph.GetOrCreateNodeInstance(childIfTrue);
-            instance.childIfFalse = graph.GetOrCreateNodeInstance(childIfFalse);
-            return instance;
         }
     }
 }

@@ -8,21 +8,22 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using ZDialoguer;
+using ZGraph.DialogueSystem;
+using ZGraph;
 using ZDialoguer.Localization;
 using ZDialoguer.Localization.Editor;
 
 public class GlobalDataSearchWindow : EditorWindow
 {
-    private IEnumerable<DialogueData> itemList;
+    private IEnumerable<GraphData> itemList;
     private Action<int> OnSelectOption;
-    private Action<IEnumerable<DialogueData>> OnAddItem;
+    private Action<IEnumerable<GraphData>> OnAddItem;
     private Action<int> OnRemoveItem;
     private ZDialogueGraph graph;
     private Type itemListType;
  
     public static void Open<T>(ZDialogueGraph graph, List<T> list, Action<int> OnSelectOption,
-        Action<IEnumerable<DialogueData>> OnAddItem, Action<int> OnRemoveItem, Vector2 position) where T : DialogueData
+        Action<IEnumerable<GraphData>> OnAddItem, Action<int> OnRemoveItem, Vector2 position) where T : GraphData
     {
         GlobalDataSearchWindow window = CreateInstance<GlobalDataSearchWindow>();
         window.itemList = list;
@@ -69,7 +70,7 @@ public class GlobalDataSearchWindow : EditorWindow
             switch (itemListType.Name)
             {
                 case "Fact":
-                    nameIDs = graph.facts.Select(f => GlobalData.Instance.facts[f].nameID).ToArray();
+                    nameIDs = graph.localFacts.Select(f => f.nameID).ToArray();
                     break;
                 case "Character":
                     nameIDs = graph.characters.Select(c => GlobalData.Instance.characters[c].nameID).ToArray();
@@ -87,7 +88,7 @@ public class GlobalDataSearchWindow : EditorWindow
                     if (GUILayout.Button("-", GUILayout.Width(24), GUILayout.MinHeight(24)))
                     {
                         OnRemoveItem.Invoke(itemList.ToList().IndexOf(item));
-                        itemList = (IEnumerable<DialogueData>) typeof(GlobalData).GetFields(BindingFlags.Public | BindingFlags.Instance)
+                        itemList = (IEnumerable<GraphData>) typeof(GlobalData).GetFields(BindingFlags.Public | BindingFlags.Instance)
                             .First(f => f.FieldType.GenericTypeArguments[0] == itemListType)
                             .GetValue(GlobalData.Instance);
                         return;
@@ -113,7 +114,7 @@ public class GlobalDataSearchWindow : EditorWindow
         rootVisualElement.Add(root);
     }
 
-    void SelectValue(DialogueData item)
+    void SelectValue(GraphData item)
     {
         OnSelectOption?.Invoke(itemList.ToList().IndexOf(item));
     }

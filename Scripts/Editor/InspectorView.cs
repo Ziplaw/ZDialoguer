@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using ZDialoguer;
 using ZDialoguerEditor;
 
 public class InspectorView : VisualElement
@@ -14,7 +13,7 @@ public class InspectorView : VisualElement
 
     private Editor editor;
 
-    public void UpdateSelection(ZDialogueGraph graph, Editor _editor)
+    public void UpdateSelection(ZGraph.ZGraph graph, Editor _editor)
     {
         Clear();
         var root = new ScrollView();

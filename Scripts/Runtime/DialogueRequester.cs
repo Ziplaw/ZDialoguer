@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using ZDialoguer;
+using ZGraph.DialogueSystem;
 
 public class DialogueRequester : MonoBehaviour
 {

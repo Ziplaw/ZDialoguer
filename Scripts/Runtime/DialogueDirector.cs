@@ -5,7 +5,8 @@ using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
-using ZDialoguer;
+using ZGraph.DialogueSystem;
+using ZGraph;
 using TMPro;
 using UnityEditor.Graphs;
 
@@ -14,7 +15,7 @@ public class DialogueDirector : MonoBehaviour
     // public List<ZDialogueGraph> graphs;
     public TextMeshProUGUI textComponent;
     [SerializeField] ZDialogueGraph currentGraph;
-    public UnityEvent<ChoiceNodeObject> OnGetChoice;
+    public UnityEvent<ChoiceDialogueNodeObject> OnGetChoice;
     public UnityEvent OnRequestDialogue;
     public UnityEvent OnEndDialogue;
 
@@ -29,7 +30,7 @@ public class DialogueDirector : MonoBehaviour
             .Where(f => typeof(ScriptableObject).IsAssignableFrom(f.FieldType.GenericTypeArguments?.FirstOrDefault()))
             .Select(f => f.FieldType.GenericTypeArguments?.FirstOrDefault()))
         {
-            if (type != typeof(Fact) && type != typeof(NodeObject))
+            if (type != typeof(Fact) && type != typeof(ZNode))
                 Debug.LogWarning($"Missing {type} for deep cloning!");
         }
     }
@@ -45,11 +46,11 @@ public class DialogueDirector : MonoBehaviour
         {
             switch (o)
             {
-                case ChoiceNodeObject choiceNodeObject:
+                case ChoiceDialogueNodeObject choiceNodeObject:
                     choiceNodeObject.OnExecuteExternal = OnGetChoice.Invoke;
                     break;
-                case ExitNodeObject exitNodeObject:
-                    exitNodeObject.OnExitDialogue = EndDialogue;
+                case ExitDialogueNodeObject exitNodeObject:
+                    // exitNodeObject.OnExitDialogue = EndDialogue;
                     break;
             }
         }
@@ -69,14 +70,7 @@ public class DialogueDirector : MonoBehaviour
 
     private ZDialogueGraph ProcessGraph(ZDialogueGraph graph)
     {
-        graph.nodeObjectMap.Clear();
-        
-        var cloneGraph = Instantiate(graph);
-        cloneGraph.Setup();
-
-        cloneGraph.nodes = cloneGraph.nodes.Select(n => n.DeepClone()).ToList();
-
-        return cloneGraph;
+        return graph;
     }
 
     public void GetNextText()

@@ -5,10 +5,13 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using ZDialoguer;
 
-public abstract class StaticNodeView : NodeView
+namespace ZGraph.DialogueSystem
 {
-    public abstract override void OnConnectEdgeToInputPort(Edge edge);
-    public abstract override void OnConnectEdgeToOutputPort(Edge edge);
-    public abstract override void OnDisconnectEdgeFromInputPort(Edge edge);
-    public abstract override void OnDisconnectEdgeFromOutputPort(Edge edge);
+    public abstract class StaticZNodeView : ZNodeView
+    {
+        // public abstract override void OnConnectEdgeToInputPort(Edge edge);
+        // public abstract override void OnConnectEdgeToOutputPort(Edge edge);
+        // public abstract override void OnDisconnectEdgeFromInputPort(Edge edge);
+        // public abstract override void OnDisconnectEdgeFromOutputPort(Edge edge);
+    }
 }

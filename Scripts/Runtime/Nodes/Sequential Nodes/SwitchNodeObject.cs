@@ -5,28 +5,10 @@ using System.Linq;
 using UnityEngine;
 using ZDialoguer.Localization;
 
-namespace ZDialoguer
+namespace ZGraph.DialogueSystem
 {
-    public class SwitchNodeObject : SequentialNodeObject
+    public class SwitchDialogueNodeObject : SequentialDialogueNodeObject
     {
-        public override SequentialNodeObject SequenceChild
-        {
-            get
-            {
-                if (FactInstance == null) return null;
-                switch (FactInstance.factType)
-                {
-                    case Fact.FactType.Float:
-                        return outputEntries.FirstOrDefault(o => o.floatValue == (float)FactInstance.Value)?.output as
-                            SequentialNodeObject;
-                    case Fact.FactType.String:
-                        return outputEntries.FirstOrDefault(o => o.stringValue == (string)FactInstance.Value)?.output as
-                            SequentialNodeObject;
-                    default: return null;
-                }
-            }
-        }
-
         public Fact FactInstance => factIndex == -1? Fact.Null : GlobalData.Instance.facts[factIndex];
 
         public int factIndex = -1;
@@ -37,7 +19,7 @@ namespace ZDialoguer
         {
             public float floatValue;
             public string stringValue = "New Entry";
-            public NodeObject output;
+            public ZNode output;
 
             public void SetValue(object value, Fact.FactType factFactType)
             {
@@ -75,18 +57,6 @@ namespace ZDialoguer
 
             position = -1;
             return null;
-        }
-
-        public override (LocalisedString, SequentialNodeObject) OnRetrieve()
-        {
-            return SequenceChild.OnRetrieve();
-        }
-
-        public override NodeObject DeepClone()
-        {
-            SwitchNodeObject instance = (SwitchNodeObject)graph.GetOrCreateNodeInstance(this);
-            instance.outputEntries.ForEach(outputEntry => outputEntry.output = graph.GetOrCreateNodeInstance(outputEntry.output));
-            return instance;
         }
     }
 }

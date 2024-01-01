@@ -10,13 +10,15 @@ using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using UnityEngine.PlayerLoop;
 using ZDialoguer.Localization;
+using ZGraph;
+using ZGraph.DialogueSystem;
 using ZDialoguerEditor;
 
 namespace ZDialoguer.Localization.Editor
 {
     public class LocalisedStringPropertyDrawer : PropertyDrawer
     {
-        internal NodeView _nodeView;
+        internal ZNodeView ZNodeView;
         internal int indexPosition = 0;
         internal bool oneLine;
         internal bool stretch;
@@ -26,7 +28,7 @@ namespace ZDialoguer.Localization.Editor
 
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            var self = GetTextFromNode(property.serializedObject.targetObject as NodeObject, indexPosition);
+            var self = GetTextFromNode(property.serializedObject.targetObject as ZNode, indexPosition);
 
             self.table = null;
 
@@ -126,12 +128,12 @@ namespace ZDialoguer.Localization.Editor
             _container.Insert(_containerPosition,CreatePropertyGUI(property) );
         }
 
-        internal static LocalisedString GetTextFromNode(NodeObject nodeObject, int indexPosition)
+        internal static LocalisedString GetTextFromNode(ZNode zNode, int indexPosition)
         {
-            switch (nodeObject)
+            switch (zNode)
             {
                 case DialogueNodeObject dialogueNodeObject: return dialogueNodeObject.text;
-                case ChoiceNodeObject choiceNodeObject:
+                case ChoiceDialogueNodeObject choiceNodeObject:
                     return indexPosition == -1
                         ? choiceNodeObject.dialogueText
                         : choiceNodeObject.choices[indexPosition].choiceText;
@@ -170,7 +172,7 @@ namespace ZDialoguer.Localization.Editor
             rootVisualElement.style.marginTop = 5;
 
             LocalisedString text =
-                LocalisedStringPropertyDrawer.GetTextFromNode(_property.serializedObject.targetObject as NodeObject,
+                LocalisedStringPropertyDrawer.GetTextFromNode(_property.serializedObject.targetObject as ZNode,
                     choiceNodeIndexPos);
 
             // var node = _property.serializedObject.targetObject as DialogueNodeObject;
@@ -212,7 +214,7 @@ namespace ZDialoguer.Localization.Editor
                             GUILayout.MinHeight(24), GUILayout.MaxHeight(height));
                         if (GUILayout.Button(selectIcon, GUILayout.Width(24), GUILayout.MinHeight(height)))
                         {
-                            SelectValue(tableEntry, table, text, _property.serializedObject.targetObject as NodeObject);
+                            SelectValue(tableEntry, table, text, _property.serializedObject.targetObject as ZNode);
                         }
                     }
                 }
@@ -231,12 +233,12 @@ namespace ZDialoguer.Localization.Editor
         }
 
         void SelectValue(LocalizationSystem.TableEntry entry, List<LocalizationSystem.TableEntry> table,
-            LocalisedString text, NodeObject node)
+            LocalisedString text, ZNode zNode)
         {
             text.Reset();
             text.value = Array.IndexOf(table.ToArray(), entry);
             _localisedTextBox.text = text;
-            EditorUtility.SetDirty(node);
+            EditorUtility.SetDirty(zNode);
             AssetDatabase.SaveAssets();
             Close();
         }

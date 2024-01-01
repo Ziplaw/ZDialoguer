@@ -1,5 +1,37 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-6166203590187157561
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45a779c596352e541a57f6ca73efc725, type: 3}
+  m_Name: GraphStartDialogueNodeObject
+  m_EditorClassIdentifier: 
+  position: {x: -386, y: -16}
+  guid: 366d9874ef9f6a14f99dd514e459c3bb
+  graph: {fileID: 11400000}
+  DialogueGraph: {fileID: 11400000}
+--- !u!114 &-1544140176173729920
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5bdad6f2e22743078337603f69bd0f26, type: 3}
+  m_Name: ExitDialogueNodeObject
+  m_EditorClassIdentifier: 
+  position: {x: -8, y: 104}
+  guid: 997ca72bec808f14990583d1198c6b67
+  graph: {fileID: 11400000}
+  DialogueGraph: {fileID: 11400000}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12,28 +44,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a22a4c407ee48a54d863fc04a4674fc5, type: 3}
   m_Name: New Z Dialogue Graph
   m_EditorClassIdentifier: 
-  debugMode: 0
-  initialized: 1
   nodes:
-  - {fileID: 2778610008275586288}
-  facts: 
+  - {fileID: -6166203590187157561}
+  - {fileID: -1544140176173729920}
+  edgeDatas:
+  - outputPortViewDataKey: 366d9874ef9f6a14f99dd514e459c3bb 0
+    inputPortViewDataKey: 997ca72bec808f14990583d1198c6b67 0
+  localFacts: []
   characters: 
-  edgeDatas: []
   dialogueText: {fileID: 0}
---- !u!114 &2778610008275586288
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45a779c596352e541a57f6ca73efc725, type: 3}
-  m_Name: GraphStartNodeObject
-  m_EditorClassIdentifier: 
-  position: {x: 9, y: 127.25}
-  guid: 1998317555ee537498c29553334f400b
-  graph: {fileID: 11400000}
-  childNodeObject: {fileID: 0}
-  _current: {fileID: 2778610008275586288}

@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using ZDialoguer.Localization;
 
-namespace ZDialoguer
+namespace ZGraph.DialogueSystem
 {
-    public class ChoiceNodeObject : SequentialNodeObject, IEventNodeObject
+    public class ChoiceDialogueNodeObject : SequentialDialogueNodeObject, IEventNodeObject
     {
-        public override SequentialNodeObject SequenceChild => _sequenceChild;
-
-            [SerializeField] internal SequentialNodeObject _sequenceChild;
-        public Action<ChoiceNodeObject> OnExecuteExternal;
+        [SerializeField] internal SequentialDialogueNodeObject _sequenceChild;
+        public Action<ChoiceDialogueNodeObject> OnExecuteExternal;
         public LocalisedString dialogueText;
 
         public List<Choice> choices = new List<Choice>();
@@ -22,28 +21,7 @@ namespace ZDialoguer
 
         public void ConfirmChoice(Choice choice)
         {
-            graph.GetEntryNode().Current = choice.output;
-        }
-
-        public override (LocalisedString, SequentialNodeObject) OnRetrieve()
-        {
-            dialogueText.GenerateOutput();
-            choices.ForEach(c => c.choiceText.GenerateOutput());
-            
-            Execute();
-            return (dialogueText, SequenceChild);
-        }
-
-        public override NodeObject DeepClone()
-        {
-            ChoiceNodeObject instance = (ChoiceNodeObject)graph.GetOrCreateNodeInstance(this);
-            instance._sequenceChild = (SequentialNodeObject)graph.GetOrCreateNodeInstance(instance._sequenceChild);
-            instance.choices.ForEach(c =>
-            {
-                c.overriddenNode = (PredicateNodeObject)graph.GetOrCreateNodeInstance(c.overriddenNode);
-                c.output = (SequentialNodeObject)graph.GetOrCreateNodeInstance(c.output);
-            });
-            return instance;
+            throw new NotImplementedException();
         }
     }
 
@@ -60,10 +38,10 @@ namespace ZDialoguer
         
         
         public LocalisedString choiceText;
-        public SequentialNodeObject output;
-        internal bool Enabled => overriddenNode ? overriddenNode.GetPredicate() : true;
+        public SequentialDialogueNodeObject output;
+        internal bool Enabled => overriddenDialogueNode ? overriddenDialogueNode.GetPredicate() : true;
 
-        [SerializeField] internal PredicateNodeObject overriddenNode;
+        [FormerlySerializedAs("overriddenNode")] [SerializeField] internal PredicateDialogueNodeObject overriddenDialogueNode;
         public DisabledVisibility visibility;
     }
 }

@@ -1,29 +1,23 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
-namespace ZDialoguer
+namespace ZGraph.DialogueSystem
 {
-    public class FactNodeObject : StaticNodeObject
+    public class FactDialogueNode : PureDialogueNode
     {
-        public int factIndex;
-
-        public override NodeObject DeepClone()
+        [FormerlySerializedAs("factIndex")] public Fact fact;
+        
+        protected override void OnCreate()
         {
-            FactNodeObject instance = (FactNodeObject)graph.GetOrCreateNodeInstance(this);
-            instance.factIndex = factIndex;
-            return instance;
-        }
-
-        public override bool Init(Vector2 position, ZDialogueGraph graph)
-        {
-            base.Init(position, graph);
-            if (graph.facts.Count > 0)
+            base.OnCreate();
+            ZDialogueGraph dialogueGraph = graph as ZDialogueGraph;
+            
+            if (dialogueGraph.localFacts.Count > 0)
             {
-                factIndex = graph.facts[0];
-                return true;
+                fact = dialogueGraph.localFacts[0];
             }
-            Debug.LogWarning("There's no Facts in the current graph!");
-            return false;
+            throw new NodeNotCreatedException("There's no Facts in the current graph!");
         }
     }
 }

@@ -3,17 +3,14 @@ using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
-using ZDialoguer;
 
-public abstract class SequentialNodeView : NodeView
+namespace ZGraph.DialogueSystem
 {
-    public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph)
+    public abstract class SequentialZNodeView : ZNodeView
     {
-        
-    }
+        public override void BuildNodeView(ZNode Node, ZGraph graph)
+        {
 
-    public abstract override void OnConnectEdgeToInputPort(Edge edge);
-    public abstract override void OnConnectEdgeToOutputPort(Edge edge);
-    public abstract override void OnDisconnectEdgeFromInputPort(Edge edge);
-    public abstract override void OnDisconnectEdgeFromOutputPort(Edge edge);
+        }
+    }
 }

@@ -1,35 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using ZDialoguer;
 using ZDialoguer.Localization;
 
-public class DialogueNodeObject : SequentialNodeObject
+namespace ZGraph.DialogueSystem
 {
-    public override SequentialNodeObject SequenceChild => connectedChild;
 
-    public SequentialNodeObject connectedChild;
-    public LocalisedString text;
 
-    public override (LocalisedString, SequentialNodeObject) OnRetrieve()
+    public class DialogueNodeObject : SequentialDialogueNodeObject
     {
-        text.GenerateOutput();
-        return (text, SequenceChild);
-    }
+        public SequentialDialogueNodeObject connectedChild;
+        public LocalisedString text;
 
-    public override NodeObject DeepClone()
-    {
-        DialogueNodeObject instance = (DialogueNodeObject)graph.GetOrCreateNodeInstance(this);
-        instance.connectedChild = (SequentialNodeObject)graph.GetOrCreateNodeInstance(connectedChild);
-        return instance;
-    }
-
-    public override bool Init(Vector2 position, ZDialogueGraph graph)
-    {
-        base.Init(position,graph);
-        text = new LocalisedString(true);
-        if (graph.dialogueText) return true;
-        Debug.LogWarning("No Localization Text Asset Selected");
-        return false;
+        protected override void OnCreate()
+        {
+            base.OnCreate();
+            
+            text = new LocalisedString(true);
+            if (DialogueGraph.dialogueText) return;
+            throw new NodeNotCreatedException("Dialogue text asset in graph is null");
+        }
     }
 }

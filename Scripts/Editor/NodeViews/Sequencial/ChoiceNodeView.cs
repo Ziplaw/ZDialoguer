@@ -9,31 +9,31 @@ using UnityEngine.UIElements.Experimental;
 using ZDialoguer.Localization;
 using ZDialoguer.Localization.Editor;
 
-namespace ZDialoguer
+namespace ZGraph.DialogueSystem
 {
-    public class ChoiceNodeView : SequentialNodeView
+    public class ChoiceZNodeView : SequentialZNodeView
     {
-        ChoiceNodeObject _choiceNodeObject;
+        ChoiceDialogueNodeObject _choiceDialogueNodeObject;
         private int choiceStartPos = 2;
 
-        public override void BuildNodeView(NodeObject nodeObject, ZDialogueGraph graph)
+        public override void BuildNodeView(ZNode Node, ZGraph graph)
         {
-            _choiceNodeObject = nodeObject as ChoiceNodeObject;
-            base.BuildNodeView(nodeObject, graph);
+            _choiceDialogueNodeObject = Node as ChoiceDialogueNodeObject;
+            base.BuildNodeView(Node, graph);
             int index = 0;
             titleContainer.style.backgroundColor = new Color(0.96f, 0.9f, 0.56f);
             title = "Choice Node";
 
 
-            CreateInputPort(typeof(SequentialNodeObject), "►", inputContainer, NodeObject, ref index, Port.Capacity.Multi);
-            CreateOutputPort(typeof(SequentialNodeObject), "►", outputContainer, NodeObject, ref index);
+            CreateInputPort(typeof(SequentialDialogueNodeObject), "►", inputContainer, ((ZNodeView)this).Node, ref index, Port.Capacity.Multi);
+            CreateOutputPort(typeof(SequentialDialogueNodeObject), "►", outputContainer, ((ZNodeView)this).Node, ref index);
             Button addButton = new Button(() =>
             {
-                _choiceNodeObject.choices.Add(new Choice(new LocalisedString(true)));
+                _choiceDialogueNodeObject.choices.Add(new Choice(new LocalisedString(true)));
                 RepopulateGraph();
             }) { text = "+", style = { width = 24, height = 24, fontSize = 24 } };
 
-            for (int i = 0; i < _choiceNodeObject.choices.Count; i++)
+            for (int i = 0; i < _choiceDialogueNodeObject.choices.Count; i++)
             {
                 AddChoiceContainer(i);
             }
@@ -41,13 +41,13 @@ namespace ZDialoguer
 
             titleContainer.Add(addButton);
             
-            _choiceNodeObject.dialogueText.csvFile = currentGraphView.graph.dialogueText;
-            _choiceNodeObject.dialogueText.csvFileFullAssetPath =
-                LocalisedString.GetFullAssetPath(_choiceNodeObject.dialogueText.csvFile);
+            _choiceDialogueNodeObject.dialogueText.csvFile = ((ZDialogueGraph)currentGraphView.graph).dialogueText;
+            _choiceDialogueNodeObject.dialogueText.csvFileFullAssetPath =
+                LocalisedString.GetFullAssetPath(_choiceDialogueNodeObject.dialogueText.csvFile);
 
             var propertyDrawer =
-                new LocalisedStringPropertyDrawer{indexPosition = -1, stretch = true, _nodeView = this, _container = extensionContainer, _containerPosition = 0}.CreatePropertyGUI(
-                    new SerializedObject(_choiceNodeObject).FindProperty("dialogueText"));
+                new LocalisedStringPropertyDrawer{indexPosition = -1, stretch = true, ZNodeView = this, _container = extensionContainer, _containerPosition = 0}.CreatePropertyGUI(
+                    new SerializedObject(_choiceDialogueNodeObject).FindProperty("dialogueText"));
             
             extensionContainer.Add(propertyDrawer);
         }
@@ -57,10 +57,10 @@ namespace ZDialoguer
             int outputPortPos = index + choiceStartPos;
             int inputPortPos = index + choiceStartPos;
 
-            Port outputPort = CreateOutputPort(typeof(SequentialNodeObject), $"Choice", outputContainer,
-                _choiceNodeObject,
+            Port outputPort = CreateOutputPort(typeof(SequentialDialogueNodeObject), $"Choice", outputContainer,
+                _choiceDialogueNodeObject,
                 ref outputPortPos);
-            CreateInputPort(typeof(bool), $"Predicate {index + 1}", inputContainer, _choiceNodeObject,
+            CreateInputPort(typeof(bool), $"Predicate {index + 1}", inputContainer, _choiceDialogueNodeObject,
                 ref inputPortPos);
             // outputPort.Q<Label>().RemoveFromHierarchy();
             var container = GeneratePortContainer(index);
@@ -88,29 +88,29 @@ namespace ZDialoguer
             };
 
             var visibilityButton =
-                new TwoStateToggle<Choice.DisabledVisibility>(_choiceNodeObject.choices[choicePosition].visibility,
-                        button => _choiceNodeObject.choices[choicePosition].visibility = button.state, colorList,
+                new TwoStateToggle<Choice.DisabledVisibility>(_choiceDialogueNodeObject.choices[choicePosition].visibility,
+                        button => _choiceDialogueNodeObject.choices[choicePosition].visibility = button.state, colorList,
                         iconList)
                     { name = "visibilityButton" };
 
-            _choiceNodeObject.choices[choicePosition].choiceText.csvFile = currentGraphView.graph.dialogueText;
-            _choiceNodeObject.choices[choicePosition].choiceText.csvFileFullAssetPath =
-                LocalisedString.GetFullAssetPath(_choiceNodeObject.choices[choicePosition].choiceText.csvFile);
+            _choiceDialogueNodeObject.choices[choicePosition].choiceText.csvFile = ((ZDialogueGraph)currentGraphView.graph).dialogueText;
+            _choiceDialogueNodeObject.choices[choicePosition].choiceText.csvFileFullAssetPath =
+                LocalisedString.GetFullAssetPath(_choiceDialogueNodeObject.choices[choicePosition].choiceText.csvFile);
 
             var propertyDrawer =
-                new LocalisedStringPropertyDrawer { indexPosition = choicePosition, oneLine = true, _nodeView = this, _container = container, _containerPosition = _choiceNodeObject.choices[choicePosition].overriddenNode ? 1 : 0}.CreatePropertyGUI(
-                    new SerializedObject(_choiceNodeObject).FindProperty("choices")
+                new LocalisedStringPropertyDrawer { indexPosition = choicePosition, oneLine = true, ZNodeView = this, _container = container, _containerPosition = _choiceDialogueNodeObject.choices[choicePosition].overriddenDialogueNode ? 1 : 0}.CreatePropertyGUI(
+                    new SerializedObject(_choiceDialogueNodeObject).FindProperty("choices")
                         .GetArrayElementAtIndex(choicePosition).FindPropertyRelative("choiceText"));
 
             int _choicePos = choicePosition;
 
             var minusButton = new Button(() =>
             {
-                _choiceNodeObject.choices.RemoveAt(_choicePos);
+                _choiceDialogueNodeObject.choices.RemoveAt(_choicePos);
                 RepopulateGraph();
             }) { text = "-", style = { width = 24, height = 24, fontSize = 24 } };
 
-            if (_choiceNodeObject.choices[choicePosition].overriddenNode) container.Add(visibilityButton);
+            if (_choiceDialogueNodeObject.choices[choicePosition].overriddenDialogueNode) container.Add(visibilityButton);
             container.Add(propertyDrawer);
             container.Add(minusButton);
 
@@ -123,41 +123,41 @@ namespace ZDialoguer
             return container;
         }
 
-        public override void OnConnectEdgeToInputPort(Edge edge)
-        {
-            if (!edge.IsInputKey(0))
-                _choiceNodeObject.choices[edge.input.GetID(Direction.Input) - choiceStartPos]
-                    .overriddenNode = (edge.output.node as NodeView).NodeObject as PredicateNodeObject;
-        }
-
-        public override void OnConnectEdgeToOutputPort(Edge edge)
-        {
-            edge.IsOutputKey(1,
-                () =>
-                {
-                    _choiceNodeObject._sequenceChild = (edge.input.node as NodeView).NodeObject as SequentialNodeObject;
-                });
-            if (!edge.IsOutputKey(1))
-            {
-                _choiceNodeObject.choices[edge.output.GetID(Direction.Output) - choiceStartPos].output = (edge.input.node as NodeView).NodeObject as SequentialNodeObject;
-            }
-        }
-
-        public override void OnDisconnectEdgeFromInputPort(Edge edge)
-        {
-            if (!edge.IsInputKey(0))
-                _choiceNodeObject.choices[edge.input.GetID(Direction.Input) - choiceStartPos]
-                    .overriddenNode = null;
-        }
-
-        public override void OnDisconnectEdgeFromOutputPort(Edge edge)
-        {
-            edge.IsOutputKey(1, () => { _choiceNodeObject._sequenceChild = null; });
-            
-            if (!edge.IsOutputKey(1))
-            {
-                _choiceNodeObject.choices[edge.output.GetID(Direction.Output) - choiceStartPos].output = null;
-            }
-        }
+        // public override void OnConnectEdgeToInputPort(Edge edge)
+        // {
+        //     if (!edge.IsInputKey(0))
+        //         _choiceDialogueNodeObject.choices[edge.input.GetID(Direction.Input) - choiceStartPos]
+        //             .overriddenDialogueNode = (edge.output.node as ZNodeView).ZNode as PredicateDialogueNodeObject;
+        // }
+        //
+        // public override void OnConnectEdgeToOutputPort(Edge edge)
+        // {
+        //     edge.IsOutputKey(1,
+        //         () =>
+        //         {
+        //             _choiceDialogueNodeObject._sequenceChild = (edge.input.node as ZNodeView).ZNode as SequentialDialogueNodeObject;
+        //         });
+        //     if (!edge.IsOutputKey(1))
+        //     {
+        //         _choiceDialogueNodeObject.choices[edge.output.GetID(Direction.Output) - choiceStartPos].output = (edge.input.node as ZNodeView).ZNode as SequentialDialogueNodeObject;
+        //     }
+        // }
+        //
+        // public override void OnDisconnectEdgeFromInputPort(Edge edge)
+        // {
+        //     if (!edge.IsInputKey(0))
+        //         _choiceDialogueNodeObject.choices[edge.input.GetID(Direction.Input) - choiceStartPos]
+        //             .overriddenDialogueNode = null;
+        // }
+        //
+        // public override void OnDisconnectEdgeFromOutputPort(Edge edge)
+        // {
+        //     edge.IsOutputKey(1, () => { _choiceDialogueNodeObject._sequenceChild = null; });
+        //     
+        //     if (!edge.IsOutputKey(1))
+        //     {
+        //         _choiceDialogueNodeObject.choices[edge.output.GetID(Direction.Output) - choiceStartPos].output = null;
+        //     }
+        // }
     }
 }

@@ -5,15 +5,19 @@ using UnityEngine;
 using ZDialoguer;
 using ZDialoguerEditor;
 
-[CustomEditor(typeof(ZDialogueGraph))]
-public class ZDialogueGraphEditor : Editor
+namespace ZGraph.DialogueSystem
 {
-    public override void OnInspectorGUI()
+    [CustomEditor(typeof(ZDialogueGraph))]
+    public class ZDialogueGraphEditor : Editor
     {
-        if (GUILayout.Button("Open Graph"))
+        public override void OnInspectorGUI()
         {
-            ZDialogueGraphEditorWindow.OpenWindow(target as ZDialogueGraph);
+            if (GUILayout.Button("Open Graph"))
+            {
+                ZDialogueGraphEditorWindow.OpenWindow(target as ZDialogueGraph);
+            }
+
+            base.OnInspectorGUI();
         }
-        base.OnInspectorGUI();
     }
 }

@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ZDialoguer
+namespace ZGraph.DialogueSystem
 {
     [Serializable]
-    public class Character : DialogueData
+    public class Character : GraphData
     {
         [Serializable]
         public struct Name

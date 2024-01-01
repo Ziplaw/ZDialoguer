@@ -6,7 +6,8 @@ using UnityEditor.Callbacks;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
-using ZDialoguer;
+using ZGraph.DialogueSystem;
+using ZGraph;
 
 namespace ZDialoguerEditor
 {
@@ -30,13 +31,13 @@ namespace ZDialoguerEditor
     public class ZDialogueGraphEditorWindow : EditorWindow
     {
         public ZDialogueGraph graph;
-        public ZDialoguerGraphView graphView;
+        public ZGraphView graphView;
         private InspectorView inspectorView;
 
         public static void OpenWindow(ZDialogueGraph graph)
         {
             ZDialogueGraphEditorWindow wnd = GetWindow<ZDialogueGraphEditorWindow>();
-            wnd.titleContent = new GUIContent("Dialogue Graph");
+            wnd.titleContent = new GUIContent(graph.GraphTypeName);
             wnd.graph = graph;
             wnd.graphView.PopulateView(wnd.graph);
             var resolution = Screen.currentResolution;
@@ -68,7 +69,7 @@ namespace ZDialoguerEditor
             VisualElement root = rootVisualElement;
             var visualTree = Resources.Load<VisualTreeAsset>("UXML/ZDialogueGraphEditorWindow");
             visualTree.CloneTree(root);
-            graphView = root.Q<ZDialoguerGraphView>();
+            graphView = root.Q<ZGraphView>();
             graphView._editorWindow = this;
             inspectorView = root.Q<InspectorView>();
             PopupField<string> languagePopup = new PopupField<string>(LocalizationSettings.Instance.languages,
@@ -89,7 +90,7 @@ namespace ZDialoguerEditor
             root.Q<VisualElement>("LanguageSelectElement").Add(languagePopup);
 
             graphView.OnNodeSelected = OnNodeSelectionChanged;
-            graphView.OnBlackboardFactSelected = OnFactSelectionChanged;
+            graphView.OnNodeDeselected = OnNodeDeselection;
 
             AssetDeleter.window = this;
 
@@ -97,9 +98,16 @@ namespace ZDialoguerEditor
                 graphView.PopulateView(graph);
         }
 
-        void OnNodeSelectionChanged(NodeView nodeView)
+        void OnNodeSelectionChanged(ZNodeView zNodeView)
         {
-            inspectorView.UpdateSelection(graphView.graph, Editor.CreateEditor(nodeView.NodeObject));
+            inspectorView.UpdateSelection(graphView.graph, Editor.CreateEditor(zNodeView.Node));
+            Selection.activeObject = zNodeView.Node;
+        }
+        
+        void OnNodeDeselection(ZNodeView zNodeView)
+        {
+            inspectorView.UpdateSelection(graphView.graph, Editor.CreateEditor(zNodeView.Node));
+            Selection.activeObject = graph;
         }
 
         void OnFactSelectionChanged(Fact fact)

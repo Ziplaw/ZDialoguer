@@ -2,10 +2,10 @@ using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace ZDialoguer
+namespace ZGraph.DialogueSystem
 {
     [Serializable]
-    public class Fact : DialogueData
+    public class Fact : GraphData
     {
         public Fact()
         {
