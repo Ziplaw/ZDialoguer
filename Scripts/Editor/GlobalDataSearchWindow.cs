@@ -19,10 +19,10 @@ public class GlobalDataSearchWindow : EditorWindow
     private Action<int> OnSelectOption;
     private Action<IEnumerable<GraphData>> OnAddItem;
     private Action<int> OnRemoveItem;
-    private ZDialogueGraph graph;
+    private DialogueGraph graph;
     private Type itemListType;
  
-    public static void Open<T>(ZDialogueGraph graph, List<T> list, Action<int> OnSelectOption,
+    public static void Open<T>(DialogueGraph graph, List<T> list, Action<int> OnSelectOption,
         Action<IEnumerable<GraphData>> OnAddItem, Action<int> OnRemoveItem, Vector2 position) where T : GraphData
     {
         GlobalDataSearchWindow window = CreateInstance<GlobalDataSearchWindow>();

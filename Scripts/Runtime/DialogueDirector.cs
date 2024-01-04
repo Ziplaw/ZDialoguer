@@ -9,12 +9,13 @@ using ZGraph.DialogueSystem;
 using ZGraph;
 using TMPro;
 using UnityEditor.Graphs;
+using Node = ZGraph.Node;
 
 public class DialogueDirector : MonoBehaviour
 {
     // public List<ZDialogueGraph> graphs;
     public TextMeshProUGUI textComponent;
-    [SerializeField] ZDialogueGraph currentGraph;
+    [SerializeField] DialogueGraph currentGraph;
     public UnityEvent<ChoiceDialogueNodeObject> OnGetChoice;
     public UnityEvent OnRequestDialogue;
     public UnityEvent OnEndDialogue;
@@ -26,11 +27,11 @@ public class DialogueDirector : MonoBehaviour
 
     private void StupidCheck()
     {
-        foreach (var type in typeof(ZDialogueGraph).GetFields(BindingFlags.Public | BindingFlags.Instance)
+        foreach (var type in typeof(DialogueGraph).GetFields(BindingFlags.Public | BindingFlags.Instance)
             .Where(f => typeof(ScriptableObject).IsAssignableFrom(f.FieldType.GenericTypeArguments?.FirstOrDefault()))
             .Select(f => f.FieldType.GenericTypeArguments?.FirstOrDefault()))
         {
-            if (type != typeof(Fact) && type != typeof(ZNode))
+            if (type != typeof(Fact) && type != typeof(Node))
                 Debug.LogWarning($"Missing {type} for deep cloning!");
         }
     }
@@ -40,9 +41,9 @@ public class DialogueDirector : MonoBehaviour
         OnEndDialogue.Invoke();
     }
 
-    private void SetupGraphExternal(ZDialogueGraph graph)
+    private void SetupGraphExternal(DialogueGraph graph)
     {
-        foreach (var o in graph.nodes)
+        foreach (var o in graph.Nodes)
         {
             switch (o)
             {
@@ -56,7 +57,7 @@ public class DialogueDirector : MonoBehaviour
         }
     }
 
-    public void RequestDialogue(ZDialogueGraph graph, params FactData[] context)
+    public void RequestDialogue(DialogueGraph graph, params FactData[] context)
     {
         LocalizationSettings.Instance.SetLanguage("ID");
         
@@ -68,7 +69,7 @@ public class DialogueDirector : MonoBehaviour
         GetNextText();
     }
 
-    private ZDialogueGraph ProcessGraph(ZDialogueGraph graph)
+    private DialogueGraph ProcessGraph(DialogueGraph graph)
     {
         return graph;
     }

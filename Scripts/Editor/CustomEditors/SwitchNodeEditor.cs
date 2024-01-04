@@ -40,7 +40,7 @@ public class SwitchNodeEditor : Editor
                         if (output is DialogueNodeObject _dialogueNodeObject)
                         {
                             string parsedText =
-                                _dialogueNodeObject.text.ParseFacts(graphWindow.graphView.graph as ZDialogueGraph);
+                                _dialogueNodeObject.text.ParseFacts(graphWindow.graphView.graph as DialogueGraph);
                             var split = parsedText.Split('\n')[0];
                             stringOutput = split.Substring(0, Mathf.Min(30, split.Length)) +
                                            "(...)";

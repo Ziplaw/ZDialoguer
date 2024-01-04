@@ -5,7 +5,7 @@ using ZGraph.DialogueSystem;
 
 public class DialogueRequester : MonoBehaviour
 {
-    public ZDialogueGraph graph;
+    public DialogueGraph graph;
     public string playerName;
     
     public void RequestDialogue()

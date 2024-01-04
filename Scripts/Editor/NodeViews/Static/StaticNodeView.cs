@@ -7,7 +7,7 @@ using ZDialoguer;
 
 namespace ZGraph.DialogueSystem
 {
-    public abstract class StaticZNodeView : ZNodeView
+    public abstract class StaticNodeView : NodeView
     {
         // public abstract override void OnConnectEdgeToInputPort(Edge edge);
         // public abstract override void OnConnectEdgeToOutputPort(Edge edge);

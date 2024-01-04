@@ -6,14 +6,14 @@ using ZDialoguer.Localization;
 namespace ZGraph.DialogueSystem
 {
     [ZNodeDisplay("#9991F5","Exit")]
-    public class ExitDialogueNodeObject : SequentialDialogueNodeObject
+    public class ExitDialogueNodeObject : UnnamedNode
     {
-        [Input(PortOptions.Multiple)]
-        public ZNode Input(EdgeData edgeData)
+        [Input(PortOptions.Single)] int Input;
+        public override void Execute()
         {
-            var node = graph.GetNode(edgeData.outputPortViewDataKey);
-            Debug.Log($"Input: {node}");
-            return node;
+            var connectedNode = GetConnectedNode<UnnamedNode>(nameof(Input));
+            connectedNode.Execute();
+            Input = connectedNode.GetValueConnectedTo<int>(this, nameof(Input));
         }
     }
 }

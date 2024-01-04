@@ -8,24 +8,24 @@ using ZDialoguer.Localization;
 namespace ZGraph.DialogueSystem
 {
     [ZNodeDisplay("#9991F5","Entry")]
-    public class GraphStartDialogueNodeObject : DialogueNode
+    public class GraphStartDialogueNodeObject : UnnamedNode
     {
-        [Output(PortOptions.Single)]
-        public ZNode Out(EdgeData edgeData)
-        {
-            var node = graph.GetNode(edgeData.inputPortViewDataKey);
-            Debug.Log($"Out: {node}");
-            return node;
-        }
+        [Output(PortOptions.Single)] int Out;
+        
         public string GetNextText()
         {
             return null;
+        }
+
+        public override void Execute()
+        {
+            Out = 3;
         }
     }
 
     public static class Extensions
     {
-        public static string ParseFacts(this LocalisedString text, ZDialogueGraph graph)
+        public static string ParseFacts(this LocalisedString text, DialogueGraph graph)
         {
             string _text = text;
             // int index = 0;

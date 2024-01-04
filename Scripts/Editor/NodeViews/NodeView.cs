@@ -2,72 +2,48 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using ZGraph.DialogueSystem;
 
 namespace ZGraph
 {
-    public class ZNodeView : Node
+    public class NodeView : UnityEditor.Experimental.GraphView.Node
     {
-        public ZNode Node;
+        public Node Node;
         protected static ZGraphView currentGraphView;
 
-        public virtual void BuildNodeView(ZNode Node, ZGraph graph)
+        public virtual void BuildNodeView(Node node, Graph graph)
         {
-            int index = 0;
-
-            inputContainer.Clear();
-            outputContainer.Clear();
-
-            foreach (var method in Node.GetType().GetMethods())
+            foreach (var field in node.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
-                var outputAttribute = method.GetCustomAttribute<OutputAttribute>();
+                var outputAttribute = field.GetCustomAttribute<OutputAttribute>();
                 Port port = null;
                 if (outputAttribute != null)
                 {
-                    port = CreateOutputPort(method.ReturnType, method.Name, outputContainer, Node, ref index,
+                    port = CreateOutputPort(field.FieldType, field.Name, outputContainer, node,
                         outputAttribute.PortOptions == PortOptions.Single ? Port.Capacity.Single : Port.Capacity.Multi);
                 }
 
-                if (port != null)
-                {
-                    var edgeDatas = graph.GetInputConnectionsTo(port.viewDataKey);
-                    foreach (var edgeData in edgeDatas)
-                    {
-                        var button = new Button();
-                        button.text = method.Name;
-                        button.clicked += () => method.Invoke(Node, new object[] { edgeData });
-                        contentContainer.Add(button);
-                    }
-                }
-
-                var inputAttribute = method.GetCustomAttribute<InputAttribute>();
+                var inputAttribute = field.GetCustomAttribute<InputAttribute>();
                 port = null;
                 if (inputAttribute != null)
                 {
-                    port = CreateInputPort(method.ReturnType, method.Name, inputContainer, Node, ref index,
+                    port = CreateInputPort(field.FieldType, field.Name, inputContainer, node,
                         inputAttribute.PortOptions == PortOptions.Single ? Port.Capacity.Single : Port.Capacity.Multi);
-                }
-
-                if (port != null)
-                {
-                    var edgeDatas = graph.GetOutputConnectionsTo(port.viewDataKey);
-                    foreach (var edgeData in edgeDatas)
-                    {
-                        var button = new Button();
-                        button.text = method.Name;
-                        button.clicked += () => method.Invoke(Node, new object[] { edgeData });
-                        contentContainer.Add(button);
-                    }
                 }
             }
 
+            RebuildContentContainer(node, graph);
+
             capabilities ^= Capabilities.Deletable;
             capabilities ^= Capabilities.Collapsible;
-            var nodeDisplayAttribute = Node.GetType().GetCustomAttribute<ZNodeDisplay>();
+            var nodeDisplayAttribute = node.GetType().GetCustomAttribute<ZNodeDisplay>();
             if (nodeDisplayAttribute != null)
             {
                 title = nodeDisplayAttribute.DisplayName;
@@ -82,7 +58,83 @@ namespace ZGraph
             // titleContainer.style.backgroundColor = new StyleColor(new Color(0.6f, 0.57f, 0.96f));
             mainContainer.style.alignItems = Align.Center;
         }
+        
+        private void RebuildContentContainer(Node node, Graph graph)
+        {
+            extensionContainer.Clear();
+            
+            foreach (var field in Node.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+            {
+                if (field.GetCustomAttribute<InputAttribute>() != null)
+                {
+                    var edgeDatas = graph.GetInputConnectionsTo($"{node.guid}_{field.Name}");
+                    foreach (var edgeData in edgeDatas)
+                    {
+                        var button = new Button();
+                        button.text = edgeData.outputPortID;
+                        button.clicked += () =>
+                        {
+                            ((UnnamedNode)Node).Execute();
+                            Debug.Log(field.GetValue(Node));
+                        };
+                        extensionContainer.Add(button);
+                    }
+                }
 
+                if (field.GetCustomAttribute<OutputAttribute>() != null)
+                {
+                    var edgeDatas = graph.GetOutputConnectionsTo($"{node.guid}_{field.Name}");
+                    foreach (var edgeData in edgeDatas)
+                    {
+                        var button = new Button();
+                        button.text = edgeData.inputPortID;
+                        button.clicked += () =>
+                        {
+                            ((UnnamedNode)Node).Execute();
+                            Debug.Log(field.GetValue(Node));
+                        };
+                        extensionContainer.Add(button);
+                    }
+                }
+            }
+        }
+
+        public void OnConnectEdgeToInputPort(Edge edge, bool populating)
+        {
+            if (populating) return;
+            
+            var inputNodeView = (NodeView)edge.input.node;
+
+            inputNodeView.RebuildContentContainer(inputNodeView.Node, currentGraphView.graph);
+        }
+
+        public void OnConnectEdgeToOutputPort(Edge edge, bool populating)
+        {
+            if (populating) return;
+            
+            var outputNodeView = (NodeView)edge.output.node;
+
+            outputNodeView.RebuildContentContainer(outputNodeView.Node, currentGraphView.graph);
+        }
+
+        public void OnDisconnectEdgeFromInputPort(Edge edge, bool populating)
+        {
+            if (populating) return;
+            
+            var inputNodeView = (NodeView)edge.input.node;
+
+            inputNodeView.RebuildContentContainer(inputNodeView.Node, currentGraphView.graph);
+        }
+
+        public void OnDisconnectEdgeFromOutputPort(Edge edge, bool populating)
+        {
+            if (populating) return;
+            
+            var outputNodeView = (NodeView)edge.output.node;
+
+            outputNodeView.RebuildContentContainer(outputNodeView.Node, currentGraphView.graph);
+        }
+        
         protected void ForceCollapsable()
         {
             var ghostPort = InstantiatePort(Orientation.Vertical, Direction.Input, Port.Capacity.Single, null);
@@ -91,81 +143,34 @@ namespace ZGraph
             inputContainer.Add(ghostPort);
         }
 
-        public void OnConnectEdgeToInputPort(Edge edge, bool populating)
-        {
-            
-        }
-
-        public void OnConnectEdgeToOutputPort(Edge edge, bool populating)
-        {
-            // if (populating) return;
-            //
-            // var outputNodeView = (ZNodeView)edge.input.node;
-            // var inputNodeView = (ZNodeView)edge.input.node;
-            //
-            // outputNodeView.BuildNodeView(outputNodeView.Node, currentGraphView.graph);
-            // inputNodeView.BuildNodeView(inputNodeView.Node, currentGraphView.graph);
-        }
-
-        public void OnDisconnectEdgeFromInputPort(Edge edge, bool populating)
-        {
-            
-        }
-
-        public void OnDisconnectEdgeFromOutputPort(Edge edge, bool populating)
-        {
-            // if (populating) return;
-            //
-            // var outputNodeView = (ZNodeView)edge.input.node;
-            // var inputNodeView = (ZNodeView)edge.input.node;
-            //
-            // outputNodeView.BuildNodeView(outputNodeView.Node, currentGraphView.graph);
-            // inputNodeView.BuildNodeView(inputNodeView.Node, currentGraphView.graph);
-        }
-
-        public static ZNodeView CreateNodeView(ZNode zNode, ZGraphView graphView)
+        public static NodeView CreateNodeView(Node node, ZGraphView graphView)
         {
             currentGraphView = graphView;
-            ZNodeView zNodeView = new ZNodeView();
+            NodeView nodeView = new NodeView();
 
-            zNodeView.Node = zNode;
-            zNodeView.viewDataKey = zNode.guid;
-            zNodeView.BuildNodeView(zNode, graphView.graph);
+            nodeView.Node = node;
+            nodeView.viewDataKey = node.guid;
+            nodeView.BuildNodeView(node, graphView.graph);
             var font = Resources.Load<Font>("Fonts/FugazOne");
-            zNodeView.Q<Label>("title-label").style.unityFont = font;
-            zNodeView.Q<Label>("title-label").style.unityFontDefinition = new StyleFontDefinition(font);
+            nodeView.Q<Label>("title-label").style.unityFont = font;
+            nodeView.Q<Label>("title-label").style.unityFontDefinition = new StyleFontDefinition(font);
+            nodeView.titleContainer.parent.style.alignItems = Align.Stretch;
 
-            zNodeView.SetPosition(new Rect(new Vector2(zNode.position.x, zNode.position.y),
+            nodeView.SetPosition(new Rect(new Vector2(node.position.x, node.position.y),
                 new Vector2(100, 100)));
-            zNodeView.style.left = zNode.position.x;
-            zNodeView.style.top = zNode.position.y;
-            zNodeView.mainContainer.style.backgroundColor = new StyleColor(new Color(0.17f, 0.17f, 0.17f));
-            zNodeView.RefreshExpandedState();
-            zNodeView.RefreshPorts();
+            nodeView.style.left = node.position.x;
+            nodeView.style.top = node.position.y;
+            nodeView.mainContainer.style.backgroundColor = new StyleColor(new Color(0.17f, 0.17f, 0.17f));
+            nodeView.RefreshExpandedState();
+            nodeView.RefreshPorts();
 
-            return zNodeView;
+            return nodeView;
         }
 
-        private static Dictionary<Type, Func<ZNodeView>> nodeViewMap =
-            new Dictionary<Type, Func<ZNodeView>>
-            {
-                // { typeof(GraphStartDialogueNodeObject), () => new GraphStartZNodeView() },
-                // { typeof(PredicateDialogueNodeObject), () => new PredicateZNodeView() },
-                // { typeof(DialogueNodeObject), () => new DialogueZNodeView() },
-                // { typeof(ChoiceDialogueNodeObject), () => new ChoiceZNodeView() },
-                // { typeof(SwitchDialogueNodeObject), () => new SwitchZNodeView() },
-                // { typeof(FactDialogueNode), () => new FactZNodeView() },
-                // { typeof(ExitDialogueNodeObject), () => new ExitZNodeView() },
-            };
-
+        
+        
         private string nodeName;
         private bool collapsed;
-
-        protected void RepopulateGraph()
-        {
-            var view = currentGraphView;
-            view.PopulateView(view.graph);
-        }
 
         protected override void ToggleCollapse()
         {
@@ -185,8 +190,7 @@ namespace ZGraph
         }
 
 
-        protected Port CreateInputPort(Type type, string portName, VisualElement container, ZNode zNode,
-            ref int index,
+        protected Port CreateInputPort(Type type, string portName, VisualElement container, Node node,
             Port.Capacity capacity = Port.Capacity.Single)
         {
             var input = InstantiatePort(Orientation.Horizontal, Direction.Input, capacity, type);
@@ -197,19 +201,22 @@ namespace ZGraph
             {
                 color = _color;
             }
-
+            else
+            {
+                var parsed = ColorUtility.TryParseHtmlString($"#{GetRandomColor(type.AssemblyQualifiedName)}FF", out _color);
+                if(parsed) color = _color;
+            }
+            
             Color.RGBToHSV(color, out float H, out float S, out float B);
             // S *= .5f;
             input.Q<Label>().style.color = Color.HSVToRGB(H, S, B);
             input.portColor = color;
-            input.viewDataKey = zNode.guid + " " + index;
-            index++;
+            input.viewDataKey = $"{node.guid}_{portName}";
             container?.Add(input);
             return input;
         }
 
-        protected Port CreateOutputPort(Type type, string portName, VisualElement container, ZNode zNode,
-            ref int index,
+        protected Port CreateOutputPort(Type type, string portName, VisualElement container, Node node,
             Port.Capacity portCapacity = Port.Capacity.Multi, Orientation orientation = Orientation.Horizontal)
         {
             var output = InstantiatePort(orientation, Direction.Output, portCapacity, type);
@@ -219,6 +226,11 @@ namespace ZGraph
             {
                 color = _color;
             }
+            else
+            {
+                var parsed = ColorUtility.TryParseHtmlString($"#{GetRandomColor(type.AssemblyQualifiedName)}FF", out _color);
+                if(parsed) color = _color;
+            }
 
 
             Color.RGBToHSV(color, out float H, out float S, out float B);
@@ -226,8 +238,7 @@ namespace ZGraph
             output.Q<Label>().style.color = Color.HSVToRGB(H, S, B);
             output.portName = portName;
             output.portColor = color;
-            output.viewDataKey = zNode.guid + " " + index;
-            index++;
+            output.viewDataKey = $"{node.guid}_{portName}";
             container?.Add(output);
             return output;
         }
@@ -238,6 +249,15 @@ namespace ZGraph
             // { typeof(SequentialDialogueNodeObject), new Color(0.55f, 0.42f, 1f) },
             // { typeof(bool), new Color(0.25f, 0.88f, 1f) }
         };
+        
+        static string GetRandomColor(string raw)
+        {
+            using (MD5 md5Hash = MD5.Create())
+            {
+                byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(raw));
+                return BitConverter.ToString(data).Replace("-", string.Empty).Substring(0, 6);
+            }
+        }
 
         public override void SetPosition(Rect newPos)
         {

@@ -7,9 +7,9 @@ namespace ZGraph.DialogueSystem
 {
 
 
-    public class DialogueNodeObject : SequentialDialogueNodeObject
+    public class DialogueNodeObject : DialogueNode
     {
-        public SequentialDialogueNodeObject connectedChild;
+        public DialogueNode connectedChild;
         public LocalisedString text;
 
         protected override void OnCreate()

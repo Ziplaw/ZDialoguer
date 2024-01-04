@@ -9,7 +9,7 @@ using ZDialoguer.Localization;
 
 namespace ZGraph.DialogueSystem
 {
-    public class PredicateDialogueNodeObject : SequentialDialogueNodeObject
+    public class PredicateDialogueNodeObject : DialogueNode
     {
         public enum Operation
         {
@@ -53,8 +53,8 @@ namespace ZGraph.DialogueSystem
             }
         }
 
-        public ZNode childIfTrue;
-        public ZNode childIfFalse;
+        public Node childIfTrue;
+        public Node childIfFalse;
 
         bool errorPrinted = false;
 

@@ -7,7 +7,7 @@ using ZDialoguer.Localization;
 
 namespace ZGraph.DialogueSystem
 {
-    public class SwitchDialogueNodeObject : SequentialDialogueNodeObject
+    public class SwitchDialogueNodeObject : DialogueNode
     {
         public Fact FactInstance => factIndex == -1? Fact.Null : GlobalData.Instance.facts[factIndex];
 
@@ -19,7 +19,7 @@ namespace ZGraph.DialogueSystem
         {
             public float floatValue;
             public string stringValue = "New Entry";
-            public ZNode output;
+            public Node output;
 
             public void SetValue(object value, Fact.FactType factFactType)
             {

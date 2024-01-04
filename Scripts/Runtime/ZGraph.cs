@@ -5,40 +5,42 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.Serialization;
 using ZDialoguer;
 
 namespace ZGraph
 {
-    public abstract class ZGraph : ScriptableObject
+    public abstract class Graph : ScriptableObject
     {
         internal virtual string GraphTypeName => "Generic Graph";
         
-        public List<ZNode> nodes = new();
+        [FormerlySerializedAs("nodes")] public List<Node> Nodes = new();
         public List<EdgeData> edgeDatas = new();
-        
+        public Dictionary<string, Node> NodeDictionary;
+
         public virtual void OnPopulate(Vector2 size)
         {
         }
 
-        public void CreateNode<T>(Vector2 nodePosition) where T : ZNode
+        public void CreateNode<T>(Vector2 nodePosition) where T : Node
         {
             var node = CreateInstance<T>();
             node.OnCreate(nodePosition, this);
         }
 
-        public ZNode GetNode(string portID)
+        public Node GetNode(string portID)
         {
-            return nodes.Find(n => n.guid == GetPortInfo(portID).guid);
+            return Nodes.Find(n => n.guid == GetPortInfo(portID).guid);
         }
 
         public IEnumerable<EdgeData> GetInputConnectionsTo(string portID)
         {
-            return edgeDatas.Where(e => e.outputPortViewDataKey == portID);
+            return edgeDatas.Where(e => e.inputPortID == portID);
         }
         
         public IEnumerable<EdgeData> GetOutputConnectionsTo(string portID)
         {
-            return edgeDatas.Where(e => e.inputPortViewDataKey == portID);
+            return edgeDatas.Where(e => e.outputPortID == portID);
         }
         
         (string guid, int index) GetPortInfo(string portID)
@@ -47,25 +49,24 @@ namespace ZGraph
 
             return (split[0], int.Parse(split[1]));
         }
-    }
-
-
-    public static class Extensions
-    {
-        public static void RemoveEdge(this List<EdgeData> list, Edge edge)
+        
+        public void RemoveEdge(string inputPortID, string outputPortID)
         {
-            list.Remove(list.FirstOrDefault(e =>
-                e.inputPortViewDataKey == edge.input.viewDataKey &&
-                e.outputPortViewDataKey == edge.output.viewDataKey));
+            edgeDatas.Remove(edgeDatas.FirstOrDefault(edgeData =>
+                edgeData.inputPortID == inputPortID && edgeData.outputPortID == outputPortID));
         }
 
-        public static void AddEdge(this List<EdgeData> list, Edge edge)
+        public void AddEdge(string inputPortID, string outputPortID)
         {
-            if (!list.Any(e =>
-                    e.inputPortViewDataKey == edge.input.viewDataKey &&
-                    e.outputPortViewDataKey == edge.output.viewDataKey))
-                list.Add(new EdgeData
-                    { inputPortViewDataKey = edge.input.viewDataKey, outputPortViewDataKey = edge.output.viewDataKey });
+            if (edgeDatas.Any(edgeData => edgeData.inputPortID == inputPortID && edgeData.outputPortID == outputPortID))
+                return;
+            
+            edgeDatas.Add(new EdgeData(inputPortID, outputPortID));
+        }
+
+        public T GetNodeFromPortID<T>(string outputPortID) where T : Node
+        {
+            return (T)Nodes.Find(n => n is T && n.guid == outputPortID.Split("_")[0]);
         }
     }
     

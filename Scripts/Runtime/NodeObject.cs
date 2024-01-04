@@ -13,7 +13,7 @@ using UnityEngine.UIElements;
 
 namespace ZGraph.DialogueSystem
 {
-    public abstract class PureDialogueNode : ZNode
+    public abstract class PureDialogueNode : Node
     {
         
     }

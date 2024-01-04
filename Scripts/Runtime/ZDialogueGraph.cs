@@ -8,7 +8,7 @@ using UnityEngine;
 namespace ZGraph.DialogueSystem
 {
     [CreateAssetMenu]
-    public class ZDialogueGraph : ZGraph
+    public class DialogueGraph : Graph
     {
         internal override string GraphTypeName => "Dialogue Graph";
 
@@ -23,7 +23,7 @@ namespace ZGraph.DialogueSystem
 
         public GraphStartDialogueNodeObject GetEntryNode()
         {
-            return nodes.Count > 0 ? (GraphStartDialogueNodeObject)nodes[0] : null;
+            return Nodes.Count > 0 ? (GraphStartDialogueNodeObject)Nodes[0] : null;
         }
 
         public void InitializeFacts(FactData[] factDatas)

@@ -2,19 +2,22 @@ using ZGraph;
 
 namespace ZGraph.DialogueSystem
 {
-    public abstract class DialogueNode : ZNode
+    public abstract class DialogueNode : Node
     {
-        public ZDialogueGraph DialogueGraph;
+        public DialogueGraph DialogueGraph;
 
         protected override void OnCreate()
         {
             base.OnCreate();
 
-            DialogueGraph = graph as ZDialogueGraph;
+            DialogueGraph = graph as DialogueGraph;
 
             if (DialogueGraph == null) throw new NodeNotCreatedException($"variable \"graph\" is null");
         }
     }
-    
-    public class Flow {}
+
+    public abstract class UnnamedNode : DialogueNode
+    {
+        public abstract void Execute();
+    }
 }

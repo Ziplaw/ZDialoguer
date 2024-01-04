@@ -21,7 +21,7 @@ public class ChoiceSpawner : MonoBehaviour
             var button = Instantiate(buttonPrefab, transform.position, Quaternion.identity, transform).GetComponent<Button>();
             button.GetComponentInChildren<TextMeshProUGUI>().text = choiceDialogueNodeObject.choices[i].choiceText;
 
-            if (!choiceDialogueNodeObject.choices[i].Enabled)
+            // if (!choiceDialogueNodeObject.choices[i].Enabled)
             {
                 button.interactable = false;
                 if (choiceDialogueNodeObject.choices[i].visibility == Choice.DisabledVisibility.Hidden)

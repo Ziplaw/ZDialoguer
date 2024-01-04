@@ -17,7 +17,7 @@ namespace ZDialoguerEditor
         public static bool OpenAsset(int instanceID, int line)
         {
             var obj = EditorUtility.InstanceIDToObject(instanceID);
-            if (obj is ZDialogueGraph graph)
+            if (obj is DialogueGraph graph)
             {
                 Selection.activeObject = obj;
                 ZDialogueGraphEditorWindow.OpenWindow(graph);
@@ -30,11 +30,11 @@ namespace ZDialoguerEditor
 
     public class ZDialogueGraphEditorWindow : EditorWindow
     {
-        public ZDialogueGraph graph;
+        public DialogueGraph graph;
         public ZGraphView graphView;
         private InspectorView inspectorView;
 
-        public static void OpenWindow(ZDialogueGraph graph)
+        public static void OpenWindow(DialogueGraph graph)
         {
             ZDialogueGraphEditorWindow wnd = GetWindow<ZDialogueGraphEditorWindow>();
             wnd.titleContent = new GUIContent(graph.GraphTypeName);
@@ -98,15 +98,15 @@ namespace ZDialoguerEditor
                 graphView.PopulateView(graph);
         }
 
-        void OnNodeSelectionChanged(ZNodeView zNodeView)
+        void OnNodeSelectionChanged(NodeView nodeView)
         {
-            inspectorView.UpdateSelection(graphView.graph, Editor.CreateEditor(zNodeView.Node));
-            Selection.activeObject = zNodeView.Node;
+            inspectorView.UpdateSelection(graphView.graph, Editor.CreateEditor(nodeView.Node));
+            Selection.activeObject = nodeView.Node;
         }
         
-        void OnNodeDeselection(ZNodeView zNodeView)
+        void OnNodeDeselection(NodeView nodeView)
         {
-            inspectorView.UpdateSelection(graphView.graph, Editor.CreateEditor(zNodeView.Node));
+            inspectorView.UpdateSelection(graphView.graph, Editor.CreateEditor(nodeView.Node));
             Selection.activeObject = graph;
         }
 

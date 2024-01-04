@@ -11,7 +11,7 @@ namespace ZGraph.DialogueSystem
         protected override void OnCreate()
         {
             base.OnCreate();
-            ZDialogueGraph dialogueGraph = graph as ZDialogueGraph;
+            DialogueGraph dialogueGraph = graph as DialogueGraph;
             
             if (dialogueGraph.localFacts.Count > 0)
             {

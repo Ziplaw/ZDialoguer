@@ -9,6 +9,7 @@ using UnityEngine.UIElements;
 using ZGraph;
 using ZDialoguer.Localization;
 using ZDialoguerEditor;
+using Node = ZGraph.Node;
 
 public class ZGraphView : GraphView
 {
@@ -16,10 +17,10 @@ public class ZGraphView : GraphView
     {
     }
 
-    public Action<ZNodeView> OnNodeSelected;
-    public Action<ZNodeView> OnNodeDeselected;
+    public Action<NodeView> OnNodeSelected;
+    public Action<NodeView> OnNodeDeselected;
     
-    internal ZGraph.ZGraph graph;
+    internal ZGraph.Graph graph;
     internal ZNodeSearchWindow _nodeSearchWindow;
     internal ZDialogueGraphEditorWindow _editorWindow;
 
@@ -44,7 +45,7 @@ public class ZGraphView : GraphView
         styleSheets.Add(styleSheet);
     }
 
-    public void PopulateView(ZGraph.ZGraph graph)
+    public void PopulateView(ZGraph.Graph graph)
     {
         foreach (var node in nodes)
         {
@@ -60,7 +61,7 @@ public class ZGraphView : GraphView
         graph.OnPopulate(new Vector2(resolvedStyle.width, resolvedStyle.height));
         AddSearchWindow();
         // GenerateBlackBoard();
-        graph.nodes.ForEach(n => CreateNodeView(n));
+        graph.Nodes.ForEach(n => CreateNodeView(n));
         RestoreConnections();
     }
 
@@ -69,9 +70,8 @@ public class ZGraphView : GraphView
         List<Edge> edgesToCreate = new List<Edge>();
         foreach (var graphEdgeData in graph.edgeDatas)
         {
-            Port input = GetPortByGuid(graphEdgeData.inputPortViewDataKey);
-            Port output = GetPortByGuid(graphEdgeData.outputPortViewDataKey);
-
+            Port input = GetPortByGuid(graphEdgeData.inputPortID);
+            Port output = GetPortByGuid(graphEdgeData.outputPortID);
 
             if (output == null || input == null) continue;
             Edge edge = output.ConnectTo(input);
@@ -114,19 +114,19 @@ public class ZGraphView : GraphView
 
                 switch (e)
                 {
-                    case ZNodeView nV:
+                    case NodeView nV:
                         DeleteNode(nV.Node);
                         edges.Where(edge => edge.input.node == nV || edge.output.node == nV).ToList().ForEach(edge =>
                         {
-                            (edge.output.node as ZNodeView).OnDisconnectEdgeFromOutputPort(edge, populating);
-                            (edge.input.node as ZNodeView).OnDisconnectEdgeFromInputPort(edge, populating);
-                            graph.edgeDatas.RemoveEdge(edge);
+                            graph.RemoveEdge(edge.input.viewDataKey, edge.output.viewDataKey);
+                            (edge.output.node as NodeView).OnDisconnectEdgeFromOutputPort(edge, populating);
+                            (edge.input.node as NodeView).OnDisconnectEdgeFromInputPort(edge, populating);
                         });
                         break;
                     case Edge edge:
-                        (edge.output.node as ZNodeView).OnDisconnectEdgeFromOutputPort(edge, populating);
-                        (edge.input.node as ZNodeView).OnDisconnectEdgeFromInputPort(edge, populating);
-                        graph.edgeDatas.RemoveEdge(edge);
+                        graph.RemoveEdge(edge.input.viewDataKey, edge.output.viewDataKey);
+                        (edge.output.node as NodeView).OnDisconnectEdgeFromOutputPort(edge, populating);
+                        (edge.input.node as NodeView).OnDisconnectEdgeFromInputPort(edge, populating);
                         break;
                 }
             }
@@ -136,11 +136,11 @@ public class ZGraphView : GraphView
         {
             foreach (var edge in graphViewChange.edgesToCreate)
             {
-                ZNodeView outputZNodeView = edge.output.node as ZNodeView;
-                ZNodeView inputZNodeView = edge.input.node as ZNodeView;
-                outputZNodeView.OnConnectEdgeToOutputPort(edge, populating);
-                inputZNodeView.OnConnectEdgeToInputPort(edge, populating);
-                graph.edgeDatas.AddEdge(edge);
+                NodeView outputNodeView = edge.output.node as NodeView;
+                NodeView inputNodeView = edge.input.node as NodeView;
+                graph.AddEdge(edge.input.viewDataKey, edge.output.viewDataKey);
+                outputNodeView.OnConnectEdgeToOutputPort(edge, populating);
+                inputNodeView.OnConnectEdgeToInputPort(edge, populating);
             }
         }
 
@@ -184,9 +184,9 @@ public class ZGraphView : GraphView
         return viewTransform.matrix.inverse.MultiplyPoint(eventLocalMousePosition);
     }
 
-    internal ZNode CreateNode(Type type, Vector2 position, bool generateView = true)
+    internal Node CreateNode(Type type, Vector2 position, bool generateView = true)
     {
-        var node = ScriptableObject.CreateInstance(type) as ZNode;
+        var node = ScriptableObject.CreateInstance(type) as Node;
         if (node.OnCreate(position, graph))
         {
             if (generateView) CreateNodeView(node);
@@ -195,17 +195,17 @@ public class ZGraphView : GraphView
         return null;
     }
     
-    public void DeleteNode(ZNode nodeObject)
+    public void DeleteNode(Node nodeObject)
     {
-        graph.nodes.Remove(nodeObject);
+        graph.Nodes.Remove(nodeObject);
         AssetDatabase.RemoveObjectFromAsset(nodeObject);
         AssetDatabase.SaveAssets();
     }
 
-    ZNodeView CreateNodeView(ZNode zNode)
+    NodeView CreateNodeView(Node node)
     {
-        ZNodeView zNodeView = ZNodeView.CreateNodeView(zNode, this);
-        AddElement(zNodeView);
-        return zNodeView;
+        NodeView nodeView = NodeView.CreateNodeView(node, this);
+        AddElement(nodeView);
+        return nodeView;
     }
 }

@@ -6,9 +6,9 @@ using UnityEngine.UIElements;
 
 namespace ZGraph.DialogueSystem
 {
-    public abstract class SequentialZNodeView : ZNodeView
+    public abstract class SequentialNodeView : NodeView
     {
-        public override void BuildNodeView(ZNode Node, ZGraph graph)
+        public override void BuildNodeView(Node Node, Graph graph)
         {
 
         }

@@ -7,14 +7,14 @@ using ZDialoguerEditor;
 
 namespace ZGraph.DialogueSystem
 {
-    [CustomEditor(typeof(ZDialogueGraph))]
+    [CustomEditor(typeof(DialogueGraph))]
     public class ZDialogueGraphEditor : Editor
     {
         public override void OnInspectorGUI()
         {
             if (GUILayout.Button("Open Graph"))
             {
-                ZDialogueGraphEditorWindow.OpenWindow(target as ZDialogueGraph);
+                ZDialogueGraphEditorWindow.OpenWindow(target as DialogueGraph);
             }
 
             base.OnInspectorGUI();

@@ -6,9 +6,9 @@ using ZDialoguer.Localization;
 
 namespace ZGraph.DialogueSystem
 {
-    public class ChoiceDialogueNodeObject : SequentialDialogueNodeObject, IEventNodeObject
+    public class ChoiceDialogueNodeObject : DialogueNode, IEventNodeObject
     {
-        [SerializeField] internal SequentialDialogueNodeObject _sequenceChild;
+        [SerializeField] internal DialogueNode _sequenceChild;
         public Action<ChoiceDialogueNodeObject> OnExecuteExternal;
         public LocalisedString dialogueText;
 
@@ -38,8 +38,7 @@ namespace ZGraph.DialogueSystem
         
         
         public LocalisedString choiceText;
-        public SequentialDialogueNodeObject output;
-        internal bool Enabled => overriddenDialogueNode ? overriddenDialogueNode.GetPredicate() : true;
+        public DialogueNode output;
 
         [FormerlySerializedAs("overriddenNode")] [SerializeField] internal PredicateDialogueNodeObject overriddenDialogueNode;
         public DisabledVisibility visibility;

@@ -13,7 +13,7 @@ public class InspectorView : VisualElement
 
     private Editor editor;
 
-    public void UpdateSelection(ZGraph.ZGraph graph, Editor _editor)
+    public void UpdateSelection(ZGraph.Graph graph, Editor _editor)
     {
         Clear();
         var root = new ScrollView();

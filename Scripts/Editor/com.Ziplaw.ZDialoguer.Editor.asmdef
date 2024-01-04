@@ -2,7 +2,8 @@
     "name": "com.Ziplaw.ZDialoguer.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:f9741071e2f9b134ba2c46f0bc06d832"
+        "GUID:f9741071e2f9b134ba2c46f0bc06d832",
+        "GUID:d28191d32fdd4ba4199c8c1d69aed93d"
     ],
     "includePlatforms": [
         "Editor"
